@@ -4,65 +4,40 @@ const ValidationPanel = ({ errors, warnings, onClose }: any) => {
   if (errors.length === 0 && warnings.length === 0) return null;
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: '70px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: '90%',
-      maxWidth: '800px',
-      background: '#fff',
-      border: '1px solid #e2e8f0',
-      borderRadius: '8px',
-      boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-      zIndex: 100,
-      maxHeight: '300px',
-      overflowY: 'auto',
-      padding: '15px'
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <AlertCircle size={20} color="#ef4444" />
+    <div className="absolute top-[70px] left-1/2 -translate-x-1/2 w-[90%] max-w-[800px] bg-white border border-slate-200 rounded-lg shadow-xl z-[100] max-h-[300px] overflow-y-auto p-4 animate-in fade-in slide-in-from-top-4 duration-300">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-base font-bold flex items-center gap-2 text-slate-800">
+          <AlertCircle size={20} className="text-red-500" />
           Résultats de validation
         </h3>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-          <X size={20} color="#64748b" />
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-50 transition-colors">
+          <X size={20} />
         </button>
       </div>
 
       {errors.length > 0 && (
-        <div style={{ marginBottom: '15px' }}>
-          <div style={{ fontWeight: 'bold', color: '#ef4444', marginBottom: '5px' }}>Erreurs ({errors.length})</div>
-          {errors.map((err: string, i: number) => (
-            <div key={i} style={{ 
-              padding: '8px', 
-              background: '#fef2f2', 
-              borderLeft: '4px solid #ef4444', 
-              fontSize: '13px',
-              marginBottom: '4px',
-              color: '#991b1b'
-            }}>
-              {err}
-            </div>
-          ))}
+        <div className="mb-4">
+          <div className="text-sm font-bold text-red-600 mb-2 uppercase tracking-wider">Erreurs ({errors.length})</div>
+          <div className="space-y-1">
+            {errors.map((err: string, i: number) => (
+              <div key={i} className="p-3 bg-red-50 border-l-4 border-red-500 text-sm text-red-800 rounded-r-md">
+                {err}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       {warnings.length > 0 && (
         <div>
-          <div style={{ fontWeight: 'bold', color: '#f59e0b', marginBottom: '5px' }}>Avertissements ({warnings.length})</div>
-          {warnings.map((warn: string, i: number) => (
-            <div key={i} style={{ 
-              padding: '8px', 
-              background: '#fffbeb', 
-              borderLeft: '4px solid #f59e0b', 
-              fontSize: '13px',
-              marginBottom: '4px',
-              color: '#92400e'
-            }}>
-              {warn}
-            </div>
-          ))}
+          <div className="text-sm font-bold text-amber-600 mb-2 uppercase tracking-wider">Avertissements ({warnings.length})</div>
+          <div className="space-y-1">
+            {warnings.map((warn: string, i: number) => (
+              <div key={i} className="p-3 bg-amber-50 border-l-4 border-amber-500 text-sm text-amber-800 rounded-r-md">
+                {warn}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

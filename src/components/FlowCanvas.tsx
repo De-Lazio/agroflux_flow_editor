@@ -40,7 +40,7 @@ const FlowCanvas = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onN
   };
 
   return (
-    <div style={{ flex: 1, position: 'relative', background: '#f8fafc' }}>
+    <div className="flex-1 relative bg-slate-50">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -67,6 +67,7 @@ const FlowCanvas = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onN
             }
           }}
           maskColor="rgba(248, 250, 252, 0.7)"
+          className="bg-white border border-slate-200 rounded-lg"
         />
       </ReactFlow>
     </div>

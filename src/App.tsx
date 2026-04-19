@@ -183,7 +183,7 @@ const App = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans">
       <Toolbar 
         onSave={handleSave}
         onLoad={handleLoad}
@@ -197,7 +197,7 @@ const App = () => {
         onRedo={redo}
       />
       
-      <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
+      <div className="flex flex-1 relative overflow-hidden">
         <ReactFlowProvider>
           <FlowCanvas 
             nodes={nodes}

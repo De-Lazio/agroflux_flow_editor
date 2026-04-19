@@ -63,11 +63,15 @@ const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
 const nodeWidth = 200;
-const nodeHeight = 100;
+const nodeHeight = 150;
 
 export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
   const isHorizontal = direction === 'LR';
-  dagreGraph.setGraph({ rankdir: direction });
+  dagreGraph.setGraph({ 
+    rankdir: direction,
+    ranksep: 80, // Distance verticale entre les niveaux de nœuds
+    nodesep: 80, // Distance horizontale entre les nœuds de même niveau
+  });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
