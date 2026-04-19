@@ -1,3 +1,34 @@
+export const createDefaultRootNode = (id: string) => ({
+  type: "root",
+  audio_prompt: `intro/${id}.mp3`,
+  options: []
+});
+
+export const createDefaultGridNode = (id: string) => ({
+  type: "grid",
+  audio_prompt: `questions/${id}.mp3`,
+  options_source: "",
+  set: "",
+  next: ""
+});
+
+export const createDefaultResultNode = (id: string) => ({
+  type: "result",
+  data_source: {
+    endpoint: "",
+    params: []
+  },
+  audio_sequence: []
+});
+
+export const createDefaultCalendrierNode = (id: string) => ({
+  type: "calendrier",
+  audio_prompt: `questions/date_${id}.mp3`,
+  periode: 7,
+  cadran: "centrer",
+  next: ""
+});
+
 export const createDefaultMenuNode = (id: string, level: number = 2) => ({
   id,
   level,

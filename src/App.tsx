@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { 
   applyNodeChanges, 
   applyEdgeChanges, 
@@ -16,9 +16,20 @@ import Toolbar from './components/Toolbar';
 import FlowCanvas from './components/FlowCanvas';
 import NodeEditor from './components/NodeEditor';
 import ValidationPanel from './components/ValidationPanel';
+import VariableManager from './components/VariableManager';
+import FormatSelector from './components/FormatSelector';
 import { jsonToFlow, flowToJson, getLayoutedElements } from './utils/flowManager';
 import { validateFlow } from './utils/validator';
-import { createDefaultMenuNode, createDefaultFilterNode, createDefaultResultsNode, createDefaultWidgetNode } from './utils/nodeFactory';
+import { 
+  createDefaultMenuNode, 
+  createDefaultFilterNode, 
+  createDefaultResultsNode, 
+  createDefaultWidgetNode,
+  createDefaultRootNode,
+  createDefaultGridNode,
+  createDefaultResultNode,
+  createDefaultCalendrierNode
+} from './utils/nodeFactory';
 import initialFlow from '../flow.json';
 
 const App = () => {
@@ -28,17 +39,67 @@ const App = () => {
   const [validation, setValidation] = useState<{errors: string[], warnings: string[]}>({errors: [], warnings: []});
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  
+  const [flowFormat, setFlowFormat] = useState<'legacy' | 'dynamic'>('legacy');
+  const [variables, setVariables] = useState<Record<string, string[]>>({});
+  const [config, setConfig] = useState<any>(null);
+  const [dynamicAudio, setDynamicAudio] = useState<any>(null);
+  const [entryNode, setEntryNode] = useState<string>("");
+  const [isVariableManagerOpen, setIsVariableManagerOpen] = useState(false);
+  const [isFormatSelectorOpen, setIsFormatSelectorOpen] = useState(false);
+
+  const isInitialLoadDone = useRef(false);
 
   // Load initial flow
   useEffect(() => {
+    const savedSession = localStorage.getItem('agroflux_flow_session');
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        setNodes(session.nodes || []);
+        setEdges(session.edges || []);
+        setFlowFormat(session.flowFormat || 'legacy');
+        setVariables(session.variables || {});
+        setConfig(session.config || null);
+        setDynamicAudio(session.dynamicAudio || null);
+        setEntryNode(session.entryNode || "");
+        isInitialLoadDone.current = true;
+        return;
+      } catch (e) {
+        console.error("Erreur restauration session:", e);
+      }
+    }
+    
     const { nodes: initialNodes, edges: initialEdges } = jsonToFlow(initialFlow);
     setNodes(initialNodes);
     setEdges(initialEdges);
+    setFlowFormat('legacy');
     addToHistory(initialNodes, initialEdges);
+    isInitialLoadDone.current = true;
   }, []);
 
+  // Auto-sauvegarde périodique (quand les données changent)
+  useEffect(() => {
+    if (!isInitialLoadDone.current) return;
+
+    const session = {
+      nodes,
+      edges,
+      flowFormat,
+      variables,
+      config,
+      dynamicAudio,
+      entryNode
+    };
+    localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
+  }, [nodes, edges, flowFormat, variables, config, dynamicAudio, entryNode]);
+
   const addToHistory = (newNodes: Node[], newEdges: Edge[]) => {
-    const newEntry = { nodes: JSON.parse(JSON.stringify(newNodes)), edges: JSON.parse(JSON.stringify(newEdges)) };
+    const newEntry = { 
+      nodes: JSON.parse(JSON.stringify(newNodes)), 
+      edges: JSON.parse(JSON.stringify(newEdges)),
+      variables: JSON.parse(JSON.stringify(variables))
+    };
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(newEntry);
     if (newHistory.length > 50) newHistory.shift();
@@ -78,54 +139,76 @@ const App = () => {
         return node;
       })
     );
-    // Mettre à jour les edges basés sur les nouvelles données du nœud
     updateEdgesFromNodes(nodeId, newData);
   };
 
   const updateEdgesFromNodes = (nodeId: string, data: any) => {
     setEdges((eds) => {
-      // Supprimer les anciens edges partant de ce nœud
       const filteredEdges = eds.filter((e) => e.source !== nodeId);
       const newEdges: Edge[] = [...filteredEdges];
 
-      // Ajouter les nouveaux edges depuis les options
-      if (data.options) {
-        data.options.forEach((option: any) => {
-          if (option.next) {
-            newEdges.push({
-              id: `e-${nodeId}-${option.id}-${option.next}`,
-              source: nodeId,
-              target: option.next,
-              label: option.label,
-              animated: true,
-            });
-          }
-        });
+      if (flowFormat === 'legacy') {
+        if (data.options) {
+          data.options.forEach((option: any) => {
+            if (option.next) {
+              newEdges.push({
+                id: `e-${nodeId}-${option.id}-${option.next}`,
+                source: nodeId,
+                target: option.next,
+                label: option.label,
+                animated: true,
+              });
+            }
+          });
+        }
+        if (data.next_filter) {
+          newEdges.push({
+            id: `e-${nodeId}-nextfilter-${data.next_filter}`,
+            source: nodeId,
+            target: data.next_filter,
+            label: 'next_filter',
+            style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5,5' },
+          });
+        }
+      } else {
+        if (data.type === 'root' && data.options) {
+          data.options.forEach((option: any) => {
+            if (option.next) {
+              newEdges.push({
+                id: `e-${nodeId}-${option.id}-${option.next}`,
+                source: nodeId,
+                target: option.next,
+                label: option.id,
+                animated: true,
+              });
+            }
+          });
+        } else if (data.next) {
+          newEdges.push({
+            id: `e-${nodeId}-next-${data.next}`,
+            source: nodeId,
+            target: data.next,
+            animated: true,
+          });
+        }
       }
-
-      // Ajouter l'edge depuis next_filter
-      if (data.next_filter) {
-        newEdges.push({
-          id: `e-${nodeId}-nextfilter-${data.next_filter}`,
-          source: nodeId,
-          target: data.next_filter,
-          label: 'next_filter',
-          style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5,5' },
-        });
-      }
-
       return newEdges;
     });
   };
 
   const handleNewProject = () => {
-    if (window.confirm("Êtes-vous sûr de vouloir créer un nouveau projet ? Tous les changements non enregistrés seront perdus.")) {
-      setNodes([]);
-      setEdges([]);
-      setSelectedNode(null);
-      setHistory([]);
-      setHistoryIndex(-1);
-    }
+    setIsFormatSelectorOpen(true);
+  };
+
+  const createNewProject = (format: 'legacy' | 'dynamic') => {
+    setNodes([]);
+    setEdges([]);
+    setVariables({});
+    setFlowFormat(format);
+    setSelectedNode(null);
+    setHistory([]);
+    setHistoryIndex(-1);
+    setIsFormatSelectorOpen(false);
   };
 
   const deleteNode = (nodeId: string) => {
@@ -135,18 +218,31 @@ const App = () => {
   };
 
   const addNewNode = () => {
-    const type = window.prompt("Type de nœud (menu, filter, results, widget):", "menu");
+    const isDynamic = flowFormat === 'dynamic';
+    const typesPrompt = isDynamic ? "root, grid, result, calendrier" : "menu, filter, results, widget";
+    const defaultType = isDynamic ? "grid" : "menu";
+    
+    const type = window.prompt(`Type de nœud (${typesPrompt}):`, defaultType);
     if (!type) return;
 
     const id = window.prompt("ID du nœud:", `node_${Date.now()}`);
     if (!id) return;
 
     let nodeData;
-    switch (type) {
-      case 'filter': nodeData = createDefaultFilterNode(id); break;
-      case 'results': nodeData = createDefaultResultsNode(id); break;
-      case 'widget': nodeData = createDefaultWidgetNode(id); break;
-      default: nodeData = createDefaultMenuNode(id); break;
+    if (isDynamic) {
+      switch (type) {
+        case 'root': nodeData = createDefaultRootNode(id); break;
+        case 'result': nodeData = createDefaultResultNode(id); break;
+        case 'calendrier': nodeData = createDefaultCalendrierNode(id); break;
+        default: nodeData = createDefaultGridNode(id); break;
+      }
+    } else {
+      switch (type) {
+        case 'filter': nodeData = createDefaultFilterNode(id); break;
+        case 'results': nodeData = createDefaultResultsNode(id); break;
+        case 'widget': nodeData = createDefaultWidgetNode(id); break;
+        default: nodeData = createDefaultMenuNode(id); break;
+      }
     }
 
     const newNode: Node = {
@@ -172,11 +268,21 @@ const App = () => {
   };
 
   const handleSave = () => {
-    const currentJson = flowToJson(nodes, edges);
+    const extraData = flowFormat === 'dynamic' ? {
+      variables,
+      config,
+      dynamic_audio: dynamicAudio,
+      entry: entryNode
+    } : {
+      version: "1.0",
+      defaultLanguage: "fon"
+    };
+
+    const currentJson = flowToJson(nodes, edges, flowFormat, extraData);
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentJson, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "flow.json");
+    downloadAnchorNode.setAttribute("download", `flow_${flowFormat}.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -191,11 +297,23 @@ const App = () => {
       reader.onload = (event: any) => {
         try {
           const json = JSON.parse(event.target.result);
+          const isDynamic = json.variables || json.entry || json.dynamic_audio;
+          const format = isDynamic ? 'dynamic' : 'legacy';
+          setFlowFormat(format);
+          
+          if (isDynamic) {
+            setVariables(json.variables || {});
+            setConfig(json.config || null);
+            setDynamicAudio(json.dynamic_audio || null);
+            setEntryNode(json.entry || "");
+          }
+
           const { nodes: newNodes, edges: newEdges } = jsonToFlow(json);
           setNodes(newNodes);
           setEdges(newEdges);
           addToHistory(newNodes, newEdges);
         } catch (err) {
+          console.error(err);
           alert("Erreur lors du chargement du JSON");
         }
       };
@@ -207,9 +325,7 @@ const App = () => {
   const handleSearch = (term: string) => {
     if (!term) return;
     const found = nodes.find(n => n.id.includes(term) || n.data.label?.toLowerCase().includes(term.toLowerCase()));
-    if (found) {
-      setSelectedNode(found);
-    }
+    if (found) setSelectedNode(found);
   };
 
   const undo = () => {
@@ -236,6 +352,7 @@ const App = () => {
         onSave={handleSave}
         onLoad={handleLoad}
         onNewProject={handleNewProject}
+        onOpenVariables={() => setIsVariableManagerOpen(true)}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
         onValidate={handleValidate}
@@ -244,7 +361,24 @@ const App = () => {
         canRedo={historyIndex < history.length - 1}
         onUndo={undo}
         onRedo={redo}
+        flowFormat={flowFormat}
       />
+      
+      {isVariableManagerOpen && (
+        <VariableManager 
+          variables={variables}
+          onUpdate={setVariables}
+          onClose={() => setIsVariableManagerOpen(false)}
+          nodes={nodes}
+        />
+      )}
+
+      {isFormatSelectorOpen && (
+        <FormatSelector 
+          onSelect={createNewProject}
+          onClose={() => setIsFormatSelectorOpen(false)}
+        />
+      )}
       
       <div className="flex flex-1 relative overflow-hidden">
         <ReactFlowProvider>
@@ -266,6 +400,8 @@ const App = () => {
             onUpdate={updateNodeData}
             onClose={() => setSelectedNode(null)}
             onDelete={deleteNode}
+            variables={variables}
+            flowFormat={flowFormat}
           />
         )}
 
