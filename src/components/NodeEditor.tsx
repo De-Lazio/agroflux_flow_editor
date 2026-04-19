@@ -57,199 +57,187 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete }: any) => {
     handleChange('audio.context', newAudio);
   };
 
-  const sectionStyle: React.CSSProperties = {
-    marginBottom: '20px',
-    borderBottom: '1px solid #e2e8f0',
-    paddingBottom: '15px'
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    color: '#64748b',
-    marginBottom: '5px'
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '8px',
-    borderRadius: '4px',
-    border: '1px solid #cbd5e1',
-    fontSize: '14px',
-    marginBottom: '10px'
-  };
-
   return (
-    <div style={{
-      width: '400px',
-      background: '#fff',
-      borderLeft: '1px solid #e2e8f0',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      boxShadow: '-4px 0 10px rgba(0,0,0,0.05)',
-      overflowY: 'auto',
-      padding: '20px',
-      zIndex: 50
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '18px', color: '#1e293b' }}>Éditer Nœud</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => onDelete(node.id)} style={{ padding: '5px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} title="Supprimer">
+    <div className="w-[400px] bg-white border-l border-slate-200 flex flex-col h-full shadow-lg z-50 overflow-hidden">
+      <div className="flex justify-between items-center p-5 border-b border-slate-100">
+        <h2 className="text-lg font-bold text-slate-800">Éditer Nœud</h2>
+        <div className="flex gap-2">
+          <button onClick={() => onDelete(node.id)} className="p-1 text-red-500 hover:bg-red-50 rounded" title="Supprimer">
             <Trash2 size={20} />
           </button>
-          <button onClick={onClose} style={{ padding: '5px', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>
+          <button onClick={onClose} className="p-1 text-slate-500 hover:bg-slate-50 rounded">
             <X size={20} />
           </button>
         </div>
       </div>
 
-      {/* Général */}
-      <div style={sectionStyle}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '15px' }}>
-          <Settings size={16} /> Général
-        </h3>
-        <label style={labelStyle}>ID (Lecture seule)</label>
-        <input style={{ ...inputStyle, background: '#f8fafc' }} value={data.id} readOnly />
-        
-        <label style={labelStyle}>Label</label>
-        <input style={inputStyle} value={data.label || ''} onChange={(e) => handleChange('label', e.target.value)} />
-        
-        <label style={labelStyle}>Type</label>
-        <select style={inputStyle} value={data.type} onChange={(e) => handleChange('type', e.target.value)}>
-          <option value="menu">Menu</option>
-          <option value="filter">Filter</option>
-          <option value="results">Results</option>
-          <option value="widget">Widget</option>
-        </select>
-        
-        <label style={labelStyle}>Niveau (Level)</label>
-        <input type="number" style={inputStyle} value={data.level} onChange={(e) => handleChange('level', parseInt(e.target.value))} />
-      </div>
-
-      {/* Audio */}
-      <div style={sectionStyle}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '15px' }}>
-          <Music size={16} /> Audio
-        </h3>
-        <label style={labelStyle}>Fichiers audio contexte</label>
-        {data.audio?.context?.map((audio: string, i: number) => (
-          <div key={i} style={{ display: 'flex', gap: '5px', marginBottom: '5px' }}>
-            <input style={{ ...inputStyle, marginBottom: 0 }} value={audio} onChange={(e) => {
-              const newCtx = [...data.audio.context];
-              newCtx[i] = e.target.value;
-              handleChange('audio.context', newCtx);
-            }} />
-            <button onClick={() => removeAudio(i)} style={{ padding: '5px', border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer' }}>
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ))}
-        <button onClick={addAudio} style={{ width: '100%', padding: '5px', background: '#f1f5f9', border: '1px dashed #cbd5e1', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-          <Plus size={14} /> Ajouter Audio
-        </button>
-        
-        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <input type="checkbox" checked={data.audio?.auto_play} onChange={(e) => handleChange('audio.auto_play', e.target.checked)} id="autoplay" />
-          <label htmlFor="autoplay" style={{ fontSize: '14px' }}>Lecture automatique</label>
-        </div>
-      </div>
-
-      {/* Options */}
-      {(data.type === 'menu' || data.type === 'filter') && (
-        <div style={sectionStyle}>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '15px' }}>
-            <List size={16} /> Options ({data.options?.length || 0})
+      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        {/* Général */}
+        <section className="space-y-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Settings size={16} /> Général
           </h3>
-          {data.options?.map((option: any, i: number) => (
-            <div key={i} style={{ background: '#f8fafc', padding: '10px', borderRadius: '6px', marginBottom: '10px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '12px' }}>Option #{option.number}</span>
-                <button onClick={() => removeOption(i)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}>
-                  <Trash2 size={14} />
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">ID (Lecture seule)</label>
+            <input className="w-full p-2 border border-slate-200 rounded text-sm bg-slate-50" value={data.id} readOnly />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">Label</label>
+            <input className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.label || ''} onChange={(e) => handleChange('label', e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">Type</label>
+            <select className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.type} onChange={(e) => handleChange('type', e.target.value)}>
+              <option value="menu">Menu</option>
+              <option value="filter">Filter</option>
+              <option value="results">Results</option>
+              <option value="widget">Widget</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">Niveau (Level)</label>
+            <input type="number" className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.level} onChange={(e) => handleChange('level', parseInt(e.target.value))} />
+          </div>
+        </section>
+
+        {/* Audio */}
+        <section className="space-y-4 pt-4 border-t border-slate-100">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Music size={16} /> Audio
+          </h3>
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-slate-500">Fichiers audio contexte</label>
+            {data.audio?.context?.map((audio: string, i: number) => (
+              <div key={i} className="flex gap-1">
+                <input className="flex-1 p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={audio} onChange={(e) => {
+                  const newCtx = [...data.audio.context];
+                  newCtx[i] = e.target.value;
+                  handleChange('audio.context', newCtx);
+                }} />
+                <button onClick={() => removeAudio(i)} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                  <Trash2 size={16} />
                 </button>
               </div>
-              <label style={labelStyle}>Label</label>
-              <input style={inputStyle} value={option.label} onChange={(e) => handleOptionChange(i, 'label', e.target.value)} />
-              
-              <label style={labelStyle}>Next Node ID</label>
-              <select style={inputStyle} value={option.next || ''} onChange={(e) => handleOptionChange(i, 'next', e.target.value)}>
+            ))}
+            <button onClick={addAudio} className="w-full py-2 border border-dashed border-slate-300 rounded text-sm text-slate-600 hover:bg-slate-50 flex justify-center items-center gap-2">
+              <Plus size={14} /> Ajouter Audio
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <input type="checkbox" checked={data.audio?.auto_play} onChange={(e) => handleChange('audio.auto_play', e.target.checked)} id="autoplay" className="rounded" />
+            <label htmlFor="autoplay" className="text-sm text-slate-700 cursor-pointer">Lecture automatique</label>
+          </div>
+        </section>
+
+        {/* Options */}
+        {(data.type === 'menu' || data.type === 'filter') && (
+          <section className="space-y-4 pt-4 border-t border-slate-100">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <List size={16} /> Options ({data.options?.length || 0})
+            </h3>
+            <div className="space-y-3">
+              {data.options?.map((option: any, i: number) => (
+                <div key={i} className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Option #{option.number}</span>
+                    <button onClick={() => removeOption(i)} className="text-red-500 hover:bg-red-50 rounded p-1">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Label</label>
+                    <input className="w-full p-2 border border-slate-200 rounded text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" value={option.label} onChange={(e) => handleOptionChange(i, 'label', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Next Node ID</label>
+                    <select className="w-full p-2 border border-slate-200 rounded text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" value={option.next || ''} onChange={(e) => handleOptionChange(i, 'next', e.target.value)}>
+                      <option value="">(Aucun)</option>
+                      {nodes.filter((n: any) => n.id !== data.id).map((n: any) => (
+                        <option key={n.id} value={n.id}>{n.id} ({n.data.label})</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ))}
+              <button onClick={addOption} className="w-full py-2 bg-blue-500 text-white rounded text-sm font-semibold hover:bg-blue-600 flex justify-center items-center gap-2 shadow-sm transition-colors">
+                <Plus size={16} /> Ajouter Option
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* Filtres spécifiques */}
+        {data.type === 'filter' && (
+          <section className="space-y-4 pt-4 border-t border-slate-100">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <Map size={16} /> Paramètres Filtre
+            </h3>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Catégorie</label>
+              <select className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.filter_category} onChange={(e) => handleChange('filter_category', e.target.value)}>
+                <option value="location">Localisation</option>
+                <option value="time">Temps</option>
+                <option value="market">Marché</option>
+                <option value="product">Produit</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Étape (Step)</label>
+              <input className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.filter_step || ''} onChange={(e) => handleChange('filter_step', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Next Filter ID</label>
+              <select className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.next_filter || ''} onChange={(e) => handleChange('next_filter', e.target.value)}>
                 <option value="">(Aucun)</option>
-                {nodes.filter((n: any) => n.id !== data.id).map((n: any) => (
+                {nodes.filter((n: any) => n.id !== data.id && n.data.type === 'filter').map((n: any) => (
                   <option key={n.id} value={n.id}>{n.id} ({n.data.label})</option>
                 ))}
               </select>
             </div>
-          ))}
-          <button onClick={addOption} style={{ width: '100%', padding: '8px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-            <Plus size={16} /> Ajouter Option
-          </button>
-        </div>
-      )}
+          </section>
+        )}
 
-      {/* Filtres spécifiques */}
-      {data.type === 'filter' && (
-        <div style={sectionStyle}>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '15px' }}>
-            <Map size={16} /> Paramètres Filtre
+        {/* API */}
+        {(data.type === 'filter' || data.type === 'results') && data.api && (
+          <section className="space-y-4 pt-4 border-t border-slate-100">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <Globe size={16} /> API
+            </h3>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Endpoint</label>
+              <input className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.api.endpoint} onChange={(e) => handleChange('api.endpoint', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Méthode</label>
+              <select className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.api.method} onChange={(e) => handleChange('api.method', e.target.value)}>
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+              </select>
+            </div>
+          </section>
+        )}
+
+        {/* Navigation & Pagination */}
+        <section className="space-y-4 pt-4 border-t border-slate-100 mb-8">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Map size={16} /> UI & Navigation
           </h3>
-          <label style={labelStyle}>Catégorie</label>
-          <select style={inputStyle} value={data.filter_category} onChange={(e) => handleChange('filter_category', e.target.value)}>
-            <option value="location">Localisation</option>
-            <option value="time">Temps</option>
-            <option value="market">Marché</option>
-            <option value="product">Produit</option>
-          </select>
-          
-          <label style={labelStyle}>Étape (Step)</label>
-          <input style={inputStyle} value={data.filter_step || ''} onChange={(e) => handleChange('filter_step', e.target.value)} />
-          
-          <label style={labelStyle}>Next Filter ID</label>
-          <select style={inputStyle} value={data.next_filter || ''} onChange={(e) => handleChange('next_filter', e.target.value)}>
-            <option value="">(Aucun)</option>
-            {nodes.filter((n: any) => n.id !== data.id && n.data.type === 'filter').map((n: any) => (
-              <option key={n.id} value={n.id}>{n.id} ({n.data.label})</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* API */}
-      {(data.type === 'filter' || data.type === 'results') && data.api && (
-        <div style={sectionStyle}>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '15px' }}>
-            <Globe size={16} /> API
-          </h3>
-          <label style={labelStyle}>Endpoint</label>
-          <input style={inputStyle} value={data.api.endpoint} onChange={(e) => handleChange('api.endpoint', e.target.value)} />
-          
-          <label style={labelStyle}>Méthode</label>
-          <select style={inputStyle} value={data.api.method} onChange={(e) => handleChange('api.method', e.target.value)}>
-            <option value="GET">GET</option>
-            <option value="POST">POST</option>
-          </select>
-        </div>
-      )}
-
-      {/* Navigation & Pagination */}
-      <div style={{ ...sectionStyle, borderBottom: 'none' }}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '15px' }}>
-          <Map size={16} /> UI & Navigation
-        </h3>
-        <label style={labelStyle}>Items par page</label>
-        <input type="number" style={inputStyle} value={data.pagination?.items_per_page} onChange={(e) => handleChange('pagination.items_per_page', parseInt(e.target.value))} />
-        
-        <div style={{ display: 'flex', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input type="checkbox" checked={data.navigation?.show_back} onChange={(e) => handleChange('navigation.show_back', e.target.checked)} id="back" />
-            <label htmlFor="back" style={{ fontSize: '14px' }}>Back</label>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">Items par page</label>
+            <input type="number" className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.pagination?.items_per_page} onChange={(e) => handleChange('pagination.items_per_page', parseInt(e.target.value))} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input type="checkbox" checked={data.navigation?.show_home} onChange={(e) => handleChange('navigation.show_home', e.target.checked)} id="home" />
-            <label htmlFor="home" style={{ fontSize: '14px' }}>Home</label>
+          <div className="flex gap-6">
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={data.navigation?.show_back} onChange={(e) => handleChange('navigation.show_back', e.target.checked)} id="back" className="rounded text-blue-500 focus:ring-blue-500" />
+              <label htmlFor="back" className="text-sm text-slate-700 cursor-pointer">Back</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={data.navigation?.show_home} onChange={(e) => handleChange('navigation.show_home', e.target.checked)} id="home" className="rounded text-blue-500 focus:ring-blue-500" />
+              <label htmlFor="home" className="text-sm text-slate-700 cursor-pointer">Home</label>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
