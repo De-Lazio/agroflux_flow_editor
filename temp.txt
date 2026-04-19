@@ -1,0 +1,1 @@
+en appuyant sur le button reorganiser, il reorganise parfaitement les noeud, c'est bon. sauf que la ditance verticale entre les noeuds est petite et les noeuds qui ont plusieurs next_noeuds en parallèle, on a du mal à voir les trait correment. augment un peu la distance vertical par défaut entre noeud.
