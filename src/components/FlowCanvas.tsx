@@ -2,7 +2,8 @@ import ReactFlow, {
   Background, 
   Controls, 
   MiniMap, 
-  MarkerType
+  MarkerType,
+  SelectionMode
 } from 'reactflow';
 import type { 
   Node, 
@@ -53,6 +54,10 @@ const FlowCanvas = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onN
         connectionLineStyle={connectionLineStyle}
         defaultEdgeOptions={defaultEdgeOptions}
         fitView
+        selectionOnDrag={true}
+        selectionMode={SelectionMode.Partial}
+        panOnScroll={true}
+        panOnDrag={[1, 2]}
       >
         <Background color="#cbd5e1" gap={20} />
         <Controls />

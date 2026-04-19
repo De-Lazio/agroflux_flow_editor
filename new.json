@@ -1,0 +1,199 @@
+{
+  "version": "1.0",
+  "entry": "main_menu",
+
+  "config": {
+    "audio": {
+      "auto_play_prompt": true,
+      "auto_play_option": true,
+      "pause_between_ms": 600
+    }
+  },
+
+  "variables": {
+    "produit": ["maïs", "riz", "haricot", "manioc", "tomate"],
+    "localite": ["Ouémé", "Zou", "Atacora", "Donga", "Collines", "Mono", "Couffo", "Plateau", "Alibori", "Borgou", "Atlantique", "Littoral"],
+    "marche": ["Ikpinlè", "Dantokpa", "Adjohoun", "Porto-Novo", "Parakou", "Natitingou", "Bohicon", "Abomey"],
+    "infos_marche_filtre": ["jours", "produits", "prix", "tendance"],
+    "explore_prix_filtre": ["marches", "evolution", "prediction"],
+    "periode": ["today", "week", "month"]
+  },
+
+  "dynamic_audio": {
+    "produit": "produits/{value}.mp3",
+    "marche": "marches/{value}.mp3",
+    "localite": "localites/{value}.mp3"
+  },
+
+  "nodes": {
+
+    /* ===================== MENU PRINCIPAL ===================== */
+    "main_menu": {
+      "type": "root",
+      "audio_prompt": "intro/menu_principal.mp3",
+      "options": [
+        { "id": "aller", "image": "icons/aller.png", "audio": "menu/aller.mp3", "next": "aller_localite" },
+        { "id": "vendre", "image": "icons/vendre.png", "audio": "menu/vendre.mp3", "next": "vendre_produit" },
+        { "id": "acheter", "image": "icons/acheter.png", "audio": "menu/acheter.mp3", "next": "acheter_produit" },
+        { "id": "infos", "image": "icons/info.png", "audio": "menu/info_marche.mp3", "next": "infos_marche" },
+        { "id": "explorer", "image": "icons/prix.png", "audio": "menu/explorer_prix.mp3", "next": "explorer_produit" }
+      ]
+    },
+
+    /* ===================== 1. ALLER AUJOURD’HUI ===================== */
+
+    "aller_localite": {
+      "type": "grid",
+      "audio_prompt": "questions/localite.mp3",
+      "options_source": "localites",
+      "set": "localite",
+      "next": "aller_distance"
+    },
+
+    "aller_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "/markets/today",
+        "params": ["localite", "distance"]
+      },
+      "audio_sequence": [
+        "phrases/marches_disponibles.mp3"
+      ]
+    },
+
+    /* ===================== 2. VENDRE PRODUIT ===================== */
+
+    "vendre_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/produit_vendre.mp3",
+      "options_source": "produits",
+      "set": "produit",
+      "next": "vendre_localite"
+    },
+
+    "vendre_localite": {
+      "type": "grid",
+      "audio_prompt": "questions/localite.mp3",
+      "options_source": "localites",
+      "set": "localite",
+      "next": "vendre_result"
+    },
+
+    "vendre_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "/markets/best-sell",
+        "params": ["produit", "localite"]
+      },
+      "audio_sequence": [
+        "phrases/meilleur_marche_vendre.mp3",
+        "{produit}",
+        "phrases/aujourdhui_est.mp3",
+        "{marche}",
+        "phrases/prix_eleve.mp3",
+        "phrases/conseil_vendre.mp3"
+      ]
+    },
+
+    /* ===================== 3. ACHETER PRODUIT ===================== */
+
+    "acheter_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/produit_acheter.mp3",
+      "options_source": "produits",
+      "set": "produit",
+      "next": "acheter_localite"
+    },
+
+    "acheter_localite": {
+      "type": "grid",
+      "audio_prompt": "questions/localite.mp3",
+      "options_source": "localites",
+      "set": "localite",
+      "next": "acheter_result"
+    },
+
+    "acheter_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "/markets/cheapest",
+        "params": ["produit", "localite"]
+      },
+      "audio_sequence": [
+        "phrases/meilleur_marche_acheter.mp3",
+        "{produit}",
+        "phrases/aujourdhui_est.mp3",
+        "{marche}"
+      ]
+    },
+
+    /* ===================== 4. INFOS MARCHÉ ===================== */
+
+    "infos_marche": {
+      "type": "grid",
+      "audio_prompt": "questions/choisir_marche.mp3",
+      "options_source": "marches",
+      "set": "marche",
+      "next": "infos_type"
+    },
+
+    "infos_type": {
+      "type": "grid",
+      "audio_prompt": "questions/type_info.mp3",
+      "data_source": "filtre",
+      "set": "filtre",
+      "next": "infos_result"
+    },
+
+    "infos_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "/market/info",
+        "params": ["marche", "filtre"]
+      },
+      "audio_sequence": [
+        "phrases/information_marche.mp3",
+        "{marche}"
+      ]
+    },
+
+    /* ===================== 5. EXPLORER PRIX ===================== */
+
+    "explorer_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/produit_explorer.mp3",
+      "options_source": "produits",
+      "set": "produit",
+      "next": "explorer_filtre"
+    },
+
+    "explorer_filtre": {
+      "type": "grid",
+      "audio_prompt": "questions/type_prix.mp3",
+      "options_source": "explore_prix_filtre",
+      "set": "filtre",
+      "next": "explorer_periode"
+    },
+
+    "explorer_periode": {
+      "type": "grid",
+      "audio_prompt": "questions/periode.mp3",
+      "options_source": "periode",
+      "set": "periode",
+      "next": "explorer_result"
+    },
+
+    "explorer_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "/prices/explore",
+        "params": ["produit", "filtre", "periode"]
+      },
+      "audio_sequence": [
+        "phrases/resultat_prix.mp3",
+        "{produit}"
+      ]
+    }
+
+  }
+}
