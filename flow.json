@@ -1,0 +1,691 @@
+{
+  "version": "1.0",
+  "default_language": "fon",
+
+  "nodes": {
+    "root": {
+      "id": "root",
+      "level": 1,
+      "type": "menu",
+
+      "audio": {
+        "context": ["welcome.mp3", "choose_approach.mp3"],
+        "auto_play": true
+      },
+
+      "options": [
+        {
+          "id": "approach_market",
+          "number": 1,
+          "label": "Par Marché",
+          "image": "approaches/market.jpg",
+          "audio": ["approach_market.mp3"],
+          "keywords": ["marché", "place"],
+          "next": "menu_markets"
+        },
+        {
+          "id": "approach_product",
+          "number": 2,
+          "label": "Par Produit",
+          "image": "approaches/product.jpg",
+          "audio": ["approach_product.mp3"],
+          "keywords": ["produit", "article"],
+          "next": "menu_products"
+        }
+      ],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": false
+      },
+
+      "voice_filter": {
+        "enabled": false,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": false,
+        "show_home": false,
+        "breadcrumb": []
+      }
+    },
+
+    "menu_markets": {
+      "id": "menu_markets",
+      "level": 2,
+      "type": "menu",
+
+      "audio": {
+        "context": ["markets_menu_intro.mp3"],
+        "auto_play": true
+      },
+
+      "options": [
+        {
+          "id": "markets_today",
+          "number": 1,
+          "label": "Marchés aujourd'hui",
+          "image": "markets/today.jpg",
+          "audio": ["markets_today.mp3"],
+          "keywords": ["aujourd'hui", "maintenant"],
+          "usable_filters": ["location"],
+          "params": {
+            "time_filter": "today"
+          }
+        },
+        {
+          "id": "markets_by_date",
+          "number": 2,
+          "label": "Marchés le jour X",
+          "image": "markets/calendar.jpg",
+          "audio": ["markets_date.mp3"],
+          "keywords": ["date", "jour", "quand"],
+          "usable_filters": ["time", "location"],
+          "params": {}
+        },
+        {
+          "id": "markets_by_location",
+          "number": 3,
+          "label": "Tous les marchés d'une localité",
+          "image": "markets/location.jpg",
+          "audio": ["markets_location.mp3"],
+          "keywords": ["localité", "ville", "région"],
+          "usable_filters": ["location"],
+          "params": {}
+        },
+        {
+          "id": "markets_by_name",
+          "number": 4,
+          "label": "Rechercher un marché par nom",
+          "image": "markets/search.jpg",
+          "audio": ["markets_search.mp3"],
+          "keywords": ["nom", "chercher", "trouver"],
+          "usable_filters": ["market"],
+          "params": {}
+        },
+        {
+          "id": "markets_by_product",
+          "number": 5,
+          "label": "Marchés vendant un produit",
+          "image": "markets/product.jpg",
+          "audio": ["markets_product.mp3"],
+          "keywords": ["produit", "vendre", "acheter"],
+          "usable_filters": ["product", "location"],
+          "params": {}
+        }
+      ],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": false,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil"]
+      }
+    },
+
+    "menu_products": {
+      "id": "menu_products",
+      "level": 2,
+      "type": "menu",
+
+      "audio": {
+        "context": ["products_menu_intro.mp3"],
+        "auto_play": true
+      },
+
+      "options": [
+        {
+          "id": "product_best_price",
+          "number": 1,
+          "label": "Où acheter au meilleur prix ?",
+          "image": "products/best_price.jpg",
+          "audio": ["product_best_price.mp3"],
+          "keywords": ["prix", "meilleur", "moins cher"],
+          "usable_filters": ["product", "location"],
+          "params": {
+            "sort": "price_asc"
+          }
+        },
+        {
+          "id": "product_current_price",
+          "number": 2,
+          "label": "Prix actuel d'un produit",
+          "image": "products/price.jpg",
+          "audio": ["product_price.mp3"],
+          "keywords": ["prix", "coût", "combien"],
+          "usable_filters": ["product"],
+          "params": {}
+        },
+        {
+          "id": "product_varieties",
+          "number": 3,
+          "label": "Variétés disponibles",
+          "image": "products/varieties.jpg",
+          "audio": ["product_varieties.mp3"],
+          "keywords": ["variété", "type", "sorte"],
+          "usable_filters": ["product"],
+          "params": {}
+        },
+        {
+          "id": "product_search",
+          "number": 4,
+          "label": "Rechercher un produit par nom",
+          "image": "products/search.jpg",
+          "audio": ["product_search.mp3"],
+          "keywords": ["chercher", "trouver", "nom"],
+          "usable_filters": ["product"],
+          "params": {}
+        }
+      ],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": false,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil"]
+      }
+    },
+
+    "filter_location": {
+      "id": "filter_location",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "location",
+      "filter_step": "region",
+
+      "audio": {
+        "context": ["choose_region.mp3"],
+        "auto_play": true
+      },
+
+      "options": [],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": true,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Marchés"]
+      },
+
+      "api": {
+        "endpoint": "/filters/locations/regions",
+        "method": "GET",
+        "params_from_history": true
+      },
+
+      "next_filter": "filter_location_department"
+    },
+
+    "filter_location_department": {
+      "id": "filter_location_department",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "location",
+      "filter_step": "department",
+
+      "audio": {
+        "context": ["choose_department.mp3"],
+        "auto_play": true
+      },
+
+      "options": [],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": true,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Marchés", "Région"]
+      },
+
+      "api": {
+        "endpoint": "/filters/locations/departments",
+        "method": "GET",
+        "params_from_history": true
+      },
+
+      "next_filter": "filter_location_commune"
+    },
+
+    "filter_location_commune": {
+      "id": "filter_location_commune",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "location",
+      "filter_step": "commune",
+
+      "audio": {
+        "context": ["choose_commune.mp3"],
+        "auto_play": true
+      },
+
+      "options": [],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": true,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Marchés", "Région", "Département"]
+      },
+
+      "api": {
+        "endpoint": "/filters/locations/communes",
+        "method": "GET",
+        "params_from_history": true
+      },
+
+      "next_filter": null
+    },
+
+    "filter_time": {
+      "id": "filter_time",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "time",
+      "filter_step": "period",
+
+      "audio": {
+        "context": ["choose_period.mp3"],
+        "auto_play": true
+      },
+
+      "options": [
+        {
+          "id": "time_past",
+          "number": 1,
+          "label": "Passé",
+          "image": "time/past.jpg",
+          "audio": ["time_past.mp3"],
+          "keywords": ["passé", "avant", "hier"],
+          "next": "filter_time_past"
+        },
+        {
+          "id": "time_future",
+          "number": 2,
+          "label": "Futur",
+          "image": "time/future.jpg",
+          "audio": ["time_future.mp3"],
+          "keywords": ["futur", "après", "demain"],
+          "next": "filter_time_future"
+        },
+        {
+          "id": "time_calendar",
+          "number": 3,
+          "label": "Calendrier",
+          "image": "time/calendar.jpg",
+          "audio": ["time_calendar.mp3"],
+          "keywords": ["calendrier", "date", "choisir"],
+          "next": "filter_time_calendar"
+        }
+      ],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": false
+      },
+
+      "voice_filter": {
+        "enabled": false,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Marchés"]
+      },
+
+      "next_filter": null
+    },
+
+    "filter_time_past": {
+      "id": "filter_time_past",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "time",
+      "filter_step": "past",
+
+      "audio": {
+        "context": ["choose_past_date.mp3"],
+        "auto_play": true
+      },
+
+      "options": [
+        {
+          "id": "past_yesterday",
+          "number": 1,
+          "label": "Hier",
+          "image": "time/day.jpg",
+          "audio": ["past_yesterday.mp3"],
+          "keywords": ["hier"],
+          "params": {"date_offset": -1}
+        },
+        {
+          "id": "past_2days",
+          "number": 2,
+          "label": "Avant-hier",
+          "image": "time/day.jpg",
+          "audio": ["past_2days.mp3"],
+          "keywords": ["avant-hier"],
+          "params": {"date_offset": -2}
+        },
+        {
+          "id": "past_3days",
+          "number": 3,
+          "label": "Il y a 3 jours",
+          "image": "time/day.jpg",
+          "audio": ["past_3days.mp3"],
+          "keywords": ["trois jours"],
+          "params": {"date_offset": -3}
+        },
+        {
+          "id": "past_4days",
+          "number": 4,
+          "label": "Il y a 4 jours",
+          "image": "time/day.jpg",
+          "audio": ["past_4days.mp3"],
+          "keywords": ["quatre jours"],
+          "params": {"date_offset": -4}
+        },
+        {
+          "id": "past_5days",
+          "number": 5,
+          "label": "Il y a 5 jours",
+          "image": "time/day.jpg",
+          "audio": ["past_5days.mp3"],
+          "keywords": ["cinq jours"],
+          "params": {"date_offset": -5}
+        }
+      ],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": false,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Marchés", "Période"]
+      },
+
+      "next_filter": null
+    },
+
+    "filter_time_future": {
+      "id": "filter_time_future",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "time",
+      "filter_step": "future",
+
+      "audio": {
+        "context": ["choose_future_date.mp3"],
+        "auto_play": true
+      },
+
+      "options": [
+        {
+          "id": "future_today",
+          "number": 1,
+          "label": "Aujourd'hui",
+          "image": "time/day.jpg",
+          "audio": ["future_today.mp3"],
+          "keywords": ["aujourd'hui", "maintenant"],
+          "params": {"date_offset": 0}
+        },
+        {
+          "id": "future_tomorrow",
+          "number": 2,
+          "label": "Demain",
+          "image": "time/day.jpg",
+          "audio": ["future_tomorrow.mp3"],
+          "keywords": ["demain"],
+          "params": {"date_offset": 1}
+        },
+        {
+          "id": "future_2days",
+          "number": 3,
+          "label": "Après-demain",
+          "image": "time/day.jpg",
+          "audio": ["future_2days.mp3"],
+          "keywords": ["après-demain"],
+          "params": {"date_offset": 2}
+        },
+        {
+          "id": "future_3days",
+          "number": 4,
+          "label": "Dans 3 jours",
+          "image": "time/day.jpg",
+          "audio": ["future_3days.mp3"],
+          "keywords": ["trois jours"],
+          "params": {"date_offset": 3}
+        },
+        {
+          "id": "future_4days",
+          "number": 5,
+          "label": "Dans 4 jours",
+          "image": "time/day.jpg",
+          "audio": ["future_4days.mp3"],
+          "keywords": ["quatre jours"],
+          "params": {"date_offset": 4}
+        }
+      ],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": false,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Marchés", "Période"]
+      },
+
+      "next_filter": null
+    },
+
+    "filter_time_calendar": {
+      "id": "filter_time_calendar",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "time",
+      "filter_step": "calendar",
+      "widget_type": "calendar",
+
+      "audio": {
+        "context": ["choose_calendar_date.mp3"],
+        "auto_play": true
+      },
+
+      "options": [],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": false
+      },
+
+      "voice_filter": {
+        "enabled": false,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Marchés", "Période"]
+      },
+
+      "next_filter": null
+    },
+
+    "filter_market": {
+      "id": "filter_market",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "market",
+      "filter_step": "name",
+
+      "audio": {
+        "context": ["choose_market.mp3"],
+        "auto_play": true
+      },
+
+      "options": [],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": true,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Marchés"]
+      },
+
+      "api": {
+        "endpoint": "/filters/markets",
+        "method": "GET",
+        "params_from_history": true
+      },
+
+      "next_filter": null
+    },
+
+    "filter_product": {
+      "id": "filter_product",
+      "level": 3,
+      "type": "filter",
+      "filter_category": "product",
+      "filter_step": "name",
+
+      "audio": {
+        "context": ["choose_product.mp3"],
+        "auto_play": true
+      },
+
+      "options": [],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": true,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": ["Accueil", "Produits"]
+      },
+
+      "api": {
+        "endpoint": "/filters/products",
+        "method": "GET",
+        "params_from_history": true
+      },
+
+      "next_filter": null
+    },
+
+    "results": {
+      "id": "results",
+      "level": 4,
+      "type": "results",
+
+      "audio": {
+        "context": [],
+        "auto_play": true
+      },
+
+      "options": [],
+
+      "pagination": {
+        "items_per_page": 5,
+        "allow_swipe": true
+      },
+
+      "voice_filter": {
+        "enabled": true,
+        "trigger_threshold": 10
+      },
+
+      "navigation": {
+        "show_back": true,
+        "show_home": true,
+        "breadcrumb": []
+      },
+
+      "api": {
+        "endpoint": "/search/results",
+        "method": "POST",
+        "params_from_history": true
+      }
+    }
+  }
+}

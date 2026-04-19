@@ -1,0 +1,425 @@
+# PROMPT POUR GEMINI - ÉDITEUR DE FLOW AGROFLUX
+
+## CONTEXTE
+
+Tu vas créer un **éditeur visuel de flow de navigation** pour l'application mobile AgroFlux. Cet éditeur permet de concevoir et modifier la navigation audio multi-étapes en langues locales.
+
+J'ai fourni :
+1. ✅ L'analyse complète de la structure des nœuds (4 types identifiés)
+2. ✅ Le fichier `flow.json` actuel avec la structure existante
+
+---
+
+## TON TRAVAIL
+
+Crée une **application web standalone** avec **React 18 + React Flow** qui permet de :
+
+### 1. VISUALISER le flow
+- Afficher tous les nœuds du JSON sous forme de graphe interactif
+- Utiliser React Flow pour le rendu visuel
+- Colorer les nœuds selon leur type :
+  - 🟦 **Bleu** : type "menu"
+  - 🟩 **Vert** : type "filter"  
+  - 🟨 **Jaune** : type "results"
+  - 🟪 **Violet** : type "widget"
+- Afficher les connexions entre nœuds (flèches) basées sur :
+  - `option.next` (pour les options)
+  - `next_filter` (pour les filtres)
+
+### 2. ÉDITER les nœuds
+Quand on clique sur un nœud, afficher un **panel latéral droit** avec tous les champs éditables :
+
+**Section Général**
+- Input : `id` (lecture seule)
+- Input : `label` (à ajouter au JSON si absent)
+- Select : `type` (menu | filter | results | widget)
+- Number : `level`
+
+**Section Audio**
+- Liste des fichiers audio contexte (`audio.context[]`)
+- Bouton "+ Ajouter audio"
+- Checkbox : `audio.auto_play`
+
+**Section Options** (si type = menu ou filter)
+- Liste éditable des options avec pour chaque :
+  - Input : `id`
+  - Number : `number` (1-5)
+  - Input : `label`
+  - Input : `image` (chemin)
+  - Liste : `audio[]` (fichiers)
+  - Tags : `keywords[]`
+  - Select : `next` (dropdown tous les nœuds)
+  - JSON editor : `params`
+  - Bouton : 🗑️ Supprimer
+- Bouton : **+ Ajouter option**
+
+**Section Pagination**
+- Number : `items_per_page`
+- Checkbox : `allow_swipe`
+
+**Section Navigation**
+- Checkbox : `show_back`
+- Checkbox : `show_home`
+- Tags éditables : `breadcrumb[]`
+
+**Section API** (si présent)
+- Input : `endpoint`
+- Select : `method` (GET | POST)
+- Checkbox : `params_from_history`
+
+**Section Filtres** (si type = filter)
+- Select : `filter_category`
+- Input : `filter_step`
+- Select : `next_filter` (dropdown nœuds)
+
+### 3. AJOUTER de nouveaux nœuds
+- Bouton flottant "+ Nouveau nœud"
+- Modal avec choix du type :
+  - Menu
+  - Filter
+  - Results
+  - Widget
+- Créer nœud avec structure par défaut selon le type
+- Placer visuellement sur le canvas
+
+### 4. CONNECTER les nœuds
+- Drag & drop pour créer connexions entre nœuds
+- Mise à jour automatique du JSON (`next`, `next_filter`)
+
+### 5. SUPPRIMER nœuds/connexions
+- Sélectionner nœud → touche Delete → Supprime nœud
+- Clic sur connexion → Bouton supprimer → Supprime lien
+
+### 6. SAUVEGARDER / CHARGER
+- Bouton **💾 Télécharger JSON** : Exporte le flow édité
+- Bouton **📂 Charger JSON** : Upload un fichier JSON
+- Auto-save dans localStorage toutes les 30 secondes
+
+### 7. VALIDER le flow
+- Bouton **✅ Valider**
+- Vérifications :
+  - ❌ Nœuds avec `next` pointant vers ID inexistant → Erreur
+  - ⚠️ Nœuds orphelins (aucun nœud ne pointe vers eux, sauf root) → Warning
+  - ⚠️ Nœuds sans options (si type menu/filter) → Warning
+- Afficher résultats validation en haut de l'écran
+
+---
+
+## STRUCTURE DU CODE
+
+Organise l'application ainsi :
+
+```
+flow-editor/
+├── public/
+│   └── index.html
+├── src/
+│   ├── App.jsx                  # Composant principal
+│   ├── components/
+│   │   ├── FlowCanvas.jsx       # Canvas React Flow
+│   │   ├── NodeEditor.jsx       # Panel édition nœud (droite)
+│   │   ├── Toolbar.jsx          # Barre d'outils (haut)
+│   │   ├── CustomNode.jsx       # Nœud personnalisé React Flow
+│   │   └── ValidationPanel.jsx  # Résultats validation
+│   ├── utils/
+│   │   ├── flowManager.js       # Logique gestion du flow
+│   │   ├── validator.js         # Validation flow
+│   │   └── nodeFactory.js       # Création nœuds par défaut
+│   ├── styles/
+│   │   └── App.css              # Styles globaux
+│   └── index.jsx                # Point d'entrée
+├── package.json
+└── README.md
+```
+
+---
+
+## DÉPENDANCES REQUISES
+
+```json
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "reactflow": "^11.10.0",
+    "lucide-react": "^0.300.0"
+  }
+}
+```
+
+**Pas d'autres librairies** pour garder simple.
+
+---
+
+## TEMPLATES DE NŒUDS PAR TYPE
+
+Quand on crée un nouveau nœud, utilise ces templates :
+
+### Template MENU
+```json
+{
+  "id": "new_menu_X",
+  "level": 2,
+  "type": "menu",
+  "audio": {
+    "context": [],
+    "auto_play": true
+  },
+  "options": [],
+  "pagination": {
+    "items_per_page": 5,
+    "allow_swipe": true
+  },
+  "voice_filter": {
+    "enabled": false,
+    "trigger_threshold": 10
+  },
+  "navigation": {
+    "show_back": true,
+    "show_home": true,
+    "breadcrumb": []
+  }
+}
+```
+
+### Template FILTER
+```json
+{
+  "id": "new_filter_X",
+  "level": 3,
+  "type": "filter",
+  "filter_category": "location",
+  "filter_step": "",
+  "audio": {
+    "context": [],
+    "auto_play": true
+  },
+  "options": [],
+  "pagination": {
+    "items_per_page": 5,
+    "allow_swipe": true
+  },
+  "voice_filter": {
+    "enabled": true,
+    "trigger_threshold": 10
+  },
+  "navigation": {
+    "show_back": true,
+    "show_home": true,
+    "breadcrumb": []
+  },
+  "api": {
+    "endpoint": "",
+    "method": "GET",
+    "params_from_history": true
+  },
+  "next_filter": null
+}
+```
+
+### Template RESULTS
+```json
+{
+  "id": "new_results_X",
+  "level": 4,
+  "type": "results",
+  "audio": {
+    "context": [],
+    "auto_play": true
+  },
+  "options": [],
+  "pagination": {
+    "items_per_page": 5,
+    "allow_swipe": true
+  },
+  "voice_filter": {
+    "enabled": true,
+    "trigger_threshold": 10
+  },
+  "navigation": {
+    "show_back": true,
+    "show_home": true,
+    "breadcrumb": []
+  },
+  "api": {
+    "endpoint": "/search/results",
+    "method": "POST",
+    "params_from_history": true
+  }
+}
+```
+
+---
+
+## FONCTIONNALITÉS IMPORTANTES
+
+### Auto-layout
+- Utilise React Flow `dagre` layout pour organiser automatiquement les nœuds
+- Bouton **🔄 Réorganiser** pour appliquer auto-layout
+
+### Mini-map
+- Afficher mini-map React Flow en bas à droite
+- Permet navigation rapide dans flow complexe
+
+### Zoom & Pan
+- Molette souris = zoom
+- Click & drag = pan
+- Boutons +/- pour zoom
+
+### Undo / Redo
+- Stack historique des modifications
+- Boutons ↩️ Undo / ↪️ Redo dans toolbar
+- Raccourcis Ctrl+Z / Ctrl+Y
+
+### Recherche
+- Input recherche dans toolbar
+- Recherche par ID ou label de nœud
+- Centrer canvas sur nœud trouvé
+
+---
+
+## CONTRAINTES TECHNIQUES
+
+1. **JSON valide** : Toujours maintenir structure JSON valide
+2. **IDs uniques** : Vérifier qu'aucun ID n'est dupliqué
+3. **Connexions valides** : `next` et `next_filter` doivent pointer vers IDs existants
+4. **Pas de cycles** : Détecter et empêcher cycles infinis dans le flow
+5. **Performance** : Optimiser pour 50+ nœuds minimum
+
+---
+
+## UI/UX
+
+### Couleurs
+- Background canvas : `#f8f9fa` (gris clair)
+- Nœud menu : `#3b82f6` (bleu)
+- Nœud filter : `#10b981` (vert)
+- Nœud results : `#f59e0b` (jaune/orange)
+- Nœud widget : `#8b5cf6` (violet)
+- Connexions : `#64748b` (gris foncé)
+- Sélection : `#ef4444` (rouge)
+
+### Toolbar (en haut)
+```
+[Logo AgroFlux] | [📂 Charger] [💾 Sauvegarder] | [+ Nœud] | [🔍 Recherche] | [↩️] [↪️] | [🔄 Réorganiser] | [✅ Valider]
+```
+
+### Layout
+```
+┌─────────────────────────────────────────────────┐
+│              TOOLBAR (haut)                      │
+├────────────────────────────┬────────────────────┤
+│                            │                    │
+│      CANVAS REACT FLOW     │   PANEL ÉDITION    │
+│      (zone principale)     │   (nœud sélect.)   │
+│                            │                    │
+│       [Mini-map ici]       │                    │
+│                            │                    │
+└────────────────────────────┴────────────────────┘
+```
+
+---
+
+## GESTION DES ERREURS
+
+- **Fichier JSON invalide** : Message d'erreur clair + garde l'ancien flow
+- **Nœud sans ID** : Génère ID automatique `node_${timestamp}`
+- **Option sans next** : Pas d'erreur, juste warning
+- **Connexion vers ID inexistant** : Erreur rouge, supprime connexion
+
+---
+
+## EXEMPLES D'UTILISATION
+
+### Cas 1 : Modifier un nœud existant
+1. Cliquer sur nœud "menu_markets"
+2. Panel s'ouvre à droite
+3. Modifier label : "Marchés agricoles"
+4. Ajouter fichier audio : "markets_intro_fon.mp3"
+5. Modifications auto-sauvegardées
+
+### Cas 2 : Ajouter nouvelle option à un menu
+1. Sélectionner nœud "root"
+2. Dans section Options, cliquer "+ Ajouter option"
+3. Remplir :
+   - number: 3
+   - label: "Par Prix"
+   - next: "menu_prices" (sélectionner dans dropdown)
+4. Sauvegarder
+
+### Cas 3 : Créer nouveau parcours
+1. Cliquer "+ Nouveau nœud"
+2. Choisir type "Menu"
+3. Placer sur canvas
+4. Éditer propriétés (ID, options...)
+5. Connecter depuis un nœud existant (drag & drop)
+
+### Cas 4 : Valider le flow
+1. Cliquer "✅ Valider"
+2. Voir résultats :
+   - ❌ Erreur : "filter_product_bis" → next pointe vers "unknown_node"
+   - ⚠️ Warning : "menu_test" est orphelin
+3. Corriger erreurs
+4. Revalider
+
+---
+
+## CE QUE JE FOURNIS
+
+1. ✅ **Analyse complète** structure nœuds (déjà lue)
+2. ✅ **Fichier flow.json** (structure actuelle du flow)
+3. ✅ **Ce prompt** avec toutes les spécifications
+
+---
+
+## TON LIVRABLE
+
+Fournis-moi le **code source complet** avec :
+
+1. **Tous les fichiers** organisés selon la structure proposée
+2. **package.json** avec dépendances
+3. **README.md** avec :
+   - Instructions installation (`npm install`)
+   - Instructions lancement (`npm start`)
+   - Guide utilisation rapide
+4. **Code commenté** aux endroits clés (en français)
+5. **App fonctionnelle** qui :
+   - ✅ Charge le flow.json fourni
+   - ✅ Affiche graphe visuel
+   - ✅ Permet édition nœuds
+   - ✅ Sauvegarde/Charge JSON
+   - ✅ Valide le flow
+
+---
+
+## FORMAT DE RÉPONSE
+
+Réponds en fournissant :
+
+1. **Code de chaque fichier** séparément avec nom du fichier en commentaire
+2. **Instructions** d'installation et lancement
+3. **Captures d'écran** du résultat (si possible, sinon description visuelle)
+
+---
+
+## PRIORITÉS
+
+Si tu dois faire des choix, priorise dans cet ordre :
+
+1. ✅ **Visualisation graphe** (React Flow fonctionnel)
+2. ✅ **Édition propriétés nœud** (panel latéral)
+3. ✅ **Sauvegarde/Chargement JSON**
+4. ✅ **Validation flow**
+5. ⚠️ **Ajout nouveaux nœuds** (si temps)
+6. ⚠️ **Drag connexions** (si temps)
+7. ⚠️ **Undo/Redo** (bonus)
+
+---
+
+## COMMENCE MAINTENANT
+
+Voici le fichier **flow.json** à utiliser :
+
+[COLLER ICI LE CONTENU DU flow.json]
+
+**Génère le code complet de l'éditeur de flow.** 🚀
