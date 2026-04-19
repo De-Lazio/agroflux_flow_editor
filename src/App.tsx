@@ -78,6 +78,54 @@ const App = () => {
         return node;
       })
     );
+    // Mettre à jour les edges basés sur les nouvelles données du nœud
+    updateEdgesFromNodes(nodeId, newData);
+  };
+
+  const updateEdgesFromNodes = (nodeId: string, data: any) => {
+    setEdges((eds) => {
+      // Supprimer les anciens edges partant de ce nœud
+      const filteredEdges = eds.filter((e) => e.source !== nodeId);
+      const newEdges: Edge[] = [...filteredEdges];
+
+      // Ajouter les nouveaux edges depuis les options
+      if (data.options) {
+        data.options.forEach((option: any) => {
+          if (option.next) {
+            newEdges.push({
+              id: `e-${nodeId}-${option.id}-${option.next}`,
+              source: nodeId,
+              target: option.next,
+              label: option.label,
+              animated: true,
+            });
+          }
+        });
+      }
+
+      // Ajouter l'edge depuis next_filter
+      if (data.next_filter) {
+        newEdges.push({
+          id: `e-${nodeId}-nextfilter-${data.next_filter}`,
+          source: nodeId,
+          target: data.next_filter,
+          label: 'next_filter',
+          style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5,5' },
+        });
+      }
+
+      return newEdges;
+    });
+  };
+
+  const handleNewProject = () => {
+    if (window.confirm("Êtes-vous sûr de vouloir créer un nouveau projet ? Tous les changements non enregistrés seront perdus.")) {
+      setNodes([]);
+      setEdges([]);
+      setSelectedNode(null);
+      setHistory([]);
+      setHistoryIndex(-1);
+    }
   };
 
   const deleteNode = (nodeId: string) => {
@@ -187,6 +235,7 @@ const App = () => {
       <Toolbar 
         onSave={handleSave}
         onLoad={handleLoad}
+        onNewProject={handleNewProject}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
         onValidate={handleValidate}

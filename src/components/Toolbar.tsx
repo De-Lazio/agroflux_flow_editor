@@ -7,12 +7,14 @@ import {
   Redo, 
   Layout, 
   CheckCircle,
-  FileJson
+  FileJson,
+  FilePlus
 } from 'lucide-react';
 
 const Toolbar = ({ 
   onSave, 
   onLoad, 
+  onNewProject,
   onAddNode, 
   onAutoLayout, 
   onValidate,
@@ -32,17 +34,24 @@ const Toolbar = ({
       <div className="flex gap-1">
         <button 
           className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+          onClick={onNewProject} 
+          title="Nouveau Projet"
+        >
+          <FilePlus size={18} /> <span className="hidden lg:inline">Nouveau</span>
+        </button>
+        <button 
+          className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
           onClick={onLoad} 
           title="Charger JSON"
         >
-          <Upload size={18} /> <span className="hidden lg:inline">Charger</span>
+          <Upload size={18} /> <span className="hidden lg:inline">Importer</span>
         </button>
         <button 
           className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
           onClick={onSave} 
           title="Sauvegarder JSON"
         >
-          <Download size={18} /> <span className="hidden lg:inline">Sauvegarder</span>
+          <Download size={18} /> <span className="hidden lg:inline">Enregistrer</span>
         </button>
       </div>
 
