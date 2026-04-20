@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import ReactFlow, { 
   Background, 
   Controls, 
@@ -19,6 +20,17 @@ const nodeTypes = {
   customNode: CustomNode,
 };
 
+const connectionLineStyle = { stroke: '#94a3b8' };
+
+const defaultEdgeOptions = {
+  type: 'smoothstep',
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    color: '#64748b',
+  },
+  style: { stroke: '#64748b', strokeWidth: 2 },
+};
+
 interface FlowCanvasProps {
   nodes: Node[];
   edges: Edge[];
@@ -30,16 +42,6 @@ interface FlowCanvasProps {
 }
 
 const FlowCanvas = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onNodeClick, onPaneClick }: FlowCanvasProps) => {
-  const connectionLineStyle = { stroke: '#94a3b8' };
-  const defaultEdgeOptions = {
-    type: 'smoothstep',
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      color: '#64748b',
-    },
-    style: { stroke: '#64748b', strokeWidth: 2 },
-  };
-
   return (
     <div className="flex-1 relative bg-slate-50">
       <ReactFlow
@@ -64,10 +66,16 @@ const FlowCanvas = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onN
         <MiniMap 
           nodeColor={(node: any) => {
             switch (node.data.type) {
+              // Legacy
               case 'menu': return '#3b82f6';
               case 'filter': return '#10b981';
               case 'results': return '#f59e0b';
               case 'widget': return '#8b5cf6';
+              // Dynamic
+              case 'root': return '#4f46e5';
+              case 'grid': return '#06b6d4';
+              case 'result': return '#f43f5e';
+              case 'calendrier': return '#8b5cf6';
               default: return '#eee';
             }
           }}
@@ -79,4 +87,4 @@ const FlowCanvas = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onN
   );
 };
 
-export default FlowCanvas;
+export default memo(FlowCanvas);

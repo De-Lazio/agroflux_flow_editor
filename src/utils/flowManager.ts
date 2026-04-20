@@ -5,56 +5,99 @@ import dagre from 'dagre';
 export const jsonToFlow = (flowData: any) => {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
+  const isDynamic = flowData.variables || flowData.entry || flowData.dynamic_audio;
 
-  Object.values(flowData.nodes).forEach((node: any) => {
+  Object.entries(flowData.nodes).forEach(([id, node]: [string, any]) => {
     // Add Node
     nodes.push({
-      id: node.id,
+      id: id,
       type: 'customNode',
-      data: { ...node },
-      position: { x: 0, y: 0 }, // Will be set by dagre
+      data: { ...node, id },
+      position: { x: 0, y: 0 },
     });
 
-    // Add Edges from options
-    if (node.options) {
-      node.options.forEach((option: any) => {
-        if (option.next) {
-          edges.push({
-            id: `e-${node.id}-${option.id}-${option.next}`,
-            source: node.id,
-            target: option.next,
-            label: option.label,
-            animated: true,
-          });
-        }
-      });
-    }
+    if (isDynamic) {
+      // Dynamic Format Edges
+      if (node.type === 'root' && node.options) {
+        node.options.forEach((opt: any) => {
+          if (opt.next) {
+            edges.push({
+              id: `e-${id}-${opt.id}-${opt.next}`,
+              source: id,
+              target: opt.next,
+              label: opt.id,
+              animated: true,
+            });
+          }
+        });
+      } else if (node.next) {
+        edges.push({
+          id: `e-${id}-next-${node.next}`,
+          source: id,
+          target: node.next,
+          animated: true,
+        });
+      }
+    } else {
+      // Legacy Format Edges
+      if (node.options) {
+        node.options.forEach((option: any) => {
+          if (option.next) {
+            edges.push({
+              id: `e-${id}-${option.id}-${option.next}`,
+              source: id,
+              target: option.next,
+              label: option.label,
+              animated: true,
+            });
+          }
+        });
+      }
 
-    // Add Edges from next_filter
-    if (node.next_filter) {
-      edges.push({
-        id: `e-${node.id}-nextfilter-${node.next_filter}`,
-        source: node.id,
-        target: node.next_filter,
-        label: 'next_filter',
-        style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5,5' },
-      });
+      if (node.next_filter) {
+        edges.push({
+          id: `e-${id}-nextfilter-${node.next_filter}`,
+          source: id,
+          target: node.next_filter,
+          label: 'next_filter',
+          style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5,5' },
+        });
+      }
     }
   });
 
   return getLayoutedElements(nodes, edges);
 };
 
-export const flowToJson = (nodes: Node[], _edges: Edge[], version: string = "1.0", defaultLanguage: string = "fon") => {
+export const flowToJson = (
+  nodes: Node[], 
+  _edges: Edge[], 
+  format: 'legacy' | 'dynamic' = 'legacy',
+  extraData: any = {}
+) => {
   const flowNodes: any = {};
 
   nodes.forEach((node) => {
-    flowNodes[node.id] = { ...node.data };
+    const { id, ...cleanData } = node.data;
+    flowNodes[node.id] = cleanData;
   });
 
+  if (format === 'dynamic') {
+    return {
+      version: "1.0",
+      entry: extraData.entry || Object.keys(flowNodes)[0],
+      config: extraData.config || {
+        audio: { auto_play_prompt: true, auto_play_option: true, pause_between_ms: 600 }
+      },
+      variables: extraData.variables || {},
+      dynamic_audio: extraData.dynamic_audio || {},
+      nodes: flowNodes
+    };
+  }
+
   return {
-    version,
-    default_language: defaultLanguage,
+    version: extraData.version || "1.0",
+    default_language: extraData.defaultLanguage || "fon",
     nodes: flowNodes,
   };
 };
@@ -62,15 +105,15 @@ export const flowToJson = (nodes: Node[], _edges: Edge[], version: string = "1.0
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-const nodeWidth = 200;
+const nodeWidth = 220;
 const nodeHeight = 150;
 
 export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
   const isHorizontal = direction === 'LR';
   dagreGraph.setGraph({ 
     rankdir: direction,
-    ranksep: 80, // Distance verticale entre les niveaux de nœuds
-    nodesep: 80, // Distance horizontale entre les nœuds de même niveau
+    ranksep: 100, 
+    nodesep: 80, 
   });
 
   nodes.forEach((node) => {
@@ -88,7 +131,6 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'T
     node.targetPosition = isHorizontal ? Position.Left : Position.Top;
     node.sourcePosition = isHorizontal ? Position.Right : Position.Bottom;
 
-    // We are shifting the dagre node position (which is center-based) to top-left
     node.position = {
       x: nodeWithPosition.x - nodeWidth / 2,
       y: nodeWithPosition.y - nodeHeight / 2,
