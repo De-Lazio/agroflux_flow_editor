@@ -64,6 +64,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, flowF
                   <option value="root">Root (Menu Principal)</option>
                   <option value="grid">Grid (Grille Variable)</option>
                   <option value="result">Result (Résultats)</option>
+                  <option value="calendrier">Calendrier</option>
                 </>
               ) : (
                 <>
@@ -203,8 +204,8 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, flowF
               </section>
             )}
 
-            {/* Navigation pour Root et Grid */}
-            {(data.type === 'root' || data.type === 'grid') && (
+            {/* Navigation pour Root, Grid et Calendrier */}
+            {(data.type === 'root' || data.type === 'grid' || data.type === 'calendrier') && (
               <section className="space-y-4 pt-4 border-t border-slate-100">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                   <Map size={16} /> Navigation
@@ -241,7 +242,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, flowF
                   </div>
                 )}
 
-                {data.type === 'grid' && (
+                {(data.type === 'grid' || data.type === 'calendrier') && (
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Nœud Suivant (Next)</label>
                     <select 
@@ -254,24 +255,6 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, flowF
                         <option key={n.id} value={n.id}>{n.id} ({n.data.label || n.data.type})</option>
                       ))}
                     </select>
-                  </div>
-                )}
-
-                {data.type === 'calendrier' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1">Nœud Suivant (Next)</label>
-                      <select 
-                        className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                        value={data.next || ''}
-                        onChange={(e) => handleChange('next', e.target.value)}
-                      >
-                        <option value="">(Aucun)</option>
-                        {nodes.filter((n: any) => n.id !== node.id).map((n: any) => (
-                          <option key={n.id} value={n.id}>{n.id} ({n.data.label || n.data.type})</option>
-                        ))}
-                      </select>
-                    </div>
                   </div>
                 )}
               </section>

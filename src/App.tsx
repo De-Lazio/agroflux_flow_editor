@@ -48,40 +48,52 @@ const App = () => {
   const [isVariableManagerOpen, setIsVariableManagerOpen] = useState(false);
   const [isFormatSelectorOpen, setIsFormatSelectorOpen] = useState(false);
 
-  const isInitialLoadDone = useRef(false);
+  // État de verrouillage pour le chargement
+  const [isAppReady, setIsAppReady] = useState(false);
 
-  // Load initial flow
+  // 1. RESTAURATION INITIALE
   useEffect(() => {
-    const savedSession = localStorage.getItem('agroflux_flow_session');
-    if (savedSession) {
-      try {
-        const session = JSON.parse(savedSession);
-        setNodes(session.nodes || []);
-        setEdges(session.edges || []);
-        setFlowFormat(session.flowFormat || 'legacy');
-        setVariables(session.variables || {});
-        setConfig(session.config || null);
-        setDynamicAudio(session.dynamicAudio || null);
-        setEntryNode(session.entryNode || "");
-        isInitialLoadDone.current = true;
-        return;
-      } catch (e) {
-        console.error("Erreur restauration session:", e);
+    const init = async () => {
+      const savedSession = localStorage.getItem('agroflux_flow_session');
+      
+      if (savedSession) {
+        try {
+          const session = JSON.parse(savedSession);
+          if (session && session.nodes && session.nodes.length > 0) {
+            console.log("📦 [Persistence] Restauration de", session.nodes.length, "nœuds...");
+            setNodes(session.nodes);
+            setEdges(session.edges || []);
+            setFlowFormat(session.flowFormat || 'legacy');
+            setVariables(session.variables || {});
+            setConfig(session.config || null);
+            setDynamicAudio(session.dynamicAudio || null);
+            setEntryNode(session.entryNode || "");
+            setIsAppReady(true);
+            return;
+          }
+        } catch (e) {
+          console.error("❌ [Persistence] Erreur JSON:", e);
+        }
       }
-    }
-    
-    const { nodes: initialNodes, edges: initialEdges } = jsonToFlow(initialFlow);
-    setNodes(initialNodes);
-    setEdges(initialEdges);
-    setFlowFormat('legacy');
-    addToHistory(initialNodes, initialEdges);
-    isInitialLoadDone.current = true;
+      
+      console.log("📄 [Persistence] Chargement du flux par défaut...");
+      const { nodes: initialNodes, edges: initialEdges } = jsonToFlow(initialFlow);
+      setNodes(initialNodes);
+      setEdges(initialEdges);
+      setFlowFormat('legacy');
+      setIsAppReady(true);
+    };
+
+    init();
   }, []);
 
-  // Auto-sauvegarde périodique (quand les données changent)
+  // 2. AUTO-SAUVEGARDE
   useEffect(() => {
-    if (!isInitialLoadDone.current) return;
-
+    // Ne jamais sauvegarder si l'app n'est pas prête ou si les nœuds ont été vidés par erreur
+    if (!isAppReady) return;
+    
+    // Sécurité : si on a 0 nœuds mais qu'on vient de démarrer, on attend une action utilisateur
+    // (sauf si c'est un nouveau projet explicite)
     const session = {
       nodes,
       edges,
@@ -89,10 +101,20 @@ const App = () => {
       variables,
       config,
       dynamicAudio,
-      entryNode
+      entryNode,
+      updatedAt: new Date().toISOString()
     };
+    
     localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
-  }, [nodes, edges, flowFormat, variables, config, dynamicAudio, entryNode]);
+    // console.log("💾 [Persistence] Sauvegardé");
+  }, [nodes, edges, flowFormat, variables, config, dynamicAudio, entryNode, isAppReady]);
+
+  // Ajouter à l'historique seulement quand l'app est prête
+  useEffect(() => {
+    if (isAppReady && nodes.length > 0 && history.length === 0) {
+      addToHistory(nodes, edges);
+    }
+  }, [isAppReady]);
 
   const addToHistory = (newNodes: Node[], newEdges: Edge[]) => {
     const newEntry = { 
@@ -201,6 +223,7 @@ const App = () => {
   };
 
   const createNewProject = (format: 'legacy' | 'dynamic') => {
+    localStorage.removeItem('agroflux_flow_session');
     setNodes([]);
     setEdges([]);
     setVariables({});
@@ -262,7 +285,8 @@ const App = () => {
   };
 
   const handleValidate = () => {
-    const currentJson = flowToJson(nodes, edges);
+    const extraData = flowFormat === 'dynamic' ? { variables } : { version: "1.0" };
+    const currentJson = flowToJson(nodes, edges, flowFormat, extraData);
     const results = validateFlow(currentJson);
     setValidation(results);
   };
@@ -299,8 +323,8 @@ const App = () => {
           const json = JSON.parse(event.target.result);
           const isDynamic = json.variables || json.entry || json.dynamic_audio;
           const format = isDynamic ? 'dynamic' : 'legacy';
-          setFlowFormat(format);
           
+          setFlowFormat(format);
           if (isDynamic) {
             setVariables(json.variables || {});
             setConfig(json.config || null);
@@ -345,6 +369,16 @@ const App = () => {
       setHistoryIndex(historyIndex + 1);
     }
   };
+
+  // Tant que l'app n'est pas initialisée, on affiche un loader simple
+  if (!isAppReady) {
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-500 font-medium">Chargement de votre flux...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans">
