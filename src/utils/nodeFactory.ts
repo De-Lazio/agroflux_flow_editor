@@ -18,7 +18,7 @@ export const createDefaultResultNode = (id: string) => ({
     endpoint: "",
     params: []
   },
-  audio_sequence: []
+  audio_sequence: [`questions/${id}.mp3`]
 });
 
 export const createDefaultCalendrierNode = (id: string) => ({

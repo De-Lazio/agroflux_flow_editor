@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus, Trash2, Database, AlertCircle } from 'lucide-react';
+import { X, Plus, Trash2, Database } from 'lucide-react';
 
 interface VariableManagerProps {
   variables: Record<string, string[]>;
