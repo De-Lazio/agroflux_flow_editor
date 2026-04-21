@@ -14,9 +14,7 @@
     "produit": ["maïs", "riz", "haricot", "manioc", "tomate"],
     "localite": ["Ouémé", "Zou", "Atacora", "Donga", "Collines", "Mono", "Couffo", "Plateau", "Alibori", "Borgou", "Atlantique", "Littoral"],
     "marche": ["Ikpinlè", "Dantokpa", "Adjohoun", "Porto-Novo", "Parakou", "Natitingou", "Bohicon", "Abomey"],
-    "infos_marche_filtre": ["jours", "produits", "prix", "tendance"],
-    "explore_prix_filtre": ["marches", "evolution", "prediction"],
-    "periode": ["today", "week", "month"]
+    "periode": ["today", "week", "month", "3_months", "6_months", "year"],
   },
 
   "dynamic_audio": {
