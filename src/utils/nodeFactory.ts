@@ -20,14 +20,24 @@ export const createDefaultResultNode = (id: string) => ({
   },
   audio_sequence: [`questions/${id}.mp3`]
 });
-
 export const createDefaultCalendrierNode = (id: string) => ({
-  type: "calendrier",
-  audio_prompt: `questions/date_${id}.mp3`,
+  id,
+  type: 'calendrier',
+  audio_prompt: 'questions/date.mp3',
   periode: 7,
-  cadran: "centrer",
-  next: ""
+  cadran: 'centrer',
+  next: ''
 });
+
+export const createDefaultPreFilterNode = (id: string) => ({
+  id,
+  type: 'pre_filter',
+  audio_prompt: 'questions/filtre.mp3',
+  cle: '',
+  filtre_source: '',
+  next: ''
+});
+
 
 export const createDefaultMenuNode = (id: string, level: number = 2) => ({
   id,

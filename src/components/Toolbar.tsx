@@ -9,14 +9,16 @@ import {
   CheckCircle,
   FileJson,
   FilePlus,
-  Database
+  Database,
+  Library
 } from 'lucide-react';
 
 const Toolbar = ({ 
   onSave, 
   onLoad, 
-  onNewProject,
-  onOpenVariables,
+  onNewProject, 
+  onOpenVariables, 
+  onOpenHashMaps,
   onAddNode, 
   onAutoLayout, 
   onValidate,
@@ -26,7 +28,8 @@ const Toolbar = ({
   onUndo,
   onRedo,
   flowFormat
-}: any) => {
+  }: any) => {
+
   return (
     <div className="h-[60px] bg-white border-b border-slate-200 flex items-center px-5 gap-4 shadow-sm z-10">
       <div className="flex items-center gap-2 mr-5">
@@ -54,6 +57,15 @@ const Toolbar = ({
             title="Gérer les Variables"
           >
             <Database size={18} /> <span className="hidden lg:inline">Variables</span>
+          </button>
+        )}
+        {flowFormat === 'dynamic' && (
+          <button 
+            className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+            onClick={onOpenHashMaps} 
+            title="Gérer les HashMaps"
+          >
+            <Library size={18} /> <span className="hidden lg:inline">HashMaps</span>
           </button>
         )}
         <button 

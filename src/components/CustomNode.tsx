@@ -14,6 +14,7 @@ const CustomNode = ({ data, selected, id }: any) => {
       case 'grid': return 'border-cyan-500 text-cyan-600 bg-cyan-50';
       case 'result': return 'border-rose-500 text-rose-600 bg-rose-50';
       case 'calendrier': return 'border-violet-500 text-violet-600 bg-violet-50';
+      case 'pre_filter': return 'border-amber-500 text-amber-600 bg-amber-50';
       default: return 'border-slate-400 text-slate-600 bg-slate-50';
     }
   };
@@ -28,6 +29,7 @@ const CustomNode = ({ data, selected, id }: any) => {
       case 'grid': return '#06b6d4';
       case 'result': return '#f43f5e';
       case 'calendrier': return '#8b5cf6';
+      case 'pre_filter': return '#f59e0b';
       default: return '#94a3b8';
     }
   };
@@ -82,8 +84,25 @@ const CustomNode = ({ data, selected, id }: any) => {
           </div>
         )}
 
+        {/* Affichage spécifique pour PRE_FILTER (Format Dynamic) */}
+        {data.type === 'pre_filter' && (
+          <div className="mt-2 p-2 bg-slate-50 rounded border border-slate-100 space-y-1">
+            <div className="text-[9px] uppercase font-bold text-slate-400">HashMap / Clé</div>
+            <div className="text-[11px] font-medium text-amber-700 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+              {data.filtre_source || 'Non source'}
+            </div>
+            {data.cle && (
+              <div className="mt-1 flex items-center gap-1">
+                <span className="text-[9px] text-slate-400">Filtré par:</span>
+                <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">{data.cle}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
-          {['grid', 'root', 'result', 'calendrier'].includes(data.type) ? (
+          {['grid', 'root', 'result', 'calendrier', 'pre_filter'].includes(data.type) ? (
              <span>Mode Dynamique</span>
           ) : (
             <>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Plus, Music, List, Map, Globe, Settings } from 'lucide-react';
+import { X, Trash2, Plus, Music, List, Map, Globe, Settings, Library } from 'lucide-react';
 
-const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, flowFormat }: any) => {
+const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashmaps, flowFormat }: any) => {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
@@ -63,6 +63,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, flowF
                 <>
                   <option value="root">Root (Menu Principal)</option>
                   <option value="grid">Grid (Grille Variable)</option>
+                  <option value="pre_filter">Pre-Filter (Filtre Interne)</option>
                   <option value="result">Result (Résultats)</option>
                   <option value="calendrier">Calendrier</option>
                 </>
@@ -204,8 +205,41 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, flowF
               </section>
             )}
 
-            {/* Navigation pour Root, Grid et Calendrier */}
-            {(data.type === 'root' || data.type === 'grid' || data.type === 'calendrier') && (
+            {/* PRE_FILTER : cle et filtre_source */}
+            {data.type === 'pre_filter' && (
+              <section className="space-y-4 pt-4 border-t border-slate-100">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <Library size={16} /> Configuration Pre-Filter
+                </h3>
+                
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Variable de Clé (Filtre)</label>
+                  <select 
+                    className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-amber-500"
+                    value={data.cle || ''}
+                    onChange={(e) => handleChange('cle', e.target.value)}
+                  >
+                    <option value="">(Choisir la variable contenant la clé)</option>
+                    {Object.keys(variables || {}).map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Source du HashMap (filtre_source)</label>
+                  <select 
+                    className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-amber-500"
+                    value={data.filtre_source || ''}
+                    onChange={(e) => handleChange('filtre_source', e.target.value)}
+                  >
+                    <option value="">(Choisir un hashmap)</option>
+                    {Object.keys(hashmaps || {}).map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                </div>
+              </section>
+            )}
+
+            {/* Navigation pour Root, Grid, Calendrier et Pre-Filter */}
+            {(data.type === 'root' || data.type === 'grid' || data.type === 'calendrier' || data.type === 'pre_filter') && (
               <section className="space-y-4 pt-4 border-t border-slate-100">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                   <Map size={16} /> Navigation
@@ -242,7 +276,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, flowF
                   </div>
                 )}
 
-                {(data.type === 'grid' || data.type === 'calendrier') && (
+                {(data.type === 'grid' || data.type === 'calendrier' || data.type === 'pre_filter') && (
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Nœud Suivant (Next)</label>
                     <select 

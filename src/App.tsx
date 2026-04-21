@@ -17,6 +17,7 @@ import FlowCanvas from './components/FlowCanvas';
 import NodeEditor from './components/NodeEditor';
 import ValidationPanel from './components/ValidationPanel';
 import VariableManager from './components/VariableManager';
+import HashMapManager from './components/HashMapManager';
 import FormatSelector from './components/FormatSelector';
 import { jsonToFlow, flowToJson, getLayoutedElements } from './utils/flowManager';
 import { validateFlow } from './utils/validator';
@@ -28,7 +29,8 @@ import {
   createDefaultRootNode,
   createDefaultGridNode,
   createDefaultResultNode,
-  createDefaultCalendrierNode
+  createDefaultCalendrierNode,
+  createDefaultPreFilterNode
 } from './utils/nodeFactory';
 import initialFlow from '../flow.json';
 
@@ -42,10 +44,12 @@ const App = () => {
   
   const [flowFormat, setFlowFormat] = useState<'legacy' | 'dynamic'>('legacy');
   const [variables, setVariables] = useState<Record<string, string[]>>({});
+  const [hashmaps, setHashmaps] = useState<Record<string, Record<string, string[]>>>({});
   const [config, setConfig] = useState<any>(null);
   const [dynamicAudio, setDynamicAudio] = useState<any>(null);
   const [entryNode, setEntryNode] = useState<string>("");
   const [isVariableManagerOpen, setIsVariableManagerOpen] = useState(false);
+  const [isHashMapManagerOpen, setIsHashMapManagerOpen] = useState(false);
   const [isFormatSelectorOpen, setIsFormatSelectorOpen] = useState(false);
 
   // État de verrouillage pour le chargement
@@ -65,6 +69,7 @@ const App = () => {
             setEdges(session.edges || []);
             setFlowFormat(session.flowFormat || 'legacy');
             setVariables(session.variables || {});
+            setHashmaps(session.hashmaps || {});
             setConfig(session.config || null);
             setDynamicAudio(session.dynamicAudio || null);
             setEntryNode(session.entryNode || "");
@@ -89,16 +94,14 @@ const App = () => {
 
   // 2. AUTO-SAUVEGARDE
   useEffect(() => {
-    // Ne jamais sauvegarder si l'app n'est pas prête ou si les nœuds ont été vidés par erreur
     if (!isAppReady) return;
     
-    // Sécurité : si on a 0 nœuds mais qu'on vient de démarrer, on attend une action utilisateur
-    // (sauf si c'est un nouveau projet explicite)
     const session = {
       nodes,
       edges,
       flowFormat,
       variables,
+      hashmaps,
       config,
       dynamicAudio,
       entryNode,
@@ -106,8 +109,7 @@ const App = () => {
     };
     
     localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
-    // console.log("💾 [Persistence] Sauvegardé");
-  }, [nodes, edges, flowFormat, variables, config, dynamicAudio, entryNode, isAppReady]);
+  }, [nodes, edges, flowFormat, variables, hashmaps, config, dynamicAudio, entryNode, isAppReady]);
 
   // Ajouter à l'historique seulement quand l'app est prête
   useEffect(() => {
@@ -120,7 +122,8 @@ const App = () => {
     const newEntry = { 
       nodes: JSON.parse(JSON.stringify(newNodes)), 
       edges: JSON.parse(JSON.stringify(newEdges)),
-      variables: JSON.parse(JSON.stringify(variables))
+      variables: JSON.parse(JSON.stringify(variables)),
+      hashmaps: JSON.parse(JSON.stringify(hashmaps))
     };
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(newEntry);
@@ -242,7 +245,7 @@ const App = () => {
 
   const addNewNode = () => {
     const isDynamic = flowFormat === 'dynamic';
-    const typesPrompt = isDynamic ? "root, grid, result, calendrier" : "menu, filter, results, widget";
+    const typesPrompt = isDynamic ? "root, grid, pre_filter, result, calendrier" : "menu, filter, results, widget";
     const defaultType = isDynamic ? "grid" : "menu";
     
     const type = window.prompt(`Type de nœud (${typesPrompt}):`, defaultType);
@@ -257,6 +260,7 @@ const App = () => {
         case 'root': nodeData = createDefaultRootNode(id); break;
         case 'result': nodeData = createDefaultResultNode(id); break;
         case 'calendrier': nodeData = createDefaultCalendrierNode(id); break;
+        case 'pre_filter': nodeData = createDefaultPreFilterNode(id); break;
         default: nodeData = createDefaultGridNode(id); break;
       }
     } else {
@@ -294,6 +298,7 @@ const App = () => {
   const handleSave = () => {
     const extraData = flowFormat === 'dynamic' ? {
       variables,
+      hashmaps,
       config,
       dynamic_audio: dynamicAudio,
       entry: entryNode
@@ -327,6 +332,7 @@ const App = () => {
           setFlowFormat(format);
           if (isDynamic) {
             setVariables(json.variables || {});
+            setHashmaps(json.hashmaps || {});
             setConfig(json.config || null);
             setDynamicAudio(json.dynamic_audio || null);
             setEntryNode(json.entry || "");
@@ -387,6 +393,7 @@ const App = () => {
         onLoad={handleLoad}
         onNewProject={handleNewProject}
         onOpenVariables={() => setIsVariableManagerOpen(true)}
+        onOpenHashMaps={() => setIsHashMapManagerOpen(true)}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
         onValidate={handleValidate}
@@ -404,6 +411,15 @@ const App = () => {
           onUpdate={setVariables}
           onClose={() => setIsVariableManagerOpen(false)}
           nodes={nodes}
+        />
+      )}
+
+      {isHashMapManagerOpen && (
+        <HashMapManager 
+          hashmaps={hashmaps}
+          onUpdate={setHashmaps}
+          onClose={() => setIsHashMapManagerOpen(false)}
+          variables={variables}
         />
       )}
 
@@ -435,6 +451,7 @@ const App = () => {
             onClose={() => setSelectedNode(null)}
             onDelete={deleteNode}
             variables={variables}
+            hashmaps={hashmaps}
             flowFormat={flowFormat}
           />
         )}

@@ -90,6 +90,7 @@ export const flowToJson = (
         audio: { auto_play_prompt: true, auto_play_option: true, pause_between_ms: 600 }
       },
       variables: extraData.variables || {},
+      hashmaps: extraData.hashmaps || {},
       dynamic_audio: extraData.dynamic_audio || {},
       nodes: flowNodes
     };
