@@ -15,6 +15,7 @@
     "localite": ["Ouémé", "Zou", "Atacora", "Donga", "Collines", "Mono", "Couffo", "Plateau", "Alibori", "Borgou", "Atlantique", "Littoral"],
     "marche": ["Ikpinlè", "Dantokpa", "Adjohoun", "Porto-Novo", "Parakou", "Natitingou", "Bohicon", "Abomey"],
     "periode": ["today", "week", "month", "3_months", "6_months", "year"],
+    "filtre_infos_marche": ["presentation", "produits_disponibles", "calendrier_marche", "conseils_visite"],
   },
 
   "dynamic_audio": {
@@ -72,7 +73,7 @@
     "vendre_localite": {
       "type": "grid",
       "audio_prompt": "questions/localite.mp3",
-      "options_source": "localites",
+      "options_source": "localites",62945832, 60886118 
       "set": "localite",
       "next": "vendre_result"
     },
