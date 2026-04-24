@@ -14,25 +14,31 @@ L'application est divisée en quatre zones principales :
 
 ## 2. Les Types de Nœuds (Blocs)
 
-Chaque bloc représente une étape de navigation. Ils sont identifiés par un code couleur :
+L'éditeur supporte deux formats : **LEGACY** (statique) et **DYNAMIC** (avancé avec variables).
 
-### 🟦 MENU (Bleu)
-Utilisé pour présenter des choix explicites à l'utilisateur.
-- **Usage :** Navigation principale, sélection de langue, choix de catégorie.
-- **Structure :** Contient une liste d'**options** (ID, label, lien vers le nœud suivant).
+### Format DYNAMIQUE (Nouveau)
+- **🟦 ROOT (Indigo) :** Menu principal dynamique.
+- **🩵 GRID (Cyan) :** Grille d'options générée à partir d'une variable (ex: liste des produits).
+- **🌹 RESULT (Rose) :** Résultats de recherche basés sur une API.
+- **🟪 CALENDRIER (Violet) :** Sélecteur de date spécialisé.
+- **🟧 PRE_FILTER (Ambre) :** Logique de filtrage interne (HashMap).
 
-### 🟩 FILTER (Vert)
-Utilisé pour le filtrage progressif (souvent lié à des données dynamiques comme les marchés ou les localités).
-- **Usage :** Sélection d'un département, d'une commune, ou d'un produit spécifique.
-- **Structure :** Possède généralement un champ `next_filter` ou des options de filtrage.
+---
 
-### 🟨 RESULTS (Jaune)
-Représente l'écran final affichant les informations recherchées.
-- **Usage :** Affichage des prix des produits, jours de marché, etc.
+## 3. Nouveau Système Audio (Format Dynamique)
 
-### 🟪 WIDGET (Violet)
-Composants spécialisés pour des interactions riches.
-- **Usage :** Calendriers, sélecteurs complexes.
+Le format dynamique utilise un système audio unifié et puissant :
+
+### Séquences Audios
+Au lieu d'un simple fichier, chaque nœud définit une **séquence** d'audios joués l'un après l'autre.
+- **ID Audio (Key) :** Un identifiant unique pour cette séquence (ex: `acheter_produit_intro`).
+- **Variables dynamiques :** Vous pouvez injecter des variables dans les audios en utilisant des accolades.
+  - `{"{produit}"}` : Jouera l'audio correspondant au produit choisi.
+  - `{"{prix:1000}"}` : Jouera l'audio pour le prix 1000 FCFA.
+- **Fallback :** Un audio de secours si un fichier est manquant.
+
+### Mappage Global
+Dans la barre d'outils, le bouton **"Audios"** permet de définir les dossiers racines pour chaque type de variable (ex: `produit` -> `produits/`).
 
 ---
 

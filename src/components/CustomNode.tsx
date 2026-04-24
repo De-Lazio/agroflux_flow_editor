@@ -50,7 +50,9 @@ const CustomNode = ({ data, selected, id }: any) => {
 
       <div className="p-3">
         <div className="text-sm font-semibold text-slate-700 leading-tight min-h-[36px] line-clamp-2">
-          {data.label || data.audio_prompt || 'Sans label'}
+          {['grid', 'root', 'result', 'calendrier', 'pre_filter'].includes(data.type) 
+            ? (data.audio?.key || 'Sans clé audio') 
+            : (data.label || data.audio_prompt || 'Sans label')}
         </div>
 
         {/* Affichage spécifique pour GRID (Format Dynamic) */}

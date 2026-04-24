@@ -1,6 +1,87 @@
 import { useState, useEffect } from 'react';
 import { X, Trash2, Plus, Music, List, Map, Globe, Settings, Library, FileText } from 'lucide-react';
 
+const AudioSequenceEditor = ({ audio, onChange }: any) => {
+  if (!audio) return null;
+
+  const updateField = (field: string, value: any) => {
+    onChange({ ...audio, [field]: value });
+  };
+
+  const updateSequence = (index: number, value: string) => {
+    const newSeq = [...(audio.sequence || [])];
+    newSeq[index] = value;
+    updateField('sequence', newSeq);
+  };
+
+  const addSequenceItem = () => {
+    updateField('sequence', [...(audio.sequence || []), '']);
+  };
+
+  const removeSequenceItem = (index: number) => {
+    updateField('sequence', audio.sequence.filter((_: any, i: number) => i !== index));
+  };
+
+  return (
+    <section className="space-y-4 pt-4 border-t border-slate-100">
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <Music size={16} /> Configuration Audio (Séquence)
+      </h3>
+      
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">ID Unique de l'audio (Key)</label>
+        <input 
+          className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-purple-500 outline-none font-mono"
+          value={audio.key || ''} 
+          onChange={(e) => updateField('key', e.target.value)}
+          placeholder="ex: acheter_produit_intro"
+        />
+      </div>
+
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Séquence d'audios</label>
+        <div className="space-y-2">
+          {(audio.sequence || []).map((item: string, i: number) => (
+            <div key={i} className="flex gap-1 group">
+              <input 
+                className="flex-1 p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-purple-500 bg-white" 
+                value={item} 
+                onChange={(e) => updateSequence(i, e.target.value)}
+                placeholder="chemin/audio.mp3 ou {variable}"
+              />
+              <button onClick={() => removeSequenceItem(i)} className="text-slate-300 hover:text-red-500 p-1 rounded transition-colors">
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+          <button 
+            onClick={addSequenceItem}
+            className="w-full py-1.5 border border-dashed border-slate-300 rounded text-[10px] font-bold text-slate-400 hover:bg-slate-50 uppercase tracking-wider transition-colors"
+          >
+            + Ajouter un élément
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fallback (si erreur)</label>
+        <input 
+          className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+          value={audio.fallback || ''} 
+          onChange={(e) => updateField('fallback', e.target.value)}
+          placeholder="intro/default.mp3"
+        />
+      </div>
+
+      <div className="p-3 bg-amber-50 rounded-lg border border-amber-100 text-[10px] text-amber-700 leading-relaxed">
+        <strong>💡 Astuces :</strong><br/>
+        • Utilisez <code className="bg-amber-100 px-1 rounded">{"{produit}"}</code> pour injecter une variable.<br/>
+        • Utilisez <code className="bg-amber-100 px-1 rounded">{"{prix:1000}"}</code> pour un formatage spécifique.
+      </div>
+    </section>
+  );
+};
+
 const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashmaps, flowFormat }: any) => {
   const [data, setData] = useState<any>(null);
 
@@ -79,10 +160,10 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
           </div>
 
           {isDynamic && (
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Audio Prompt (Chemin mp3)</label>
-              <input className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.audio_prompt || ''} onChange={(e) => handleChange('audio_prompt', e.target.value)} />
-            </div>
+            <AudioSequenceEditor 
+              audio={data.audio || { type: 'sequence', key: `${node.id}_intro`, sequence: [], fallback: 'intro/default.mp3' }} 
+              onChange={(newAudio: any) => handleChange('audio', newAudio)} 
+            />
           )}
 
           {isDynamic && data.type === 'calendrier' && (
@@ -130,6 +211,23 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
               onChange={(e) => handleChange('comment', e.target.value)} 
             />
           </div>
+
+          {isDynamic && (
+            <div className="pt-4 border-t border-slate-100">
+              <label className="block text-[10px] font-bold text-indigo-500 uppercase mb-1 flex items-center gap-1">
+                <Library size={12} /> Contrat de Réponse Backend (JSON)
+              </label>
+              <textarea 
+                className="w-full p-2 border border-slate-200 rounded text-[11px] font-mono focus:ring-2 focus:ring-indigo-500 outline-none min-h-[120px] bg-indigo-50/30" 
+                placeholder='{ "status": "success", ... }'
+                value={data.json_response_contrat || ''} 
+                onChange={(e) => handleChange('json_response_contrat', e.target.value)} 
+              />
+              <p className="text-[9px] text-slate-400 mt-1 italic">
+                Définissez ici le format JSON attendu pour ce nœud.
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Logique DYNAMIQUE */}
@@ -168,7 +266,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
               </section>
             )}
 
-            {/* RESULT : data_source et audio_sequence */}
+            {/* RESULT : data_source */}
             {data.type === 'result' && (
               <section className="space-y-4 pt-4 border-t border-slate-100">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -190,28 +288,40 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                     onChange={(e) => handleChange('data_source.params', e.target.value.split(',').map(s => s.trim()))}
                   />
                 </div>
-                
-                <div className="pt-2">
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Séquence Audio</label>
-                  <div className="space-y-2">
-                    {(data.audio_sequence || []).map((audio: string, i: number) => (
-                      <div key={i} className="flex gap-1">
-                        <input 
-                          className="flex-1 p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" 
-                          value={audio} 
+
+                <div className="pt-4 border-t border-slate-100">
+                  <h4 className="text-[10px] font-bold text-rose-500 uppercase mb-3 flex items-center gap-1">
+                    <Library size={12} /> Exemples de Réponses (Backend)
+                  </h4>
+                  <div className="space-y-3">
+                    {(data.response_examples || []).map((ex: string, i: number) => (
+                      <div key={i} className="relative group">
+                        <textarea 
+                          className="w-full p-2 border border-slate-200 rounded text-[10px] font-mono focus:ring-2 focus:ring-rose-500 outline-none min-h-[80px] bg-rose-50/20" 
+                          value={ex} 
                           onChange={(e) => {
-                            const newSeq = [...data.audio_sequence];
-                            newSeq[i] = e.target.value;
-                            handleChange('audio_sequence', newSeq);
+                            const newEx = [...data.response_examples];
+                            newEx[i] = e.target.value;
+                            handleChange('response_examples', newEx);
                           }}
                         />
-                        <button onClick={() => {
-                          const newSeq = data.audio_sequence.filter((_: any, idx: number) => idx !== i);
-                          handleChange('audio_sequence', newSeq);
-                        }} className="text-red-500 p-1 hover:bg-red-50 rounded"><Trash2 size={16} /></button>
+                        <button 
+                          onClick={() => {
+                            const newEx = data.response_examples.filter((_: any, idx: number) => idx !== i);
+                            handleChange('response_examples', newEx);
+                          }}
+                          className="absolute top-2 right-2 p-1 text-slate-300 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     ))}
-                    <button onClick={() => handleChange('audio_sequence', [...(data.audio_sequence || []), ''])} className="w-full py-1 border border-dashed border-slate-300 rounded text-xs text-slate-500 hover:bg-slate-50">+ Ajouter Séquence</button>
+                    <button 
+                      onClick={() => handleChange('response_examples', [...(data.response_examples || []), '{}'])}
+                      className="w-full py-2 bg-rose-50 text-rose-600 rounded text-xs font-bold hover:bg-rose-100 transition-colors border border-dashed border-rose-200"
+                    >
+                      + Ajouter un exemple
+                    </button>
                   </div>
                 </div>
               </section>

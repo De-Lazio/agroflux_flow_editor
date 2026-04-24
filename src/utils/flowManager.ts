@@ -91,6 +91,7 @@ export const flowToJson = (
       },
       variables: extraData.variables || {},
       hashmaps: extraData.hashmaps || {},
+      audio_mappings: extraData.audioMappings || {},
       dynamic_audio: extraData.dynamic_audio || {},
       nodes: flowNodes
     };

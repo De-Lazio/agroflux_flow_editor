@@ -18,6 +18,7 @@ import NodeEditor from './components/NodeEditor';
 import ValidationPanel from './components/ValidationPanel';
 import VariableManager from './components/VariableManager';
 import HashMapManager from './components/HashMapManager';
+import AudioMappingManager from './components/AudioMappingManager';
 import FormatSelector from './components/FormatSelector';
 import { jsonToFlow, flowToJson, getLayoutedElements } from './utils/flowManager';
 import { validateFlow } from './utils/validator';
@@ -38,18 +39,25 @@ const App = () => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [validation, setValidation] = useState<{errors: string[], warnings: string[]}>({errors: [], warnings: []});
+  const [validation, setValidation] = useState<{errors: string[], warnings: string[], report?: any}>({errors: [], warnings: []});
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   
   const [flowFormat, setFlowFormat] = useState<'legacy' | 'dynamic'>('legacy');
   const [variables, setVariables] = useState<Record<string, string[]>>({});
   const [hashmaps, setHashmaps] = useState<Record<string, Record<string, string[]>>>({});
+  const [audioMappings, setAudioMappings] = useState<Record<string, string>>({
+    "produit": "produits/",
+    "departement": "localites/",
+    "marche": "marches/",
+    "periode": "periode/"
+  });
   const [config, setConfig] = useState<any>(null);
   const [dynamicAudio, setDynamicAudio] = useState<any>(null);
   const [entryNode, setEntryNode] = useState<string>("");
   const [isVariableManagerOpen, setIsVariableManagerOpen] = useState(false);
   const [isHashMapManagerOpen, setIsHashMapManagerOpen] = useState(false);
+  const [isAudioMappingManagerOpen, setIsAudioMappingManagerOpen] = useState(false);
   const [isFormatSelectorOpen, setIsFormatSelectorOpen] = useState(false);
 
   // État de verrouillage pour le chargement
@@ -70,6 +78,12 @@ const App = () => {
             setFlowFormat(session.flowFormat || 'legacy');
             setVariables(session.variables || {});
             setHashmaps(session.hashmaps || {});
+            setAudioMappings(session.audioMappings || {
+              "produit": "produits/",
+              "departement": "localites/",
+              "marche": "marches/",
+              "periode": "periode/"
+            });
             setConfig(session.config || null);
             setDynamicAudio(session.dynamicAudio || null);
             setEntryNode(session.entryNode || "");
@@ -102,6 +116,7 @@ const App = () => {
       flowFormat,
       variables,
       hashmaps,
+      audioMappings,
       config,
       dynamicAudio,
       entryNode,
@@ -109,7 +124,7 @@ const App = () => {
     };
     
     localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
-  }, [nodes, edges, flowFormat, variables, hashmaps, config, dynamicAudio, entryNode, isAppReady]);
+  }, [nodes, edges, flowFormat, variables, hashmaps, audioMappings, config, dynamicAudio, entryNode, isAppReady]);
 
   // Ajouter à l'historique seulement quand l'app est prête
   useEffect(() => {
@@ -289,7 +304,7 @@ const App = () => {
   };
 
   const handleValidate = () => {
-    const extraData = flowFormat === 'dynamic' ? { variables } : { version: "1.0" };
+    const extraData = flowFormat === 'dynamic' ? { variables, audioMappings } : { version: "1.0" };
     const currentJson = flowToJson(nodes, edges, flowFormat, extraData);
     const results = validateFlow(currentJson);
     setValidation(results);
@@ -299,6 +314,7 @@ const App = () => {
     const extraData = flowFormat === 'dynamic' ? {
       variables,
       hashmaps,
+      audioMappings,
       config,
       dynamic_audio: dynamicAudio,
       entry: entryNode
@@ -333,6 +349,12 @@ const App = () => {
           if (isDynamic) {
             setVariables(json.variables || {});
             setHashmaps(json.hashmaps || {});
+            setAudioMappings(json.audio_mappings || {
+              "produit": "produits/",
+              "departement": "localites/",
+              "marche": "marches/",
+              "periode": "periode/"
+            });
             setConfig(json.config || null);
             setDynamicAudio(json.dynamic_audio || null);
             setEntryNode(json.entry || "");
@@ -394,6 +416,7 @@ const App = () => {
         onNewProject={handleNewProject}
         onOpenVariables={() => setIsVariableManagerOpen(true)}
         onOpenHashMaps={() => setIsHashMapManagerOpen(true)}
+        onOpenAudioMappings={() => setIsAudioMappingManagerOpen(true)}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
         onValidate={handleValidate}
@@ -423,10 +446,11 @@ const App = () => {
         />
       )}
 
-      {isFormatSelectorOpen && (
-        <FormatSelector 
-          onSelect={createNewProject}
-          onClose={() => setIsFormatSelectorOpen(false)}
+      {isAudioMappingManagerOpen && (
+        <AudioMappingManager 
+          mappings={audioMappings}
+          onUpdate={setAudioMappings}
+          onClose={() => setIsAudioMappingManagerOpen(false)}
         />
       )}
       
@@ -459,6 +483,7 @@ const App = () => {
         <ValidationPanel 
           errors={validation.errors}
           warnings={validation.warnings}
+          report={validation.report}
           onClose={() => setValidation({errors: [], warnings: []})}
         />
       </div>

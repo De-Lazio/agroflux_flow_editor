@@ -10,7 +10,8 @@ import {
   FileJson,
   FilePlus,
   Database,
-  Library
+  Library,
+  Music
 } from 'lucide-react';
 
 const Toolbar = ({ 
@@ -19,6 +20,7 @@ const Toolbar = ({
   onNewProject, 
   onOpenVariables, 
   onOpenHashMaps,
+  onOpenAudioMappings,
   onAddNode, 
   onAutoLayout, 
   onValidate,
@@ -66,6 +68,15 @@ const Toolbar = ({
             title="Gérer les HashMaps"
           >
             <Library size={18} /> <span className="hidden lg:inline">HashMaps</span>
+          </button>
+        )}
+        {flowFormat === 'dynamic' && (
+          <button 
+            className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+            onClick={onOpenAudioMappings} 
+            title="Gérer les Mappages Audio"
+          >
+            <Music size={18} /> <span className="hidden lg:inline">Audios</span>
           </button>
         )}
         <button 
