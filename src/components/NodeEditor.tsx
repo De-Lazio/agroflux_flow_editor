@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Plus, Music, List, Map, Globe, Settings, Library } from 'lucide-react';
+import { X, Trash2, Plus, Music, List, Map, Globe, Settings, Library, FileText } from 'lucide-react';
 
 const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashmaps, flowFormat }: any) => {
   const [data, setData] = useState<any>(null);
@@ -118,6 +118,18 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
               <input className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={data.label || ''} onChange={(e) => handleChange('label', e.target.value)} />
             </div>
           )}
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1 flex items-center gap-1">
+              <FileText size={12} /> Commentaire / Documentation
+            </label>
+            <textarea 
+              className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none min-h-[80px] bg-slate-50/50" 
+              placeholder="Ajouter une note sur ce nœud..."
+              value={data.comment || ''} 
+              onChange={(e) => handleChange('comment', e.target.value)} 
+            />
+          </div>
         </section>
 
         {/* Logique DYNAMIQUE */}

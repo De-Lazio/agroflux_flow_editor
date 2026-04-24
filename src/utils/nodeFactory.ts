@@ -1,7 +1,8 @@
 export const createDefaultRootNode = (id: string) => ({
   type: "root",
   audio_prompt: `intro/${id}.mp3`,
-  options: []
+  options: [],
+  comment: ""
 });
 
 export const createDefaultGridNode = (id: string) => ({
@@ -9,7 +10,8 @@ export const createDefaultGridNode = (id: string) => ({
   audio_prompt: `questions/${id}.mp3`,
   options_source: "",
   set: "",
-  next: ""
+  next: "",
+  comment: ""
 });
 
 export const createDefaultResultNode = (id: string) => ({
@@ -18,15 +20,18 @@ export const createDefaultResultNode = (id: string) => ({
     endpoint: "",
     params: []
   },
-  audio_sequence: [`questions/${id}.mp3`]
+  audio_sequence: [`questions/${id}.mp3`],
+  comment: ""
 });
+
 export const createDefaultCalendrierNode = (id: string) => ({
   id,
   type: 'calendrier',
   audio_prompt: 'questions/date.mp3',
   periode: 7,
   cadran: 'centrer',
-  next: ''
+  next: '',
+  comment: ""
 });
 
 export const createDefaultPreFilterNode = (id: string) => ({
@@ -35,7 +40,8 @@ export const createDefaultPreFilterNode = (id: string) => ({
   audio_prompt: 'questions/filtre.mp3',
   cle: '',
   filtre_source: '',
-  next: ''
+  next: '',
+  comment: ""
 });
 
 
@@ -43,6 +49,7 @@ export const createDefaultMenuNode = (id: string, level: number = 2) => ({
   id,
   level,
   type: "menu",
+  comment: "",
   audio: {
     context: [],
     auto_play: true
@@ -67,6 +74,7 @@ export const createDefaultFilterNode = (id: string, level: number = 3) => ({
   id,
   level,
   type: "filter",
+  comment: "",
   filter_category: "location",
   filter_step: "",
   audio: {
@@ -99,6 +107,7 @@ export const createDefaultResultsNode = (id: string, level: number = 4) => ({
   id,
   level,
   type: "results",
+  comment: "",
   audio: {
     context: [],
     auto_play: true
@@ -128,6 +137,7 @@ export const createDefaultWidgetNode = (id: string, level: number = 3) => ({
   id,
   level,
   type: "widget",
+  comment: "",
   widget_type: "calendar",
   audio: {
     context: [],
@@ -148,3 +158,4 @@ export const createDefaultWidgetNode = (id: string, level: number = 3) => ({
     breadcrumb: []
   }
 });
+

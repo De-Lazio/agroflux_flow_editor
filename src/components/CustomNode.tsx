@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
+import { FileText } from 'lucide-react';
 
 const CustomNode = ({ data, selected, id }: any) => {
   const getTypeColor = (type: string) => {
@@ -102,6 +103,11 @@ const CustomNode = ({ data, selected, id }: any) => {
         )}
 
         <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
+          {data.comment && (
+            <div title={data.comment} className="text-blue-500">
+              <FileText size={12} />
+            </div>
+          )}
           {['grid', 'root', 'result', 'calendrier', 'pre_filter'].includes(data.type) ? (
              <span>Mode Dynamique</span>
           ) : (
