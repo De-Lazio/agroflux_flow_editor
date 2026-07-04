@@ -1,369 +1,530 @@
-Je travail sur une application mobile en langue local pour informer nos mamans revendeuse de produit agricol des infos sur les marchés agricoles.
+Je pense que tu tiens quelque chose de beaucoup plus ambitieux qu'un simple "éditeur de flow".
 
-Avec cela, il connaitrons le prix de produits agricole dans toute les marché du bénin ainsi que leurs jours d'animation, il pourons donc décider facilement de sur quel marché aller faire ses approvisionnement pour venir revendre dans sa localité.
+En regardant le JSON que tu m'as partagé, on comprend que le Flow Editor n'est pas un simple outil de création d'écrans, mais le moteur de conception fonctionnelle de toute la plateforme AgroFlux. Il décrit les parcours utilisateurs, les règles de navigation, les interactions avec le backend, les contrats des réponses API, ainsi que les ressources multimédias nécessaires (audio, images, etc.).
+
+À mon avis, c'est cette idée qu'il faut transmettre aux développeurs qui vont rejoindre le projet.
+
+PRÉSENTATION DU PROJET AGROFLUX
+Document d'introduction pour les développeurs du Flow Editor
+AgroFlux Bénin
+Présentation générale
+
+AgroFlux Bénin est une plateforme numérique destinée à améliorer l'accès aux informations sur les marchés agricoles béninois.
+
+Le projet centralise les données de marché collectées directement sur le terrain (prix, marchés, calendrier d'animation, disponibilité des produits, tendances des prix, etc.) afin de les rendre accessibles sous différentes formes :
+
+application mobile grand public ;
+plateforme web ;
+API publique ;
+navigation audio multilingue en langues locales (Fon, Yoruba, Dendi et Adja).
+
+L'objectif est de rendre ces informations compréhensibles aussi bien pour un producteur agricole peu alphabétisé que pour une institution publique ou un chercheur.
+
+Les différents composants du projet
+
+Le système AgroFlux est constitué de plusieurs applications complémentaires.
+
+1. Backend
+
+Le backend constitue le cœur de la plateforme.
+
+Il est responsable de :
+
+la gestion des données agricoles ;
+la collecte des prix ;
+la gestion des marchés ;
+la gestion des utilisateurs ;
+la génération des réponses API ;
+la génération des séquences audio dynamiques.
+2. Application Mobile de Collecte
+
+Utilisée par les agents de terrain.
+
+Elle permet notamment :
+
+la saisie des prix ;
+la consultation des marchés assignés ;
+la synchronisation avec le serveur ;
+le suivi des soumissions.
+3. Dashboard Administration & Supervision
+
+Permet :
+
+l'administration des données ;
+la validation des informations collectées ;
+le suivi des agents terrain ;
+le contrôle qualité des données.
+4. Application Mobile AgroFlux
+
+Application destinée aux utilisateurs finaux.
+
+Elle permet notamment :
+
+rechercher où acheter un produit ;
+rechercher où vendre un produit ;
+connaître les marchés animés ;
+consulter les calendriers d'animation ;
+consulter les tendances des prix ;
+écouter toutes ces informations en langues locales.
+
+Cette application ne contient pratiquement aucune logique métier.
+
+Elle interprète les réponses produites par le backend.
+
+Le rôle du Flow Editor
+
+Le Flow Editor est le composant stratégique de l'ensemble du projet.
+
+Il ne s'agit pas d'un simple éditeur graphique.
+
+Il constitue le langage fonctionnel utilisé pour décrire la totalité des parcours utilisateurs de l'application AgroFlux.
+
+Autrement dit :
+
+Le Flow Editor décrit comment l'application doit fonctionner.
+
+Pourquoi le Flow Editor est-il aussi important ?
+
+Sans Flow Editor :
+
+aucune navigation audio ;
+aucune génération dynamique des réponses ;
+aucune cohérence entre le backend et le mobile ;
+aucune automatisation de la production des ressources.
+
+Le Flow Editor est donc la source de vérité de toute la navigation de l'application.
+
+Ce que décrit un Flow
+
+Un Flow décrit entièrement un parcours utilisateur.
+
+Par exemple :
+
+Je souhaite acheter du maïs dans le département du Zou.
+
+Le Flow décrit :
+
+les différentes questions posées à l'utilisateur ;
+les choix possibles ;
+les transitions entre les écrans ;
+les appels API nécessaires ;
+les paramètres transmis ;
+le type de réponse attendu ;
+la manière dont cette réponse sera restituée à l'utilisateur.
+
+Le backend exécute ce contrat.
+
+L'application Flutter l'interprète.
+
+Le Flow Editor permet de le concevoir.
+
+Ce que produit le Flow Editor
+
+À partir d'une modélisation graphique, le Flow Editor génère un document JSON structuré qui décrit entièrement le comportement du parcours utilisateur. Ce document contient notamment :
+
+la configuration générale du flow ;
+le point d'entrée du parcours ;
+les nœuds de navigation ;
+les transitions entre les nœuds ;
+les paramètres attendus ;
+les appels aux API ;
+les contrats des réponses API ;
+les références vers les ressources multimédias ;
+les commentaires techniques associés.
+
+Le JSON généré devient directement exploitable par le backend et par l'application mobile.
+
+Les types de nœuds
+
+Le moteur repose sur plusieurs types de nœuds spécialisés.
+
+Parmi eux :
+
+Root
+Grid
+Result
+Calendar
+Pre Filter
+
+Chaque type possède un comportement précis et un contrat bien défini.
+
+Le moteur Flutter interprète ces nœuds pour construire dynamiquement les interfaces utilisateur.
+
+Relation entre les différents composants
+                Flow Editor
+                     │
+                     ▼
+          Génération du Flow JSON
+                     │
+      ┌──────────────┴──────────────┐
+      ▼                             ▼
+Backend API                Application Flutter
+      │                             │
+      └──────────────┬──────────────┘
+                     ▼
+              Utilisateur final
+
+Le Flow Editor n'est donc pas une application indépendante.
+
+Il pilote indirectement :
+
+le backend ;
+l'application Flutter ;
+la navigation utilisateur ;
+les réponses API.
+Philosophie du projet
+
+Le code métier ne doit jamais être dupliqué.
+
+Les parcours utilisateurs doivent être décrits une seule fois dans le Flow Editor.
+
+Les applications (backend et Flutter) doivent interpréter cette description plutôt que réimplémenter les mêmes règles.
+
+Cette approche permet :
+
+une meilleure maintenabilité ;
+une évolution rapide des parcours ;
+une réduction des régressions ;
+une cohérence entre toutes les plateformes.
+État actuel du projet
+
+Aujourd'hui :
+
+le backend est largement développé ;
+l'application de collecte est opérationnelle ;
+le tableau de bord d'administration est en cours de finalisation ;
+le système de supervision est développé ;
+l'API publique est en cours de préparation.
+
+Le Flow Editor est fonctionnel dans sa structure générale mais plusieurs éléments restent à finaliser.
+
+Les principaux travaux attendus concernent notamment :
+
+la finalisation des routes et des transitions entre les nœuds ;
+la validation complète des contrats JSON générés ;
+la génération des références vers les ressources nécessaires (audios, images et autres assets) ;
+les derniers ajustements permettant une intégration complète avec le backend et l'application Flutter.
+Objectif du développement
+
+L'objectif n'est pas uniquement de terminer une interface graphique.
+
+Le véritable objectif est de construire un moteur de conception robuste qui deviendra le point central de l'écosystème AgroFlux.
+
+Une fois le Flow Editor stabilisé, il permettra :
+
+de concevoir de nouveaux parcours sans modifier le code de l'application mobile ;
+d'assurer une parfaite cohérence entre le backend et le frontend ;
+de faciliter la production des ressources multimédias ;
+d'accélérer considérablement l'évolution future de la plateforme.
 
 
-l'app va se basé sur un flow de navigation en langue local, ce flow sera bien établir dans un json.
-
-le travail de ce petit application des de créé un éditeur de ce flow. pour bien travailler la dessus avant d'envoyer le flow à implementer au developpeur de l'app mobile.
-
-Donc ici ce n'est pas le developpement de l'app mobile ni de la plateforme web. juste un petiti editeur de flow qu'on peut enregistrer au format json pour l'app mobile.
-
-
-l'Editeur de flow de navigation en langue local. 
-
-je vouedrais que tu me propose une petite application html, css et js. voud visualiser le flow à partir du json. et aussi je doit pour voir modifier les noeuds du flows directement sur la page et sauvégarder les modification. 
-Je pense au faità un éditeur du flow qui aura tout les eléments nécéssaire pour concevoir et  modifier le flow en se basant sur un json.
-
-Il y à différent type de noeud, il à les noeud de choix (ce que l'utilisateur cherche) et les noeuds de filtre (pour filtré et ne pas exposé l'utilsateur à une liste d'option longue ex  : filtre de région(nord/centre/sud), filtre de département (Ouémé/Plateau, Zou, Alibori...), filtre de commune ( Porto-Novo.....) ce filtre serve par exemple si l'utilsateur veut trouver un marché, au lieu de la liste de tout les marché du bénin il ira va parssé ces filtre pour réduire la liste avant de choisir le marché dans la liste restreinte. il y à des filtre pour reduire la liste de marché, des produits, des date (temps), lieu......
-
-l'application doit me permettre d'ajouter chaque type de noeud à des endroits voulu.
-
-Voilà le jons que j'ai acturellement.
-
-
-le premier travail est de voir la structur d'un noeud et de trouvé les différent élements à mettre  en place pour produit une application qui édite le flow.
-
-
-ne code pas encore parle moi de ce que tu pense les élément de structuration que tu juge importantes.
-
-
-
-Excellente idée ! Un éditeur visuel de flow pour la navigation audio. Analysons d'abord la structure avant de coder.
-📊 ANALYSE DE LA STRUCTURE DU JSON
-🎯 Types de nœuds identifiés
-D'après ton JSON, j'identifie 4 types de nœuds principaux :
-1. Nœud MENU (Choix utilisateur)
-json"type": "menu"
-
-Rôle : Présenter des choix à l'utilisateur
-Exemples : root, menu_markets, menu_products
-Caractéristiques :
-
-Options fixes (pas d'API)
-Navigation principale
-Point de départ des parcours
-
-
-
-2. Nœud FILTER (Filtrage progressif)
-json"type": "filter"
-
-Rôle : Réduire progressivement les options
-Exemples : filter_location, filter_time, filter_product
-Caractéristiques :
-
-Options dynamiques (via API)
-Chaînage (next_filter)
-Contexte cumulatif
-
-
-
-3. Nœud RESULTS (Affichage résultats)
-json"type": "results"
-
-Rôle : Montrer les résultats finaux
-Caractéristiques :
-
-API avec tous les paramètres collectés
-Fin de parcours
-Pagination résultats
-
-
-
-4. Nœud WIDGET (Interface spéciale)
-json"widget_type": "calendar"
-
-Rôle : Interface particulière (calendrier, carte...)
-Exemple : filter_time_calendar
-Caractéristiques :
-
-UI custom
-Interaction différente
-
-
-
-
-🏗️ STRUCTURE D'UN NŒUD - Éléments communs
-Métadonnées de base
-javascript{
-  "id": string,           // Identifiant unique
-  "level": number,        // Profondeur dans l'arbre (1=racine)
-  "type": enum,           // menu | filter | results | widget
-  "label": string         // Nom humain (à ajouter !)
-}
-Audio & Localisation
-javascript{
-  "audio": {
-    "context": [string],   // Fichiers audio intro
-    "auto_play": boolean   // Lecture auto
-  },
-  "languages": {           // À AJOUTER pour multi-langues
-    "fon": {...},
-    "yor": {...},
-    "dendi": {...}
-  }
-}
-Options (choix présentés)
-javascript{
-  "options": [
-    {
-      "id": string,
-      "number": number,        // Position visuelle (1-5)
-      "label": string,
-      "image": string,         // Chemin illustration
-      "audio": [string],       // Fichiers audio option
-      "keywords": [string],    // Mots-clés reconnaissance vocale
-      "next": string,          // ID nœud suivant (si fixe)
-      "params": object         // Paramètres à transmettre
+exemple du json flow actuel : 
+{
+  "version": "1.0",
+  "entry": "root",
+  "config": {
+    "audio": {
+      "auto_play_prompt": true,
+      "auto_play_option": true,
+      "pause_between_ms": 600
     }
-  ]
-}
-Pagination & UI
-javascript{
-  "pagination": {
-    "items_per_page": number,  // 5 généralement
-    "allow_swipe": boolean     // Scroll horizontal
   },
-  "voice_filter": {
-    "enabled": boolean,        // Reconnaissance vocale active
-    "trigger_threshold": number // Seuil déclenchement
+  "variables": {
+    "produits": [
+      "mais",
+      "soja"
+    ],
+    "departements": [
+      "oueme",
+      "plateau",
+      "zou",
+      "collines",
+      "mono",
+      "couffo",
+      "atlantique",
+      "litoral",
+      "borgou",
+      "alibori",
+      "atacora",
+      "donga"
+    ],
+    "x_anime_x": [
+      "aujourdhui",
+      "demain",
+      "apres_demain",
+      "dans_trois_jours",
+      "dans_quatre_jours",
+      "hier",
+      "avant_hier",
+      "trois_jours passe",
+      "quatre_jours passe",
+      "cinq_jours passe"
+    ],
+    "periode": [
+      "aujourdhui",
+      "cette_semaine",
+      "ce_mois",
+      "trois_derniers_mois",
+      "six_derniers_mois",
+      "cette_annee"
+    ],
+    "marches_suivis": [
+      "ikpinle",
+      "ketou",
+      "parakou",
+      "glazoue",
+      "save",
+      "malanville",
+      "kpedekpo"
+    ],
+    "type_info_marche": [
+      "resume_rapide",
+      "presentation_du_marche",
+      "produits_disponibles",
+      "calendrier_animation",
+      "opportunite_marche"
+    ],
+    "departements_et_tout": [
+      "tout_les_departements",
+      "oueme",
+      "plateau",
+      "zou",
+      "colline"
+    ]
+  },
+  "hashmaps": {
+    "marche_par_departement": {
+      "oueme": [
+        "ouando",
+        "adjohoun",
+        "gbada",
+        "bonou"
+      ],
+      "plateau": [
+        "takon",
+        "sakete",
+        "ketou"
+      ]
+    }
+  },
+  "audio_mappings": {
+    "produit": "produits/",
+    "departement": "localites/",
+    "marche": "marches/",
+    "periode": "periode/"
+  },
+  "dynamic_audio": {},
+  "nodes": {
+    "root": {
+      "type": "root",
+      "audio_prompt": "intro/root.mp3",
+      "options": [
+        {
+          "id": "achete_produit",
+          "next": "achete_produit"
+        },
+        {
+          "id": "vendre_produit",
+          "next": "vendre_produit"
+        },
+        {
+          "id": "marche_anime_x",
+          "next": "marche_anime_x"
+        },
+        {
+          "id": "marche_anime_calendrier",
+          "next": "anime_calendrier_calendrier"
+        },
+        {
+          "id": "infos_march",
+          "next": "infos_marche_departement"
+        },
+        {
+          "id": "explorer_produit",
+          "next": "explorer_produit_produit"
+        }
+      ]
+    },
+    "achete_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/achete_produit.mp3",
+      "options_source": "produits",
+      "set": "produits",
+      "next": "acheter_result",
+      "audio": {
+        "type": "sequence",
+        "key": "achete_produit_intro",
+        "sequence": [
+          "intro/achete_produit_intro.pm3"
+        ],
+        "fallback": "intro/default.mp3"
+      },
+      "comment": "Noeud de démarage du flow acheter un produit.\n\nCe noeud permet de choisir le produit à acheter."
+    },
+    "vendre_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/vendre_produit.mp3",
+      "options_source": "produits",
+      "set": "produits",
+      "next": "vendre_result",
+      "audio": {
+        "type": "sequence",
+        "key": "vendre_produit_intro",
+        "sequence": [
+          "intro/vendre_produit_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      },
+      "comment": "Noeud de démarage du flow vendre un produit.\n\nCe noeud permet de choisir le produit à vendre."
+    },
+    "marche_anime_x": {
+      "type": "grid",
+      "audio_prompt": "questions/marche_anime_x.mp3",
+      "options_source": "x_anime_x",
+      "set": "",
+      "next": "anime_x_departement"
+    },
+    "acheter_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/acheter_produit",
+        "params": [
+          "produit",
+          "departement"
+        ]
+      },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_acheter.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_sont.mp3\"\n      ],\n      \"image\": \"images/intro/acheter.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_bas_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/comparer_qualite.mp3\"\n      ],\n      \"image\": \"images/icons/attention_transport.png\"\n    }\n  ]\n}",
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_acheter.mp3\",\n        \"{produit}\",\n        \"intro/dans_departement.mp3\",\n        \"{departement}\"\n      ],\n      \"image\": \"images/intro/acheter.png\"\n    },\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"{date:2026-03-10}\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"{prix:1000}\",\n        \"unites/kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    }\n  ],\n  \"meta\": {\n     \"auto_play\": true,\n    \"pause_ms\": 600\n  }\n}"
+    },
+    "vendre_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/vendre_produit",
+        "params": [
+          "produit",
+          "departement"
+        ]
+      },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_vendre.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_vente.mp3\"\n      ],\n      \"image\": \"images/intro/vendre.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_eleve_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/vendre_maintenant_si_possible.mp3\"\n      ],\n      \"image\": \"images/icons/opportunity_transport.png\"\n    }\n  ]\n}"
+    },
+    "anime_x_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/anime_x_departement.mp3",
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_x_result"
+    },
+    "anime_x_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/anime_x",
+        "params": [
+          "date",
+          "departement"
+        ]
+      },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}"
+    },
+    "anime_calendrier_calendrier": {
+      "type": "calendrier",
+      "audio_prompt": "questions/date_anime_calendrier_calendrier.mp3",
+      "periode": 7,
+      "cadran": "centrer",
+      "next": "anime_calendrier_departement"
+    },
+    "anime_calendrier_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "",
+        "params": []
+      },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}"
+    },
+    "infos_marche_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/infos_marche_departement.mp3",
+      "options_source": "departements",
+      "set": "departements",
+      "next": "explorer_produit_marche_filter"
+    },
+    "infos_marche_infos_type": {
+      "type": "grid",
+      "audio_prompt": "questions/infos_marche_infos_type.mp3",
+      "options_source": "type_info_marche",
+      "set": "type_info_marche",
+      "next": "infos_marche_result"
+    },
+    "infos_marche_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/infos_marches",
+        "params": [
+          "marche",
+          "info_type"
+        ]
+      },
+      "audio_sequence": [
+        "questions/infos_marche_result.mp3"
+      ],
+      "comment": "\"regle\": {\n  \"type\": \"hebdomadaire\",\n  \"valeur\": {\n    \"jours\": [2, 5]\n  }\n}\n\"regle\": {\n  \"type\": \"intervalle\",\n  \"valeur\": {\n    \"interval\": 4,\n    \"date_reference\": \"2026-03-01\"\n  }\n}\n\n\n\"regle\": {\n  \"type\": \"mensuel\",\n  \"valeur\": {\n    \"jours\": [5],\n    \"semaine\": 2\n  }\n}\n\n\n\n",
+      "json_response_contrat": "{\n  \"type\": \"calendar\",\n  \"version\": \"1.0\",\n  \"data\": {\n    \"marche\": {\n      \"id\": 12,\n      \"nom\": \"takon\"\n    },\n\n    \"regle\": {\n      \"type\": \"hebdomadaire\",\n      \"valeur\": {\n        \"jours\": [2, 5]\n      }\n    },\n\n    \"description\": \"Marché tous les mardi et vendredi\",\n\n    \"intro\": [\n      \"intro/calendrier_marche.mp3\",\n      \"marches/takon.mp3\"\n    ],\n\n    \"outro\": [\n      \"frequence/hebdomadaire.mp3\"\n    ]\n  }\n}\n\n\n"
+    },
+    "explorer_produit_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/explorer_produit_produit.mp3",
+      "options_source": "produits",
+      "set": "produits",
+      "next": "explorer_produit_marche"
+    },
+    "explorer_produit_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "explorer_prix",
+        "params": [
+          "marche",
+          "produit",
+          "periode"
+        ]
+      },
+      "audio_sequence": [
+        "questions/explorer_produit_result.mp3"
+      ],
+      "comment": "🧠 🎯 Objectif du backend\n\nConstruire un moteur qui transforme des données de prix agricoles en narration audio structurée (JSON).\n\n⚙️ 🔥 GRANDES LIGNES À DONNER AU DEV\n1️⃣ Récupération des données\nInput API :\nproduit\nmarché\npériode (semaine, mois, 6 mois, etc.)\nRequête :\nrécupérer les prix historiques du produit dans le marché\ninclure toutes les variétés\ntrier par date croissante\n2️⃣ Structuration des données\nRegrouper les données par date\nÀ chaque date :\nliste des variétés\nprix + unité\n\n👉 Format interne attendu :\n\n[\n  {\n    \"date\": \"2026-01-10\",\n    \"varieties\": [...]\n  }\n]\n3️⃣ Filtrage intelligent des dates (CRUCIAL)\nNe garder que :\nla première date\nles dates où au moins un prix change\n\n👉 Règle :\n\ncomparer avec la date précédente\ndétecter changement par variété\n4️⃣ Calcul de tendance (🔺🔻➖)\nCalculer variation entre deux dates\nBasé sur prix moyen ou dominant\n\n👉 Règle simple :\n\nhausse → 🔺\nbaisse → 🔻\nstable → ➖\n\n👉 Ajouter seuil (~5%) pour éviter bruit\n\n5️⃣ Enrichissement (mapping assets)\n\nPour chaque élément récupérer :\n\naudio (clé fichier)\nimage associée\n\n👉 Exemple :\n\nproduit → produits/mais.mp3\nmarché → marches/takon.mp3\nunité → unites/kg.mp3\n6️⃣ Génération de la séquence audio\n\nConstruire un JSON structuré avec :\n\n🔹 INTRO\nphrase complète :\nhistorique + produit + marché + période\n🔹 POUR CHAQUE DATE\nBloc date\naudio date\nvariation (sauf première date)\nBloc variétés\npour chaque variété :\nnom\nprix\nunité\n7️⃣ Gestion des cas réels (IMPORTANT)\n\nLe backend doit gérer :\n\n1 seule variété → simple\nplusieurs variétés → boucle\ndonnées manquantes → ignorer proprement\nunités différentes → cohérence obligatoire\n8️⃣ Génération dynamique des audios\n\nLe backend doit pouvoir générer :\n\n📅 dates → date/YYYY_MM_DD.mp3\n💰 prix → prix/XXXX_fcfa.mp3\n📊 variation → variation/hausse.mp3\n9️⃣ Génération du conseil final (IA simple)\n\nBasé sur tendance globale :\n\nhausse → conseil vendre / attendre\nbaisse → conseil acheter\nstable → conseil neutre\n\n\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/historique_prix.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_marche.mp3\",\n        \"marches/takon.mp3\",\n        \"periode/six_derniers_mois.mp3\"\n      ],\n      \"image\": \"images/intro/historique.png\"\n    },\n\n    /* ================= DATE 1 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_10.mp3\"\n      ],\n      \"image\": null\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/8000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= DATE 2 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_20.mp3\",\n        \"variation/hausse.mp3\"\n      ],\n      \"image\": \"images/icons/hausse.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/6000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/9000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= CONSEIL IA ================= */\n\n    {\n      \"audios\": [\n        \"conseils/tendance_hausse.mp3\",\n        \"conseils/attendre_peut_etre.mp3\"\n      ],\n      \"image\": \"images/icons/trend_up.png\"\n    }\n  ]\n}"
+    },
+    "explorer_produit_periode": {
+      "type": "grid",
+      "audio_prompt": "questions/explorer_produit_periode.mp3",
+      "options_source": "periode",
+      "set": "periode",
+      "next": "explorer_produit_result"
+    },
+    "anime_calendrier_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/anime_calendrier_departement.mp3",
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_calendrier_result"
+    },
+    "explorer_produit_marche": {
+      "type": "grid",
+      "audio_prompt": "questions/explorer_produit_marche.mp3",
+      "options_source": "marches_suivis",
+      "set": "marches_suivis",
+      "next": "explorer_produit_periode"
+    },
+    "explorer_produit_marche_filter": {
+      "type": "pre_filter",
+      "audio_prompt": "questions/filtre.mp3",
+      "cles": [
+        "produits"
+      ],
+      "filtre_source": "marche_par_departement",
+      "next": "infos_marche_infos_type",
+      "cle": "departements"
+    }
   }
 }
-Navigation
-javascript{
-  "navigation": {
-    "show_back": boolean,      // Bouton retour
-    "show_home": boolean,      // Bouton accueil
-    "breadcrumb": [string]     // Fil d'Ariane
-  }
-}
-API (pour nœuds dynamiques)
-javascript{
-  "api": {
-    "endpoint": string,        // URL API
-    "method": enum,            // GET | POST
-    "params_from_history": boolean  // Utiliser historique navigation
-  }
-}
-Filtres spécifiques
-javascript{
-  "filter_category": enum,   // location | time | market | product
-  "filter_step": string,     // region | department | commune | name
-  "next_filter": string,     // ID filtre suivant (chaînage)
-  "usable_filters": [string] // Filtres applicables depuis ce nœud
-}
-
-🎨 ÉLÉMENTS POUR L'ÉDITEUR VISUEL
-1. Vue globale (Canvas)
-
-Graphe interactif type flowchart
-Nœuds représentés par cartes colorées selon type :
-
-🟦 Bleu : MENU
-🟩 Vert : FILTER
-🟨 Jaune : RESULTS
-🟪 Violet : WIDGET
-
-
-Connexions : Flèches entre nœuds (next, next_filter)
-Zoom/Pan : Navigation dans le flow
-Mini-map : Vue d'ensemble coin écran
-
-2. Palette de création
-Sidebar gauche avec :
-
-Bouton "+ Menu Node"
-Bouton "+ Filter Node"
-Bouton "+ Results Node"
-Bouton "+ Widget Node"
-Glisser-déposer sur canvas
-
-3. Propriétés du nœud (Panel droit)
-Quand on clique sur un nœud :
-Section Général
-
-Input : ID (auto-généré ou manuel)
-Input : Label (nom humain)
-Select : Type (menu/filter/results/widget)
-Number : Level (calculé auto ou manuel)
-
-Section Audio
-
-Upload : Fichiers audio contexte
-Checkbox : Auto-play
-Tabs : Fon | Yoruba | Dendi | Français
-
-Upload audio par langue
-
-
-
-Section Options
-
-Liste éditable d'options :
-
-Input : ID option
-Number : Numéro (1-5)
-Input : Label
-Upload : Image
-Upload : Fichiers audio
-Tags : Keywords (reconnaissance vocale)
-Select : Nœud suivant (dropdown tous les nœuds)
-JSON : Params (éditeur JSON inline)
-Bouton : 🗑️ Supprimer option
-
-
-Bouton : + Ajouter option
-
-Section Pagination
-
-Number : Items per page
-Checkbox : Allow swipe
-
-Section Reconnaissance vocale
-
-Checkbox : Enabled
-Number : Trigger threshold
-
-Section Navigation
-
-Checkbox : Show back
-Checkbox : Show home
-Tags : Breadcrumb (éditable)
-
-Section API (si type = filter ou results)
-
-Input : Endpoint
-Select : Method (GET/POST)
-Checkbox : Params from history
-
-Section Filtres (si type = filter)
-
-Select : Filter category
-Input : Filter step
-Select : Next filter (dropdown nœuds)
-Multi-select : Usable filters
-
-4. Toolbar supérieur
-
-💾 Sauvegarder (télécharge JSON)
-📂 Charger (upload JSON)
-▶️ Prévisualiser (simule navigation)
-🔍 Rechercher nœud (par ID/label)
-↩️ Undo / ↪️ Redo
-🗑️ Supprimer nœud sélectionné
-✅ Valider (vérifie liens cassés, nœuds orphelins)
-
-5. Validation automatique
-Indicateurs visuels :
-
-❌ Nœud invalide (manque propriétés requises)
-⚠️ Lien cassé (next pointe vers nœud inexistant)
-🔴 Nœud orphelin (aucun nœud ne pointe vers lui)
-✅ Flow valide
-
-
-🔧 FONCTIONNALITÉS ESSENTIELLES ÉDITEUR
-Édition visuelle
-
-Drag & Drop : Déplacer nœuds sur canvas
-Connexions manuelles : Cliquer-glisser pour relier nœuds
-Suppression lien : Clic droit sur flèche → Supprimer
-Duplication nœud : Clic droit → Dupliquer
-Groupes : Regrouper nœuds par catégorie (marchés, produits...)
-
-Auto-génération
-
-ID auto : Génère IDs uniques (menu_markets_2)
-Breadcrumb auto : Calcule fil d'Ariane selon parcours
-Level auto : Calcule profondeur automatiquement
-Liens suggérés : Propose nœuds probables pour "next"
-
-Import/Export
-
-JSON : Format actuel (import/export)
-YAML : Alternative lisible
-Diagramme PNG : Export visuel du flow
-Documentation MD : Génère doc automatique
-
-Prévisualisation
-
-Mode simulation : Navigue dans le flow comme utilisateur
-Audio preview : Écoute les audios sans quitter éditeur
-Chemins possibles : Affiche tous les chemins root → results
-Statistiques :
-
-Nombre de nœuds par type
-Profondeur maximale
-Options moyennes par nœud
-
-
-
-
-📐 STRUCTURE PROPOSÉE - Améliorations
-Manques identifiés dans ton JSON actuel :
-
-Pas de label humain pour les nœuds
-
-json   "label": "Menu principal",  // À AJOUTER
-
-Multi-langue incomplet
-
-Audio par langue OK
-Mais textes (label, keywords) pas traduits
-
-
-
-json   "translations": {
-     "fon": {"label": "..."},
-     "yor": {"label": "..."}
-   }
-
-Pas de métadonnées nœud
-
-json   "metadata": {
-     "created_at": "2024-01-15",
-     "author": "AgroFlux Team",
-     "description": "Point d'entrée principal",
-     "tags": ["main", "entry"]
-   }
-
-Validation règles manquantes
-
-json   "validation": {
-     "required_filters": ["location"],  // Filtres obligatoires
-     "max_depth": 5,                    // Profondeur max
-     "requires_auth": false             // Auth nécessaire
-   }
-
-Conditions de navigation
-
-json   "conditions": {
-     "show_if": "user.has_location",   // Conditionnel
-     "enabled": true
-   }
-
-
-
-
-React Flow.
-Très puissant pour flowcharts
-Documentation excellente
-
-
-React Flow est supérieur ici :
-
-Spécialisé pour les flows : React Flow est THE référence pour les éditeurs de graphes/flows
-Fonctionnalités natives :
-
-Drag & drop nœuds ✅
-Connexions visuelles ✅
-Mini-map intégrée ✅
-Zoom/Pan fluide ✅
-Groupes de nœuds ✅
-Validation liens ✅
-
-
-Documentation excellente : Exemples pour chaque use case
-Écosystème riche : Plugins pour tout (export PNG, layout auto...)
-Performance : Optimisé pour 1000+ nœuds
