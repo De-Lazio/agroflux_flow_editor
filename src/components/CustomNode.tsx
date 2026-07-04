@@ -5,12 +5,6 @@ import { FileText } from 'lucide-react';
 const CustomNode = ({ data, selected, id }: any) => {
   const getTypeColor = (type: string) => {
     switch (type) {
-      // Format Legacy
-      case 'menu': return 'border-blue-500 text-blue-600 bg-blue-50';
-      case 'filter': return 'border-emerald-500 text-emerald-600 bg-emerald-50';
-      case 'results': return 'border-amber-500 text-amber-600 bg-amber-50';
-      case 'widget': return 'border-purple-500 text-purple-600 bg-purple-50';
-      // Format Dynamic
       case 'root': return 'border-indigo-600 text-indigo-700 bg-indigo-50';
       case 'grid': return 'border-cyan-500 text-cyan-600 bg-cyan-50';
       case 'result': return 'border-rose-500 text-rose-600 bg-rose-50';
@@ -22,10 +16,6 @@ const CustomNode = ({ data, selected, id }: any) => {
 
   const getHandleColor = (type: string) => {
     switch (type) {
-      case 'menu': return '#3b82f6';
-      case 'filter': return '#10b981';
-      case 'results': return '#f59e0b';
-      case 'widget': return '#8b5cf6';
       case 'root': return '#4f46e5';
       case 'grid': return '#06b6d4';
       case 'result': return '#f43f5e';
@@ -42,7 +32,7 @@ const CustomNode = ({ data, selected, id }: any) => {
   return (
     <div className={`w-[220px] bg-white rounded-lg shadow-sm border-2 transition-all duration-200 ${selected ? 'border-red-500 ring-4 ring-red-100 shadow-md' : 'border-slate-200 hover:border-slate-300'}`}>
       <Handle type="target" position={Position.Top} style={{ background: handleColor, width: '10px', height: '10px' }} />
-      
+
       <div className={`px-3 py-1.5 rounded-t-[6px] border-b text-[10px] font-bold flex justify-between items-center tracking-wider ${typeStyle}`}>
         <span>{data.type?.toUpperCase()}</span>
         <span className="opacity-70 font-mono">ID: {displayId}</span>
@@ -50,12 +40,9 @@ const CustomNode = ({ data, selected, id }: any) => {
 
       <div className="p-3">
         <div className="text-sm font-semibold text-slate-700 leading-tight min-h-[36px] line-clamp-2">
-          {['grid', 'root', 'result', 'calendrier', 'pre_filter'].includes(data.type) 
-            ? (data.audio?.key || 'Sans clé audio') 
-            : (data.label || data.audio_prompt || 'Sans label')}
+          {data.audio?.key || 'Sans clé audio'}
         </div>
 
-        {/* Affichage spécifique pour GRID (Format Dynamic) */}
         {data.type === 'grid' && (
           <div className="mt-2 p-2 bg-slate-50 rounded border border-slate-100 space-y-1">
             <div className="text-[9px] uppercase font-bold text-slate-400">Variable / Source</div>
@@ -69,14 +56,12 @@ const CustomNode = ({ data, selected, id }: any) => {
           </div>
         )}
 
-        {/* Affichage spécifique pour RESULT (Format Dynamic) */}
         {data.type === 'result' && data.data_source && (
           <div className="mt-2 text-[10px] text-slate-500 truncate border-t border-slate-100 pt-2">
             API: {data.data_source.endpoint || 'Non défini'}
           </div>
         )}
 
-        {/* Affichage spécifique pour CALENDRIER (Format Dynamic) */}
         {data.type === 'calendrier' && (
           <div className="mt-2 p-2 bg-slate-50 rounded border border-slate-100 space-y-1">
             <div className="text-[9px] uppercase font-bold text-slate-400">Configuration Temps</div>
@@ -87,7 +72,6 @@ const CustomNode = ({ data, selected, id }: any) => {
           </div>
         )}
 
-        {/* Affichage spécifique pour PRE_FILTER (Format Dynamic) */}
         {data.type === 'pre_filter' && (
           <div className="mt-2 p-2 bg-slate-50 rounded border border-slate-100 space-y-1">
             <div className="text-[9px] uppercase font-bold text-slate-400">HashMap / Clé</div>
@@ -104,21 +88,17 @@ const CustomNode = ({ data, selected, id }: any) => {
           </div>
         )}
 
-        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
-          {data.comment && (
-            <div title={data.comment} className="text-blue-500">
-              <FileText size={12} />
-            </div>
-          )}
-          {['grid', 'root', 'result', 'calendrier', 'pre_filter'].includes(data.type) ? (
-             <span>Mode Dynamique</span>
-          ) : (
-            <>
-              <span>Niveau: {data.level || '-'}</span>
-              <span className="flex-1 text-right">Options: {data.options?.length || 0}</span>
-            </>
-          )}
-        </div>
+        {data.type === 'root' && (
+          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 pt-2">
+            Options: {data.options?.length || 0}
+          </div>
+        )}
+
+        {data.comment && (
+          <div className="flex items-center gap-1 mt-3 pt-3 border-t border-slate-100 text-blue-500" title={data.comment}>
+            <FileText size={12} />
+          </div>
+        )}
       </div>
 
       <Handle type="source" position={Position.Bottom} style={{ background: handleColor, width: '10px', height: '10px' }} />

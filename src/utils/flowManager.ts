@@ -5,10 +5,8 @@ import dagre from 'dagre';
 export const jsonToFlow = (flowData: any) => {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
-  const isDynamic = flowData.variables || flowData.entry || flowData.dynamic_audio;
 
   Object.entries(flowData.nodes).forEach(([id, node]: [string, any]) => {
-    // Add Node
     nodes.push({
       id: id,
       type: 'customNode',
@@ -16,65 +14,32 @@ export const jsonToFlow = (flowData: any) => {
       position: { x: 0, y: 0 },
     });
 
-    if (isDynamic) {
-      // Dynamic Format Edges
-      if (node.type === 'root' && node.options) {
-        node.options.forEach((opt: any) => {
-          if (opt.next) {
-            edges.push({
-              id: `e-${id}-${opt.id}-${opt.next}`,
-              source: id,
-              target: opt.next,
-              label: opt.id,
-              animated: true,
-            });
-          }
-        });
-      } else if (node.next) {
-        edges.push({
-          id: `e-${id}-next-${node.next}`,
-          source: id,
-          target: node.next,
-          animated: true,
-        });
-      }
-    } else {
-      // Legacy Format Edges
-      if (node.options) {
-        node.options.forEach((option: any) => {
-          if (option.next) {
-            edges.push({
-              id: `e-${id}-${option.id}-${option.next}`,
-              source: id,
-              target: option.next,
-              label: option.label,
-              animated: true,
-            });
-          }
-        });
-      }
-
-      if (node.next_filter) {
-        edges.push({
-          id: `e-${id}-nextfilter-${node.next_filter}`,
-          source: id,
-          target: node.next_filter,
-          label: 'next_filter',
-          style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5,5' },
-        });
-      }
+    if (node.type === 'root' && node.options) {
+      node.options.forEach((opt: any) => {
+        if (opt.next) {
+          edges.push({
+            id: `e-${id}-${opt.id}-${opt.next}`,
+            source: id,
+            target: opt.next,
+            label: opt.id,
+            animated: true,
+          });
+        }
+      });
+    } else if (node.next) {
+      edges.push({
+        id: `e-${id}-next-${node.next}`,
+        source: id,
+        target: node.next,
+        animated: true,
+      });
     }
   });
 
   return getLayoutedElements(nodes, edges);
 };
 
-export const flowToJson = (
-  nodes: Node[], 
-  _edges: Edge[], 
-  format: 'legacy' | 'dynamic' = 'legacy',
-  extraData: any = {}
-) => {
+export const flowToJson = (nodes: Node[], extraData: any = {}) => {
   const flowNodes: any = {};
 
   nodes.forEach((node) => {
@@ -82,25 +47,17 @@ export const flowToJson = (
     flowNodes[node.id] = cleanData;
   });
 
-  if (format === 'dynamic') {
-    return {
-      version: "1.0",
-      entry: extraData.entry || Object.keys(flowNodes)[0],
-      config: extraData.config || {
-        audio: { auto_play_prompt: true, auto_play_option: true, pause_between_ms: 600 }
-      },
-      variables: extraData.variables || {},
-      hashmaps: extraData.hashmaps || {},
-      audio_mappings: extraData.audioMappings || {},
-      dynamic_audio: extraData.dynamic_audio || {},
-      nodes: flowNodes
-    };
-  }
-
   return {
-    version: extraData.version || "1.0",
-    default_language: extraData.defaultLanguage || "fon",
-    nodes: flowNodes,
+    version: "1.0",
+    entry: extraData.entry || Object.keys(flowNodes)[0],
+    config: extraData.config || {
+      audio: { auto_play_prompt: true, auto_play_option: true, pause_between_ms: 600 }
+    },
+    variables: extraData.variables || {},
+    hashmaps: extraData.hashmaps || {},
+    audio_mappings: extraData.audioMappings || {},
+    dynamic_audio: extraData.dynamic_audio || {},
+    nodes: flowNodes
   };
 };
 

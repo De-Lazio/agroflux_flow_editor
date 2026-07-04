@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect } from 'react'; //useRef
-import { 
-  applyNodeChanges, 
-  applyEdgeChanges, 
-  addEdge, 
+import { useState, useCallback, useEffect } from 'react';
+import {
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
   ReactFlowProvider
 } from 'reactflow';
-import type { 
-  Node, 
-  Edge, 
+import type {
+  Node,
+  Edge,
   Connection,
   NodeChange,
   EdgeChange
@@ -19,14 +19,10 @@ import ValidationPanel from './components/ValidationPanel';
 import VariableManager from './components/VariableManager';
 import HashMapManager from './components/HashMapManager';
 import AudioMappingManager from './components/AudioMappingManager';
-import FormatSelector from './components/FormatSelector';
+import FlowSettingsManager from './components/FlowSettingsManager';
 import { jsonToFlow, flowToJson, getLayoutedElements } from './utils/flowManager';
 import { validateFlow } from './utils/validator';
-import { 
-  createDefaultMenuNode, 
-  createDefaultFilterNode, 
-  createDefaultResultsNode, 
-  createDefaultWidgetNode,
+import {
   createDefaultRootNode,
   createDefaultGridNode,
   createDefaultResultNode,
@@ -35,6 +31,13 @@ import {
 } from './utils/nodeFactory';
 import initialFlow from '../flow.json';
 
+const defaultAudioMappings = {
+  "produit": "produits/",
+  "departement": "localites/",
+  "marche": "marches/",
+  "periode": "periode/"
+};
+
 const App = () => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -42,23 +45,17 @@ const App = () => {
   const [validation, setValidation] = useState<{errors: string[], warnings: string[], report?: any}>({errors: [], warnings: []});
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  
-  const [flowFormat, setFlowFormat] = useState<'legacy' | 'dynamic'>('legacy');
+
   const [variables, setVariables] = useState<Record<string, string[]>>({});
   const [hashmaps, setHashmaps] = useState<Record<string, Record<string, string[]>>>({});
-  const [audioMappings, setAudioMappings] = useState<Record<string, string>>({
-    "produit": "produits/",
-    "departement": "localites/",
-    "marche": "marches/",
-    "periode": "periode/"
-  });
+  const [audioMappings, setAudioMappings] = useState<Record<string, string>>(defaultAudioMappings);
   const [config, setConfig] = useState<any>(null);
   const [dynamicAudio, setDynamicAudio] = useState<any>(null);
   const [entryNode, setEntryNode] = useState<string>("");
   const [isVariableManagerOpen, setIsVariableManagerOpen] = useState(false);
   const [isHashMapManagerOpen, setIsHashMapManagerOpen] = useState(false);
   const [isAudioMappingManagerOpen, setIsAudioMappingManagerOpen] = useState(false);
-  const [isFormatSelectorOpen, setIsFormatSelectorOpen] = useState(false);
+  const [isFlowSettingsOpen, setIsFlowSettingsOpen] = useState(false);
 
   // État de verrouillage pour le chargement
   const [isAppReady, setIsAppReady] = useState(false);
@@ -67,7 +64,7 @@ const App = () => {
   useEffect(() => {
     const init = async () => {
       const savedSession = localStorage.getItem('agroflux_flow_session');
-      
+
       if (savedSession) {
         try {
           const session = JSON.parse(savedSession);
@@ -75,15 +72,9 @@ const App = () => {
             console.log("📦 [Persistence] Restauration de", session.nodes.length, "nœuds...");
             setNodes(session.nodes);
             setEdges(session.edges || []);
-            setFlowFormat(session.flowFormat || 'legacy');
             setVariables(session.variables || {});
             setHashmaps(session.hashmaps || {});
-            setAudioMappings(session.audioMappings || {
-              "produit": "produits/",
-              "departement": "localites/",
-              "marche": "marches/",
-              "periode": "periode/"
-            });
+            setAudioMappings(session.audioMappings || defaultAudioMappings);
             setConfig(session.config || null);
             setDynamicAudio(session.dynamicAudio || null);
             setEntryNode(session.entryNode || "");
@@ -94,12 +85,17 @@ const App = () => {
           console.error("❌ [Persistence] Erreur JSON:", e);
         }
       }
-      
+
       console.log("📄 [Persistence] Chargement du flux par défaut...");
       const { nodes: initialNodes, edges: initialEdges } = jsonToFlow(initialFlow);
       setNodes(initialNodes);
       setEdges(initialEdges);
-      setFlowFormat('legacy');
+      setVariables((initialFlow as any).variables || {});
+      setHashmaps((initialFlow as any).hashmaps || {});
+      setAudioMappings((initialFlow as any).audio_mappings || defaultAudioMappings);
+      setConfig((initialFlow as any).config || null);
+      setDynamicAudio((initialFlow as any).dynamic_audio || null);
+      setEntryNode((initialFlow as any).entry || "");
       setIsAppReady(true);
     };
 
@@ -109,11 +105,10 @@ const App = () => {
   // 2. AUTO-SAUVEGARDE
   useEffect(() => {
     if (!isAppReady) return;
-    
+
     const session = {
       nodes,
       edges,
-      flowFormat,
       variables,
       hashmaps,
       audioMappings,
@@ -122,9 +117,9 @@ const App = () => {
       entryNode,
       updatedAt: new Date().toISOString()
     };
-    
+
     localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
-  }, [nodes, edges, flowFormat, variables, hashmaps, audioMappings, config, dynamicAudio, entryNode, isAppReady]);
+  }, [nodes, edges, variables, hashmaps, audioMappings, config, dynamicAudio, entryNode, isAppReady]);
 
   // Ajouter à l'historique seulement quand l'app est prête
   useEffect(() => {
@@ -134,8 +129,8 @@ const App = () => {
   }, [isAppReady]);
 
   const addToHistory = (newNodes: Node[], newEdges: Edge[]) => {
-    const newEntry = { 
-      nodes: JSON.parse(JSON.stringify(newNodes)), 
+    const newEntry = {
+      nodes: JSON.parse(JSON.stringify(newNodes)),
       edges: JSON.parse(JSON.stringify(newEdges)),
       variables: JSON.parse(JSON.stringify(variables)),
       hashmaps: JSON.parse(JSON.stringify(hashmaps))
@@ -187,69 +182,45 @@ const App = () => {
       const filteredEdges = eds.filter((e) => e.source !== nodeId);
       const newEdges: Edge[] = [...filteredEdges];
 
-      if (flowFormat === 'legacy') {
-        if (data.options) {
-          data.options.forEach((option: any) => {
-            if (option.next) {
-              newEdges.push({
-                id: `e-${nodeId}-${option.id}-${option.next}`,
-                source: nodeId,
-                target: option.next,
-                label: option.label,
-                animated: true,
-              });
-            }
-          });
-        }
-        if (data.next_filter) {
-          newEdges.push({
-            id: `e-${nodeId}-nextfilter-${data.next_filter}`,
-            source: nodeId,
-            target: data.next_filter,
-            label: 'next_filter',
-            style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5,5' },
-          });
-        }
-      } else {
-        if (data.type === 'root' && data.options) {
-          data.options.forEach((option: any) => {
-            if (option.next) {
-              newEdges.push({
-                id: `e-${nodeId}-${option.id}-${option.next}`,
-                source: nodeId,
-                target: option.next,
-                label: option.id,
-                animated: true,
-              });
-            }
-          });
-        } else if (data.next) {
-          newEdges.push({
-            id: `e-${nodeId}-next-${data.next}`,
-            source: nodeId,
-            target: data.next,
-            animated: true,
-          });
-        }
+      if (data.type === 'root' && data.options) {
+        data.options.forEach((option: any) => {
+          if (option.next) {
+            newEdges.push({
+              id: `e-${nodeId}-${option.id}-${option.next}`,
+              source: nodeId,
+              target: option.next,
+              label: option.id,
+              animated: true,
+            });
+          }
+        });
+      } else if (data.next) {
+        newEdges.push({
+          id: `e-${nodeId}-next-${data.next}`,
+          source: nodeId,
+          target: data.next,
+          animated: true,
+        });
       }
       return newEdges;
     });
   };
 
   const handleNewProject = () => {
-    setIsFormatSelectorOpen(true);
-  };
+    if (!window.confirm("Créer un nouveau projet vide ? Le flow actuel sera perdu s'il n'a pas été exporté.")) return;
 
-  const createNewProject = (format: 'legacy' | 'dynamic') => {
     localStorage.removeItem('agroflux_flow_session');
     setNodes([]);
     setEdges([]);
     setVariables({});
-    setFlowFormat(format);
+    setHashmaps({});
+    setAudioMappings(defaultAudioMappings);
+    setConfig(null);
+    setDynamicAudio(null);
+    setEntryNode("");
     setSelectedNode(null);
     setHistory([]);
     setHistoryIndex(-1);
-    setIsFormatSelectorOpen(false);
   };
 
   const deleteNode = (nodeId: string) => {
@@ -259,32 +230,19 @@ const App = () => {
   };
 
   const addNewNode = () => {
-    const isDynamic = flowFormat === 'dynamic';
-    const typesPrompt = isDynamic ? "root, grid, pre_filter, result, calendrier" : "menu, filter, results, widget";
-    const defaultType = isDynamic ? "grid" : "menu";
-    
-    const type = window.prompt(`Type de nœud (${typesPrompt}):`, defaultType);
+    const type = window.prompt("Type de nœud (root, grid, pre_filter, result, calendrier):", "grid");
     if (!type) return;
 
     const id = window.prompt("ID du nœud:", `node_${Date.now()}`);
     if (!id) return;
 
     let nodeData;
-    if (isDynamic) {
-      switch (type) {
-        case 'root': nodeData = createDefaultRootNode(id); break;
-        case 'result': nodeData = createDefaultResultNode(id); break;
-        case 'calendrier': nodeData = createDefaultCalendrierNode(id); break;
-        case 'pre_filter': nodeData = createDefaultPreFilterNode(id); break;
-        default: nodeData = createDefaultGridNode(id); break;
-      }
-    } else {
-      switch (type) {
-        case 'filter': nodeData = createDefaultFilterNode(id); break;
-        case 'results': nodeData = createDefaultResultsNode(id); break;
-        case 'widget': nodeData = createDefaultWidgetNode(id); break;
-        default: nodeData = createDefaultMenuNode(id); break;
-      }
+    switch (type) {
+      case 'root': nodeData = createDefaultRootNode(id); break;
+      case 'result': nodeData = createDefaultResultNode(id); break;
+      case 'calendrier': nodeData = createDefaultCalendrierNode(id); break;
+      case 'pre_filter': nodeData = createDefaultPreFilterNode(id); break;
+      default: nodeData = createDefaultGridNode(id); break;
     }
 
     const newNode: Node = {
@@ -303,31 +261,27 @@ const App = () => {
     setEdges([...layoutedEdges]);
   };
 
+  const buildExtraData = () => ({
+    variables,
+    hashmaps,
+    audioMappings,
+    config,
+    dynamic_audio: dynamicAudio,
+    entry: entryNode
+  });
+
   const handleValidate = () => {
-    const extraData = flowFormat === 'dynamic' ? { variables, audioMappings } : { version: "1.0" };
-    const currentJson = flowToJson(nodes, edges, flowFormat, extraData);
+    const currentJson = flowToJson(nodes, buildExtraData());
     const results = validateFlow(currentJson);
     setValidation(results);
   };
 
   const handleSave = () => {
-    const extraData = flowFormat === 'dynamic' ? {
-      variables,
-      hashmaps,
-      audioMappings,
-      config,
-      dynamic_audio: dynamicAudio,
-      entry: entryNode
-    } : {
-      version: "1.0",
-      defaultLanguage: "fon"
-    };
-
-    const currentJson = flowToJson(nodes, edges, flowFormat, extraData);
+    const currentJson = flowToJson(nodes, buildExtraData());
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentJson, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `flow_${flowFormat}.json`);
+    downloadAnchorNode.setAttribute("download", "flow.json");
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -342,23 +296,13 @@ const App = () => {
       reader.onload = (event: any) => {
         try {
           const json = JSON.parse(event.target.result);
-          const isDynamic = json.variables || json.entry || json.dynamic_audio;
-          const format = isDynamic ? 'dynamic' : 'legacy';
-          
-          setFlowFormat(format);
-          if (isDynamic) {
-            setVariables(json.variables || {});
-            setHashmaps(json.hashmaps || {});
-            setAudioMappings(json.audio_mappings || {
-              "produit": "produits/",
-              "departement": "localites/",
-              "marche": "marches/",
-              "periode": "periode/"
-            });
-            setConfig(json.config || null);
-            setDynamicAudio(json.dynamic_audio || null);
-            setEntryNode(json.entry || "");
-          }
+
+          setVariables(json.variables || {});
+          setHashmaps(json.hashmaps || {});
+          setAudioMappings(json.audio_mappings || defaultAudioMappings);
+          setConfig(json.config || null);
+          setDynamicAudio(json.dynamic_audio || null);
+          setEntryNode(json.entry || "");
 
           const { nodes: newNodes, edges: newEdges } = jsonToFlow(json);
           setNodes(newNodes);
@@ -410,13 +354,14 @@ const App = () => {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-50 font-sans">
-      <Toolbar 
+      <Toolbar
         onSave={handleSave}
         onLoad={handleLoad}
         onNewProject={handleNewProject}
         onOpenVariables={() => setIsVariableManagerOpen(true)}
         onOpenHashMaps={() => setIsHashMapManagerOpen(true)}
         onOpenAudioMappings={() => setIsAudioMappingManagerOpen(true)}
+        onOpenSettings={() => setIsFlowSettingsOpen(true)}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
         onValidate={handleValidate}
@@ -425,11 +370,10 @@ const App = () => {
         canRedo={historyIndex < history.length - 1}
         onUndo={undo}
         onRedo={redo}
-        flowFormat={flowFormat}
       />
-      
+
       {isVariableManagerOpen && (
-        <VariableManager 
+        <VariableManager
           variables={variables}
           onUpdate={setVariables}
           onClose={() => setIsVariableManagerOpen(false)}
@@ -438,7 +382,7 @@ const App = () => {
       )}
 
       {isHashMapManagerOpen && (
-        <HashMapManager 
+        <HashMapManager
           hashmaps={hashmaps}
           onUpdate={setHashmaps}
           onClose={() => setIsHashMapManagerOpen(false)}
@@ -447,16 +391,27 @@ const App = () => {
       )}
 
       {isAudioMappingManagerOpen && (
-        <AudioMappingManager 
+        <AudioMappingManager
           mappings={audioMappings}
           onUpdate={setAudioMappings}
           onClose={() => setIsAudioMappingManagerOpen(false)}
         />
       )}
-      
+
+      {isFlowSettingsOpen && (
+        <FlowSettingsManager
+          entry={entryNode}
+          onEntryChange={setEntryNode}
+          config={config}
+          onConfigChange={setConfig}
+          nodes={nodes}
+          onClose={() => setIsFlowSettingsOpen(false)}
+        />
+      )}
+
       <div className="flex flex-1 relative overflow-hidden">
         <ReactFlowProvider>
-          <FlowCanvas 
+          <FlowCanvas
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
@@ -468,7 +423,7 @@ const App = () => {
         </ReactFlowProvider>
 
         {selectedNode && (
-          <NodeEditor 
+          <NodeEditor
             node={selectedNode}
             nodes={nodes}
             onUpdate={updateNodeData}
@@ -476,11 +431,10 @@ const App = () => {
             onDelete={deleteNode}
             variables={variables}
             hashmaps={hashmaps}
-            flowFormat={flowFormat}
           />
         )}
 
-        <ValidationPanel 
+        <ValidationPanel
           errors={validation.errors}
           warnings={validation.warnings}
           report={validation.report}

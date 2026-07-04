@@ -11,77 +11,74 @@ import {
   FilePlus,
   Database,
   Library,
-  Music
+  Music,
+  Settings
 } from 'lucide-react';
 
-const Toolbar = ({ 
-  onSave, 
-  onLoad, 
-  onNewProject, 
-  onOpenVariables, 
+const Toolbar = ({
+  onSave,
+  onLoad,
+  onNewProject,
+  onOpenVariables,
   onOpenHashMaps,
   onOpenAudioMappings,
-  onAddNode, 
+  onOpenSettings,
+  onAddNode,
   onAutoLayout, 
   onValidate,
   onSearch,
   canUndo,
   canRedo,
   onUndo,
-  onRedo,
-  flowFormat
+  onRedo
   }: any) => {
 
   return (
     <div className="h-[60px] bg-white border-b border-slate-200 flex items-center px-5 gap-4 shadow-sm z-10">
       <div className="flex items-center gap-2 mr-5">
         <FileJson className="text-blue-500" size={24} />
-        <div className="flex flex-col">
-          <span className="font-bold text-sm text-slate-800 hidden md:inline leading-none">AgroFlux Flow Editor</span>
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 w-fit ${flowFormat === 'dynamic' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
-            {flowFormat === 'dynamic' ? 'DYNAMIC' : 'LEGACY'}
-          </span>
-        </div>
+        <span className="font-bold text-sm text-slate-800 hidden md:inline leading-none">AgroFlux Flow Editor</span>
       </div>
 
       <div className="flex gap-1">
-        <button 
+        <button
           className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-          onClick={onNewProject} 
+          onClick={onNewProject}
           title="Nouveau Projet"
         >
           <FilePlus size={18} /> <span className="hidden lg:inline">Nouveau</span>
         </button>
-        {flowFormat === 'dynamic' && (
-          <button 
-            className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-            onClick={onOpenVariables} 
-            title="Gérer les Variables"
-          >
-            <Database size={18} /> <span className="hidden lg:inline">Variables</span>
-          </button>
-        )}
-        {flowFormat === 'dynamic' && (
-          <button 
-            className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-            onClick={onOpenHashMaps} 
-            title="Gérer les HashMaps"
-          >
-            <Library size={18} /> <span className="hidden lg:inline">HashMaps</span>
-          </button>
-        )}
-        {flowFormat === 'dynamic' && (
-          <button 
-            className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-            onClick={onOpenAudioMappings} 
-            title="Gérer les Mappages Audio"
-          >
-            <Music size={18} /> <span className="hidden lg:inline">Audios</span>
-          </button>
-        )}
-        <button 
+        <button
           className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-          onClick={onLoad} 
+          onClick={onOpenVariables}
+          title="Gérer les Variables"
+        >
+          <Database size={18} /> <span className="hidden lg:inline">Variables</span>
+        </button>
+        <button
+          className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+          onClick={onOpenHashMaps}
+          title="Gérer les HashMaps"
+        >
+          <Library size={18} /> <span className="hidden lg:inline">HashMaps</span>
+        </button>
+        <button
+          className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+          onClick={onOpenAudioMappings}
+          title="Gérer les Mappages Audio"
+        >
+          <Music size={18} /> <span className="hidden lg:inline">Audios</span>
+        </button>
+        <button
+          className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+          onClick={onOpenSettings}
+          title="Paramètres du Flow"
+        >
+          <Settings size={18} /> <span className="hidden lg:inline">Paramètres</span>
+        </button>
+        <button
+          className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+          onClick={onLoad}
           title="Charger JSON"
         >
           <Upload size={18} /> <span className="hidden lg:inline">Importer</span>

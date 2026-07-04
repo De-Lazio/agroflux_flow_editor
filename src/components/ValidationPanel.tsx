@@ -1,7 +1,17 @@
-import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database } from 'lucide-react';
+import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download } from 'lucide-react';
 
 const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
   if (errors.length === 0 && warnings.length === 0 && !report) return null;
+
+  const handleExportReport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(report, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "rapport_inventaire.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
 
   return (
     <div className="absolute top-[70px] left-1/2 -translate-x-1/2 w-[95%] max-w-[900px] bg-white border border-slate-200 rounded-lg shadow-2xl z-[100] max-h-[80vh] overflow-y-auto p-0 animate-in fade-in slide-in-from-top-4 duration-300 border-t-4 border-t-indigo-500">
@@ -50,11 +60,20 @@ const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
 
         {report && (
           <div className="pt-4 border-t border-slate-100">
-            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <FileText size={18} className="text-indigo-500" />
-              Rapport d'inventaire automatique
-            </h4>
-            
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <FileText size={18} className="text-indigo-500" />
+                Rapport d'inventaire automatique
+              </h4>
+              <button
+                onClick={handleExportReport}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100"
+                title="Exporter le rapport en JSON"
+              >
+                <Download size={14} /> Exporter en JSON
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Audios */}
               <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
