@@ -1,4 +1,5 @@
 import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download } from 'lucide-react';
+import ResourceCheckPanel from './ResourceCheckPanel';
 
 const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
   if (errors.length === 0 && warnings.length === 0 && !report) return null;
@@ -117,6 +118,8 @@ const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
                 </div>
               </div>
             </div>
+
+            <ResourceCheckPanel report={report} />
           </div>
         )}
       </div>
