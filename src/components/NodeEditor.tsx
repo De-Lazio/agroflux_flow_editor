@@ -1,5 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Trash2, Music, List, Map, Globe, Settings, Library, FileText } from 'lucide-react';
+import {
+  createDefaultRootNode,
+  createDefaultGridNode,
+  createDefaultResultNode,
+  createDefaultCalendrierNode,
+  createDefaultPreFilterNode
+} from '../utils/nodeFactory';
 
 const AudioSequenceEditor = ({ audio, onChange }: any) => {
   if (!audio) return null;
@@ -83,15 +90,16 @@ const AudioSequenceEditor = ({ audio, onChange }: any) => {
 };
 
 const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashmaps }: any) => {
-  const [data, setData] = useState<any>(null);
+  // Le parent doit monter ce composant avec key={node.id} : ainsi, changer de
+  // nœud sélectionné remonte le composant et réinitialise "data" proprement,
+  // sans synchroniser un state depuis un prop via un useEffect.
+  const [data, setData] = useState<any>(() => ({ ...node.data }));
 
-  useEffect(() => {
-    if (node) {
-      setData({ ...node.data });
+  const handleDeleteClick = () => {
+    if (window.confirm(`Supprimer le nœud "${node.id}" ? Cette action est irréversible (sauf via Undo).`)) {
+      onDelete(node.id);
     }
-  }, [node]);
-
-  if (!data) return null;
+  };
 
   const handleChange = (path: string, value: any) => {
     const newData = { ...data };
@@ -106,12 +114,37 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
     onUpdate(node.id, newData);
   };
 
+  // Changer de type régénère une structure propre pour le nouveau type
+  // (sinon les champs de l'ancien type restent et le nœud devient incohérent).
+  // Les champs communs et rédigés à la main (audio, commentaire, contrat) sont conservés.
+  const handleTypeChange = (newType: string) => {
+    let freshData;
+    switch (newType) {
+      case 'root': freshData = createDefaultRootNode(node.id); break;
+      case 'result': freshData = createDefaultResultNode(node.id); break;
+      case 'calendrier': freshData = createDefaultCalendrierNode(node.id); break;
+      case 'pre_filter': freshData = createDefaultPreFilterNode(node.id); break;
+      default: freshData = createDefaultGridNode(node.id); break;
+    }
+
+    const newData = {
+      ...freshData,
+      id: data.id || node.id,
+      audio: data.audio || freshData.audio,
+      comment: data.comment || freshData.comment,
+      json_response_contrat: data.json_response_contrat || freshData.json_response_contrat
+    };
+
+    setData(newData);
+    onUpdate(node.id, newData);
+  };
+
   return (
     <div className="w-[400px] bg-white border-l border-slate-200 flex flex-col h-full shadow-lg z-50 overflow-hidden">
       <div className="flex justify-between items-center p-5 border-b border-slate-100">
         <h2 className="text-lg font-bold text-slate-800">Éditer Nœud</h2>
         <div className="flex gap-2">
-          <button onClick={() => onDelete(node.id)} className="p-1 text-red-500 hover:bg-red-50 rounded" title="Supprimer">
+          <button onClick={handleDeleteClick} className="p-1 text-red-500 hover:bg-red-50 rounded" title="Supprimer">
             <Trash2 size={20} />
           </button>
           <button onClick={onClose} className="p-1 text-slate-500 hover:bg-slate-50 rounded">
@@ -136,7 +169,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
             <select
               className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               value={data.type}
-              onChange={(e) => handleChange('type', e.target.value)}
+              onChange={(e) => handleTypeChange(e.target.value)}
             >
               <option value="root">Root (Menu Principal)</option>
               <option value="grid">Grid (Grille Variable)</option>

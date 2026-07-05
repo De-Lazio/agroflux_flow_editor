@@ -120,6 +120,11 @@ export const validateFlow = (flowData: any) => {
       errors.push(`Nœud "${id}" : next pointe vers un ID inexistant "${node.next}".`);
     }
 
+    // Cul-de-sac : un nœud de navigation doit toujours mener quelque part
+    if (['grid', 'calendrier', 'pre_filter'].includes(node.type) && !node.next) {
+      warnings.push(`Nœud "${id}" (${node.type}) n'a pas de "next" : ce nœud est un cul-de-sac.`);
+    }
+
     // Nœud orphelin (sauf point d'entrée)
     if (id !== flowData.entry) {
       const isTarget = nodeIds.some((otherId) => {

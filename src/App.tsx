@@ -439,6 +439,7 @@ const App = () => {
 
         {selectedNode && (
           <NodeEditor
+            key={selectedNode.id}
             node={selectedNode}
             nodes={nodes}
             onUpdate={updateNodeData}
