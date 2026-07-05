@@ -18,6 +18,24 @@ import {
   Layers
 } from 'lucide-react';
 
+interface ToolbarProps {
+  onSave: () => void;
+  onLoad: () => void;
+  onNewProject: () => void;
+  onOpenVariables: () => void;
+  onOpenHashMaps: () => void;
+  onOpenMappings: () => void;
+  onOpenSettings: () => void;
+  onAddNode: () => void;
+  onAutoLayout: () => void;
+  onValidate: () => void;
+  onSearch: (term: string) => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+}
+
 const Toolbar = ({
   onSave,
   onLoad,
@@ -34,7 +52,7 @@ const Toolbar = ({
   canRedo,
   onUndo,
   onRedo
-  }: any) => {
+  }: ToolbarProps) => {
   const [isDataMenuOpen, setIsDataMenuOpen] = useState(false);
 
   const openDataItem = (action: () => void) => {

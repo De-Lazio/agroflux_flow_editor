@@ -30,25 +30,51 @@ import {
   createDefaultCalendrierNode,
   createDefaultPreFilterNode
 } from './utils/nodeFactory';
-import initialFlow from '../flow.json';
+import initialFlowJson from '../flow.json';
+import type {
+  FlowData,
+  FlowGraphNodeData,
+  FlowVariables,
+  FlowHashmaps,
+  FlowMappings,
+  FlowConfig,
+  ValidationReport
+} from './types/flow';
 
-const defaultAudioMappings: Record<string, string> = {};
+const initialFlow = initialFlowJson as FlowData;
+
+type FlowGraphNode = Node<FlowGraphNodeData>;
+
+interface HistoryEntry {
+  nodes: FlowGraphNode[];
+  edges: Edge[];
+  variables: FlowVariables;
+  hashmaps: FlowHashmaps;
+}
+
+interface ValidationState {
+  errors: string[];
+  warnings: string[];
+  report?: ValidationReport;
+}
+
+const defaultAudioMappings: FlowMappings = {};
 
 const App = () => {
-  const [nodes, setNodes] = useState<Node[]>([]);
+  const [nodes, setNodes] = useState<FlowGraphNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [validation, setValidation] = useState<{errors: string[], warnings: string[], report?: any}>({errors: [], warnings: []});
-  const [history, setHistory] = useState<any[]>([]);
+  const [selectedNode, setSelectedNode] = useState<FlowGraphNode | null>(null);
+  const [validation, setValidation] = useState<ValidationState>({ errors: [], warnings: [] });
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
-  const [variables, setVariables] = useState<Record<string, string[]>>({});
-  const [hashmaps, setHashmaps] = useState<Record<string, Record<string, string[]>>>({});
-  const [audioMappings, setAudioMappings] = useState<Record<string, string>>(defaultAudioMappings);
+  const [variables, setVariables] = useState<FlowVariables>({});
+  const [hashmaps, setHashmaps] = useState<FlowHashmaps>({});
+  const [audioMappings, setAudioMappings] = useState<FlowMappings>(defaultAudioMappings);
   const [audioFormat, setAudioFormat] = useState<string>(DEFAULT_AUDIO_FORMAT);
   const [imageFormat, setImageFormat] = useState<string>(DEFAULT_IMAGE_FORMAT);
-  const [config, setConfig] = useState<any>(null);
-  const [dynamicAudio, setDynamicAudio] = useState<any>(null);
+  const [config, setConfig] = useState<FlowConfig | null>(null);
+  const [dynamicAudio, setDynamicAudio] = useState<Record<string, unknown> | null>(null);
   const [entryNode, setEntryNode] = useState<string>("");
   const [isVariableManagerOpen, setIsVariableManagerOpen] = useState(false);
   const [isHashMapManagerOpen, setIsHashMapManagerOpen] = useState(false);
@@ -60,6 +86,25 @@ const App = () => {
 
   // 1. RESTAURATION INITIALE
   useEffect(() => {
+    // Seed direct de l'historique (pas via un effet séparé qui réagirait à
+    // isAppReady : on sait ici, au moment de l'init, qu'il s'agit toujours
+    // de la toute première entrée).
+    const seedHistory = (
+      seedNodes: FlowGraphNode[],
+      seedEdges: Edge[],
+      seedVariables: FlowVariables,
+      seedHashmaps: FlowHashmaps
+    ) => {
+      const entry: HistoryEntry = {
+        nodes: JSON.parse(JSON.stringify(seedNodes)),
+        edges: JSON.parse(JSON.stringify(seedEdges)),
+        variables: JSON.parse(JSON.stringify(seedVariables)),
+        hashmaps: JSON.parse(JSON.stringify(seedHashmaps))
+      };
+      setHistory([entry]);
+      setHistoryIndex(0);
+    };
+
     const init = async () => {
       const savedSession = localStorage.getItem('agroflux_flow_session');
 
@@ -78,6 +123,7 @@ const App = () => {
             setConfig(session.config || null);
             setDynamicAudio(session.dynamicAudio || null);
             setEntryNode(session.entryNode || "");
+            seedHistory(session.nodes, session.edges || [], session.variables || {}, session.hashmaps || {});
             setIsAppReady(true);
             return;
           }
@@ -90,14 +136,15 @@ const App = () => {
       const { nodes: initialNodes, edges: initialEdges } = jsonToFlow(initialFlow);
       setNodes(initialNodes);
       setEdges(initialEdges);
-      setVariables((initialFlow as any).variables || {});
-      setHashmaps((initialFlow as any).hashmaps || {});
-      setAudioMappings((initialFlow as any).audio_mappings || defaultAudioMappings);
-      setAudioFormat((initialFlow as any).resource_formats?.audio || DEFAULT_AUDIO_FORMAT);
-      setImageFormat((initialFlow as any).resource_formats?.image || DEFAULT_IMAGE_FORMAT);
-      setConfig((initialFlow as any).config || null);
-      setDynamicAudio((initialFlow as any).dynamic_audio || null);
-      setEntryNode((initialFlow as any).entry || "");
+      setVariables(initialFlow.variables || {});
+      setHashmaps(initialFlow.hashmaps || {});
+      setAudioMappings(initialFlow.audio_mappings || defaultAudioMappings);
+      setAudioFormat(initialFlow.resource_formats?.audio || DEFAULT_AUDIO_FORMAT);
+      setImageFormat(initialFlow.resource_formats?.image || DEFAULT_IMAGE_FORMAT);
+      setConfig(initialFlow.config || null);
+      setDynamicAudio(initialFlow.dynamic_audio || null);
+      setEntryNode(initialFlow.entry || "");
+      seedHistory(initialNodes, initialEdges, initialFlow.variables || {}, initialFlow.hashmaps || {});
       setIsAppReady(true);
     };
 
@@ -125,15 +172,8 @@ const App = () => {
     localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
   }, [nodes, edges, variables, hashmaps, audioMappings, audioFormat, imageFormat, config, dynamicAudio, entryNode, isAppReady]);
 
-  // Ajouter à l'historique seulement quand l'app est prête
-  useEffect(() => {
-    if (isAppReady && nodes.length > 0 && history.length === 0) {
-      addToHistory(nodes, edges);
-    }
-  }, [isAppReady]);
-
-  const addToHistory = (newNodes: Node[], newEdges: Edge[]) => {
-    const newEntry = {
+  const addToHistory = (newNodes: FlowGraphNode[], newEdges: Edge[]) => {
+    const newEntry: HistoryEntry = {
       nodes: JSON.parse(JSON.stringify(newNodes)),
       edges: JSON.parse(JSON.stringify(newEdges)),
       variables: JSON.parse(JSON.stringify(variables)),
@@ -161,7 +201,7 @@ const App = () => {
     []
   );
 
-  const onNodeClick = (_: any, node: Node) => {
+  const onNodeClick = (_: React.MouseEvent, node: FlowGraphNode) => {
     setSelectedNode(node);
   };
 
@@ -169,7 +209,7 @@ const App = () => {
     setSelectedNode(null);
   };
 
-  const updateNodeData = (nodeId: string, newData: any) => {
+  const updateNodeData = (nodeId: string, newData: FlowGraphNodeData) => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === nodeId) {
@@ -181,13 +221,13 @@ const App = () => {
     updateEdgesFromNodes(nodeId, newData);
   };
 
-  const updateEdgesFromNodes = (nodeId: string, data: any) => {
+  const updateEdgesFromNodes = (nodeId: string, data: FlowGraphNodeData) => {
     setEdges((eds) => {
       const filteredEdges = eds.filter((e) => e.source !== nodeId);
       const newEdges: Edge[] = [...filteredEdges];
 
-      if (data.type === 'root' && data.options) {
-        data.options.forEach((option: any) => {
+      if (data.type === 'root') {
+        data.options.forEach((option) => {
           if (option.next) {
             newEdges.push({
               id: `e-${nodeId}-${option.id}-${option.next}`,
@@ -198,7 +238,7 @@ const App = () => {
             });
           }
         });
-      } else if (data.next) {
+      } else if ('next' in data && data.next) {
         newEdges.push({
           id: `e-${nodeId}-next-${data.next}`,
           source: nodeId,
@@ -242,16 +282,16 @@ const App = () => {
     const id = window.prompt("ID du nœud:", `node_${Date.now()}`);
     if (!id) return;
 
-    let nodeData;
+    let nodeData: FlowGraphNodeData;
     switch (type) {
-      case 'root': nodeData = createDefaultRootNode(id); break;
-      case 'result': nodeData = createDefaultResultNode(id); break;
-      case 'calendrier': nodeData = createDefaultCalendrierNode(id); break;
-      case 'pre_filter': nodeData = createDefaultPreFilterNode(id); break;
-      default: nodeData = createDefaultGridNode(id); break;
+      case 'root': nodeData = { ...createDefaultRootNode(id), id }; break;
+      case 'result': nodeData = { ...createDefaultResultNode(id), id }; break;
+      case 'calendrier': nodeData = { ...createDefaultCalendrierNode(id), id }; break;
+      case 'pre_filter': nodeData = { ...createDefaultPreFilterNode(id), id }; break;
+      default: nodeData = { ...createDefaultGridNode(id), id }; break;
     }
 
-    const newNode: Node = {
+    const newNode: FlowGraphNode = {
       id,
       type: 'customNode',
       data: nodeData,
@@ -297,12 +337,13 @@ const App = () => {
   const handleLoad = () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
+    input.onchange = (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
       const reader = new FileReader();
-      reader.onload = (event: any) => {
+      reader.onload = (event: ProgressEvent<FileReader>) => {
         try {
-          const json = JSON.parse(event.target.result);
+          const json = JSON.parse(event.target?.result as string) as FlowData;
 
           setVariables(json.variables || {});
           setHashmaps(json.hashmaps || {});
@@ -329,7 +370,7 @@ const App = () => {
 
   const handleSearch = (term: string) => {
     if (!term) return;
-    const found = nodes.find(n => n.id.includes(term) || n.data.label?.toLowerCase().includes(term.toLowerCase()));
+    const found = nodes.find((n) => n.id.includes(term));
     if (found) setSelectedNode(found);
   };
 
@@ -454,7 +495,7 @@ const App = () => {
           errors={validation.errors}
           warnings={validation.warnings}
           report={validation.report}
-          onClose={() => setValidation({errors: [], warnings: []})}
+          onClose={() => setValidation({ errors: [], warnings: [] })}
         />
       </div>
     </div>

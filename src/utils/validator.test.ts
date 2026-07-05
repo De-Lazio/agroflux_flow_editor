@@ -1,16 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { validateFlow } from './validator';
+import type { FlowData, RootNodeData, GridNodeData, ResultNodeData } from '../types/flow';
 
 // Construit un flowData minimal valide, que chaque test dérive et casse
 // volontairement sur un seul aspect à la fois.
 const baseAudio = (key: string) => ({
-  type: 'sequence',
+  type: 'sequence' as const,
   key,
   sequence: [`intro/${key}.mp3`],
   fallback: 'intro/default.mp3'
 });
 
-const buildFlow = (overrides: any = {}) => ({
+const buildFlow = (overrides: Partial<FlowData> = {}): FlowData => ({
   version: '1.0',
   entry: 'root',
   audio_mappings: {},
@@ -48,9 +49,10 @@ describe('validateFlow — cas nominal', () => {
 
 describe('validateFlow — erreurs bloquantes', () => {
   it("signale l'absence de audio_mappings à la racine", () => {
-    const flow = buildFlow();
-    delete (flow as any).audio_mappings;
-    const { errors } = validateFlow(flow);
+    // On simule un JSON externe malformé : audio_mappings est un champ requis
+    // du schéma, mais rien ne garantit qu'un fichier importé le respecte.
+    const { audio_mappings, ...incompleteFlow } = buildFlow();
+    const { errors } = validateFlow(incompleteFlow as FlowData);
     expect(errors.some((e) => e.includes('audio_mappings'))).toBe(true);
   });
 
@@ -63,7 +65,7 @@ describe('validateFlow — erreurs bloquantes', () => {
 
   it('signale deux nœuds partageant la même audio.key', () => {
     const flow = buildFlow();
-    flow.nodes.grid_1.audio.key = 'root';
+    flow.nodes.grid_1.audio!.key = 'root';
     const { errors } = validateFlow(flow);
     expect(errors.some((e) => e.includes("déjà utilisée"))).toBe(true);
   });
@@ -77,21 +79,21 @@ describe('validateFlow — erreurs bloquantes', () => {
 
   it('signale un exemple de réponse invalide', () => {
     const flow = buildFlow();
-    flow.nodes.result_1.response_examples = ['{ invalide'];
+    (flow.nodes.result_1 as ResultNodeData).response_examples = ['{ invalide'];
     const { errors } = validateFlow(flow);
     expect(errors.some((e) => e.includes("exemple de réponse"))).toBe(true);
   });
 
   it('signale une option pointant vers un ID inexistant', () => {
     const flow = buildFlow();
-    flow.nodes.root.options[0].next = 'ne_existe_pas';
+    (flow.nodes.root as RootNodeData).options[0].next = 'ne_existe_pas';
     const { errors } = validateFlow(flow);
     expect(errors.some((e) => e.includes('ne_existe_pas'))).toBe(true);
   });
 
   it('signale un next pointant vers un ID inexistant', () => {
     const flow = buildFlow();
-    flow.nodes.grid_1.next = 'ne_existe_pas';
+    (flow.nodes.grid_1 as GridNodeData).next = 'ne_existe_pas';
     const { errors } = validateFlow(flow);
     expect(errors.some((e) => e.includes('grid_1') && e.includes('ne_existe_pas'))).toBe(true);
   });
@@ -100,14 +102,14 @@ describe('validateFlow — erreurs bloquantes', () => {
 describe('validateFlow — avertissements', () => {
   it('signale une séquence audio vide', () => {
     const flow = buildFlow();
-    flow.nodes.grid_1.audio.sequence = [];
+    flow.nodes.grid_1.audio!.sequence = [];
     const { warnings } = validateFlow(flow);
     expect(warnings.some((w) => w.includes('grid_1') && w.includes('vide'))).toBe(true);
   });
 
   it('signale un nœud root sans option', () => {
     const flow = buildFlow();
-    flow.nodes.root.options = [];
+    (flow.nodes.root as RootNodeData).options = [];
     const { warnings } = validateFlow(flow);
     expect(warnings.some((w) => w.includes('root') && w.includes('aucune option'))).toBe(true);
   });
@@ -116,7 +118,7 @@ describe('validateFlow — avertissements', () => {
     const flow = buildFlow({
       nodes: {
         ...buildFlow().nodes,
-        orphelin: { type: 'grid', audio: baseAudio('orphelin'), options_source: 'produits', next: 'result_1' }
+        orphelin: { type: 'grid', audio: baseAudio('orphelin'), options_source: 'produits', set: 'produits', next: 'result_1' }
       }
     });
     const { warnings } = validateFlow(flow);
@@ -125,7 +127,7 @@ describe('validateFlow — avertissements', () => {
 
   it('signale un cul-de-sac (grid/calendrier/pre_filter sans next)', () => {
     const flow = buildFlow();
-    delete flow.nodes.grid_1.next;
+    (flow.nodes.grid_1 as GridNodeData).next = '';
     const { warnings } = validateFlow(flow);
     expect(warnings.some((w) => w.includes('grid_1') && w.includes('cul-de-sac'))).toBe(true);
   });

@@ -2,21 +2,32 @@ import type { Node, Edge } from 'reactflow';
 import { Position } from 'reactflow';
 import dagre from 'dagre';
 import { DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './resourceInventory';
+import type {
+  FlowData,
+  FlowNodes,
+  FlowNodeData,
+  FlowGraphNodeData,
+  FlowVariables,
+  FlowHashmaps,
+  FlowMappings,
+  FlowConfig,
+  ResourceFormats
+} from '../types/flow';
 
-export const jsonToFlow = (flowData: any) => {
-  const nodes: Node[] = [];
+export const jsonToFlow = (flowData: FlowData) => {
+  const nodes: Node<FlowGraphNodeData>[] = [];
   const edges: Edge[] = [];
 
-  Object.entries(flowData.nodes).forEach(([id, node]: [string, any]) => {
+  Object.entries(flowData.nodes).forEach(([id, node]) => {
     nodes.push({
-      id: id,
+      id,
       type: 'customNode',
       data: { ...node, id },
       position: { x: 0, y: 0 },
     });
 
-    if (node.type === 'root' && node.options) {
-      node.options.forEach((opt: any) => {
+    if (node.type === 'root') {
+      node.options.forEach((opt) => {
         if (opt.next) {
           edges.push({
             id: `e-${id}-${opt.id}-${opt.next}`,
@@ -27,7 +38,7 @@ export const jsonToFlow = (flowData: any) => {
           });
         }
       });
-    } else if (node.next) {
+    } else if ('next' in node && node.next) {
       edges.push({
         id: `e-${id}-next-${node.next}`,
         source: id,
@@ -40,12 +51,22 @@ export const jsonToFlow = (flowData: any) => {
   return getLayoutedElements(nodes, edges);
 };
 
-export const flowToJson = (nodes: Node[], extraData: any = {}) => {
-  const flowNodes: any = {};
+export interface FlowExtraData {
+  entry?: string;
+  config?: FlowConfig | null;
+  variables?: FlowVariables;
+  hashmaps?: FlowHashmaps;
+  audioMappings?: FlowMappings;
+  resource_formats?: ResourceFormats;
+  dynamic_audio?: Record<string, unknown> | null;
+}
+
+export const flowToJson = (nodes: Node<FlowGraphNodeData>[], extraData: FlowExtraData = {}): FlowData => {
+  const flowNodes: FlowNodes = {};
 
   nodes.forEach((node) => {
     const { id, ...cleanData } = node.data;
-    flowNodes[node.id] = cleanData;
+    flowNodes[node.id] = cleanData as FlowNodeData;
   });
 
   return {
@@ -72,12 +93,12 @@ dagreGraph.setDefaultEdgeLabel(() => ({}));
 const nodeWidth = 220;
 const nodeHeight = 150;
 
-export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
+export const getLayoutedElements = <T,>(nodes: Node<T>[], edges: Edge[], direction = 'TB') => {
   const isHorizontal = direction === 'LR';
-  dagreGraph.setGraph({ 
+  dagreGraph.setGraph({
     rankdir: direction,
-    ranksep: 100, 
-    nodesep: 80, 
+    ranksep: 100,
+    nodesep: 80,
   });
 
   nodes.forEach((node) => {

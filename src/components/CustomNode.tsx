@@ -1,9 +1,11 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
+import type { NodeProps } from 'reactflow';
 import { FileText } from 'lucide-react';
+import type { FlowGraphNodeData, FlowNodeType } from '../types/flow';
 
-const CustomNode = ({ data, selected, id }: any) => {
-  const getTypeColor = (type: string) => {
+const CustomNode = ({ data, selected, id }: NodeProps<FlowGraphNodeData>) => {
+  const getTypeColor = (type: FlowNodeType) => {
     switch (type) {
       case 'root': return 'border-indigo-600 text-indigo-700 bg-indigo-50';
       case 'grid': return 'border-cyan-500 text-cyan-600 bg-cyan-50';
@@ -14,7 +16,7 @@ const CustomNode = ({ data, selected, id }: any) => {
     }
   };
 
-  const getHandleColor = (type: string) => {
+  const getHandleColor = (type: FlowNodeType) => {
     switch (type) {
       case 'root': return '#4f46e5';
       case 'grid': return '#06b6d4';

@@ -1,7 +1,15 @@
 import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download, Layers, Library } from 'lucide-react';
 import ResourceCheckPanel from './ResourceCheckPanel';
+import type { ValidationReport } from '../types/flow';
 
-const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
+interface ValidationPanelProps {
+  errors: string[];
+  warnings: string[];
+  report?: ValidationReport;
+  onClose: () => void;
+}
+
+const ValidationPanel = ({ errors, warnings, report, onClose }: ValidationPanelProps) => {
   if (errors.length === 0 && warnings.length === 0 && !report) return null;
 
   const handleExportReport = () => {

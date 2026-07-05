@@ -1,23 +1,9 @@
 import { buildVariableResources, buildHashmapResources, DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './resourceInventory';
+import type { FlowData, FlowNodeProbe, ValidationResult } from '../types/flow';
 
-type ResourceGroup = { audios: string[], images: string[] };
-
-export const validateFlow = (flowData: any) => {
+export const validateFlow = (flowData: FlowData): ValidationResult => {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const report: {
-    audios: string[],
-    images: string[],
-    variables: string[],
-    variableResources: ResourceGroup,
-    hashmapResources: ResourceGroup
-  } = {
-    audios: [],
-    images: [],
-    variables: [],
-    variableResources: { audios: [], images: [] },
-    hashmapResources: { audios: [], images: [] }
-  };
 
   const nodes = flowData.nodes;
   const nodeIds = Object.keys(nodes);
@@ -36,6 +22,7 @@ export const validateFlow = (flowData: any) => {
 
   nodeIds.forEach((id) => {
     const node = nodes[id];
+    const fields = node as FlowNodeProbe;
 
     // Validation de l'objet audio
     if (!node.audio) {
@@ -52,7 +39,7 @@ export const validateFlow = (flowData: any) => {
       if (!node.audio.sequence || node.audio.sequence.length === 0) {
         warnings.push(`Nœud "${id}" : La séquence audio est vide.`);
       } else {
-        node.audio.sequence.forEach((item: string) => {
+        node.audio.sequence.forEach((item) => {
           if (!item) return;
           const match = item.match(/\{([^}:]+)(?::[^}]+)?\}/);
           if (match) {
@@ -67,48 +54,46 @@ export const validateFlow = (flowData: any) => {
 
     // Images référencées dans les nœuds Result (via le champ comment)
     if (node.type === 'result' && node.comment) {
-      try {
-        const matches = node.comment.match(/"image":\s*"([^"]+)"/g);
-        if (matches) {
-          matches.forEach((m: string) => {
-            const img = m.match(/"image":\s*"([^"]+)"/)?.[1];
-            if (img) imageFiles.add(img);
-          });
-        }
-      } catch (e) { /* ignore */ }
+      const matches = node.comment.match(/"image":\s*"([^"]+)"/g);
+      if (matches) {
+        matches.forEach((m) => {
+          const img = m.match(/"image":\s*"([^"]+)"/)?.[1];
+          if (img) imageFiles.add(img);
+        });
+      }
     }
 
-    if (node.options_source) usedVars.add(node.options_source);
-    if (node.set) usedVars.add(node.set);
-    if (node.cle) usedVars.add(node.cle);
+    if (fields.options_source) usedVars.add(fields.options_source);
+    if (fields.set) usedVars.add(fields.set);
+    if (fields.cle) usedVars.add(fields.cle);
 
     // Validation du contrat de réponse JSON
     if (node.json_response_contrat) {
       try {
         JSON.parse(node.json_response_contrat);
-      } catch (e) {
+      } catch {
         errors.push(`Nœud "${id}" : Le champ 'json_response_contrat' n'est pas un JSON valide.`);
       }
     }
 
     // Validation des exemples de réponse
-    if (node.response_examples && Array.isArray(node.response_examples)) {
-      node.response_examples.forEach((ex: string, idx: number) => {
+    if (fields.response_examples && Array.isArray(fields.response_examples)) {
+      fields.response_examples.forEach((ex, idx) => {
         try {
           JSON.parse(ex);
-        } catch (e) {
+        } catch {
           errors.push(`Nœud "${id}" : L'exemple de réponse #${idx + 1} n'est pas un JSON valide.`);
         }
       });
     }
 
     // Options (nœud root)
-    if (node.options) {
-      if (node.options.length === 0 && node.type === 'root') {
+    if (fields.options) {
+      if (fields.options.length === 0 && node.type === 'root') {
         warnings.push(`Nœud "${id}" (${node.type}) n'a aucune option.`);
       }
 
-      node.options.forEach((option: any) => {
+      fields.options.forEach((option) => {
         if (option.next && !nodeIds.includes(option.next)) {
           errors.push(`Nœud "${id}" : L'option "${option.id}" pointe vers un ID inexistant "${option.next}".`);
         }
@@ -116,21 +101,21 @@ export const validateFlow = (flowData: any) => {
     }
 
     // Lien next (grid, calendrier, pre_filter)
-    if (node.next && !nodeIds.includes(node.next)) {
-      errors.push(`Nœud "${id}" : next pointe vers un ID inexistant "${node.next}".`);
+    if (fields.next && !nodeIds.includes(fields.next)) {
+      errors.push(`Nœud "${id}" : next pointe vers un ID inexistant "${fields.next}".`);
     }
 
     // Cul-de-sac : un nœud de navigation doit toujours mener quelque part
-    if (['grid', 'calendrier', 'pre_filter'].includes(node.type) && !node.next) {
+    if (['grid', 'calendrier', 'pre_filter'].includes(node.type) && !fields.next) {
       warnings.push(`Nœud "${id}" (${node.type}) n'a pas de "next" : ce nœud est un cul-de-sac.`);
     }
 
     // Nœud orphelin (sauf point d'entrée)
     if (id !== flowData.entry) {
       const isTarget = nodeIds.some((otherId) => {
-        const otherNode = nodes[otherId];
-        const inOptions = otherNode.options?.some((opt: any) => opt.next === id);
-        const inNext = otherNode.next === id;
+        const otherFields = nodes[otherId] as FlowNodeProbe;
+        const inOptions = otherFields.options?.some((opt) => opt.next === id);
+        const inNext = otherFields.next === id;
         return inOptions || inNext;
       });
 
@@ -171,17 +156,21 @@ export const validateFlow = (flowData: any) => {
   hashmapResources.audios.forEach((a) => audioFiles.add(a));
   hashmapResources.images.forEach((i) => imageFiles.add(i));
 
-  report.audios = Array.from(audioFiles).sort();
-  report.images = Array.from(imageFiles).sort();
-  report.variables = Array.from(usedVars).sort();
-  report.variableResources = {
-    audios: [...variableResources.audios].sort(),
-    images: [...variableResources.images].sort()
+  return {
+    errors,
+    warnings,
+    report: {
+      audios: Array.from(audioFiles).sort(),
+      images: Array.from(imageFiles).sort(),
+      variables: Array.from(usedVars).sort(),
+      variableResources: {
+        audios: [...variableResources.audios].sort(),
+        images: [...variableResources.images].sort()
+      },
+      hashmapResources: {
+        audios: [...hashmapResources.audios].sort(),
+        images: [...hashmapResources.images].sort()
+      }
+    }
   };
-  report.hashmapResources = {
-    audios: [...hashmapResources.audios].sort(),
-    images: [...hashmapResources.images].sort()
-  };
-
-  return { errors, warnings, report };
 };

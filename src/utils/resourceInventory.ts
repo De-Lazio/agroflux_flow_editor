@@ -1,3 +1,5 @@
+import type { FlowVariables, FlowHashmaps, FlowMappings, ResourceGroup } from '../types/flow';
+
 // Formats de sortie proposés pour la génération des ressources.
 export const AUDIO_FORMATS = ['mp3', 'wav', 'ogg', 'm4a'];
 export const IMAGE_FORMATS = ['jpeg', 'jpg', 'png', 'webp'];
@@ -16,10 +18,10 @@ export const RESOURCE_EXTENSIONS = [...AUDIO_FORMATS, ...IMAGE_FORMATS, 'gif', '
  * retire les entrées qui ne correspondent plus à une variable/hashmap existant.
  */
 export const syncResourceMappings = (
-  currentMappings: Record<string, string>,
-  variables: Record<string, string[]>,
-  hashmaps: Record<string, Record<string, string[]>>
-): Record<string, string> => {
+  currentMappings: FlowMappings,
+  variables: FlowVariables,
+  hashmaps: FlowHashmaps
+): FlowMappings => {
   const validNames = [...Object.keys(variables || {}), ...Object.keys(hashmaps || {})];
   const next: Record<string, string> = {};
 
@@ -38,11 +40,11 @@ export const syncResourceMappings = (
  *   => audios/produits/riz.mp3, images/produits/riz.jpeg
  */
 export const buildVariableResources = (
-  variables: Record<string, string[]>,
-  mappings: Record<string, string>,
+  variables: FlowVariables,
+  mappings: FlowMappings,
   audioFormat: string = DEFAULT_AUDIO_FORMAT,
   imageFormat: string = DEFAULT_IMAGE_FORMAT
-): { audios: string[]; images: string[] } => {
+): ResourceGroup => {
   const audios: string[] = [];
   const images: string[] = [];
 
@@ -66,11 +68,11 @@ export const buildVariableResources = (
  *   => audios/marche_par_departement/oueme/ouando.mp3, images/.../ouando.jpeg
  */
 export const buildHashmapResources = (
-  hashmaps: Record<string, Record<string, string[]>>,
-  mappings: Record<string, string>,
+  hashmaps: FlowHashmaps,
+  mappings: FlowMappings,
   audioFormat: string = DEFAULT_AUDIO_FORMAT,
   imageFormat: string = DEFAULT_IMAGE_FORMAT
-): { audios: string[]; images: string[] } => {
+): ResourceGroup => {
   const audios: string[] = [];
   const images: string[] = [];
 

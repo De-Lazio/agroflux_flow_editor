@@ -1,4 +1,6 @@
-export const createDefaultRootNode = (id: string) => ({
+import type { RootNodeData, GridNodeData, ResultNodeData, CalendrierNodeData, PreFilterNodeData } from '../types/flow';
+
+export const createDefaultRootNode = (id: string): RootNodeData => ({
   type: "root",
   audio: {
     type: "sequence",
@@ -11,7 +13,7 @@ export const createDefaultRootNode = (id: string) => ({
   comment: ""
 });
 
-export const createDefaultGridNode = (id: string) => ({
+export const createDefaultGridNode = (id: string): GridNodeData => ({
   type: "grid",
   audio: {
     type: "sequence",
@@ -26,7 +28,7 @@ export const createDefaultGridNode = (id: string) => ({
   comment: ""
 });
 
-export const createDefaultResultNode = (id: string) => ({
+export const createDefaultResultNode = (id: string): ResultNodeData => ({
   type: "result",
   data_source: {
     endpoint: "",
@@ -43,8 +45,7 @@ export const createDefaultResultNode = (id: string) => ({
   comment: ""
 });
 
-export const createDefaultCalendrierNode = (id: string) => ({
-  id,
+export const createDefaultCalendrierNode = (id: string): CalendrierNodeData => ({
   type: 'calendrier',
   audio: {
     type: "sequence",
@@ -59,8 +60,7 @@ export const createDefaultCalendrierNode = (id: string) => ({
   comment: ""
 });
 
-export const createDefaultPreFilterNode = (id: string) => ({
-  id,
+export const createDefaultPreFilterNode = (id: string): PreFilterNodeData => ({
   type: 'pre_filter',
   audio: {
     type: "sequence",
@@ -74,4 +74,3 @@ export const createDefaultPreFilterNode = (id: string) => ({
   json_response_contrat: "{}",
   comment: ""
 });
-

@@ -1,22 +1,24 @@
 import { X, Settings } from 'lucide-react';
+import type { Node } from 'reactflow';
+import type { FlowConfig, FlowGraphNodeData, AudioConfig } from '../types/flow';
 
 interface FlowSettingsManagerProps {
   entry: string;
   onEntryChange: (entry: string) => void;
-  config: any;
-  onConfigChange: (config: any) => void;
-  nodes: any[];
+  config: FlowConfig | null;
+  onConfigChange: (config: FlowConfig) => void;
+  nodes: Node<FlowGraphNodeData>[];
   onClose: () => void;
 }
 
-const defaultConfig = {
+const defaultConfig: FlowConfig = {
   audio: { auto_play_prompt: true, auto_play_option: true, pause_between_ms: 600 }
 };
 
 const FlowSettingsManager = ({ entry, onEntryChange, config, onConfigChange, nodes, onClose }: FlowSettingsManagerProps) => {
   const audioConfig = config?.audio || defaultConfig.audio;
 
-  const updateAudioConfig = (field: string, value: any) => {
+  const updateAudioConfig = <K extends keyof AudioConfig>(field: K, value: AudioConfig[K]) => {
     onConfigChange({ ...config, audio: { ...audioConfig, [field]: value } });
   };
 
@@ -47,7 +49,7 @@ const FlowSettingsManager = ({ entry, onEntryChange, config, onConfigChange, nod
               onChange={(e) => onEntryChange(e.target.value)}
             >
               <option value="">(Premier nœud par défaut)</option>
-              {nodes.map((n: any) => <option key={n.id} value={n.id}>{n.id}</option>)}
+              {nodes.map((n) => <option key={n.id} value={n.id}>{n.id}</option>)}
             </select>
           </div>
 

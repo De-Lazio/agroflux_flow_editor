@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Trash2, Music, List, Map, Globe, Settings, Library, FileText } from 'lucide-react';
+import type { Node } from 'reactflow';
 import {
   createDefaultRootNode,
   createDefaultGridNode,
@@ -7,26 +8,32 @@ import {
   createDefaultCalendrierNode,
   createDefaultPreFilterNode
 } from '../utils/nodeFactory';
+import type { AudioSequence, FlowNodeData, FlowGraphNodeData, FlowVariables, FlowHashmaps } from '../types/flow';
 
-const AudioSequenceEditor = ({ audio, onChange }: any) => {
+interface AudioSequenceEditorProps {
+  audio: AudioSequence | undefined;
+  onChange: (audio: AudioSequence) => void;
+}
+
+const AudioSequenceEditor = ({ audio, onChange }: AudioSequenceEditorProps) => {
   if (!audio) return null;
 
-  const updateField = (field: string, value: any) => {
+  const updateField = <K extends keyof AudioSequence>(field: K, value: AudioSequence[K]) => {
     onChange({ ...audio, [field]: value });
   };
 
   const updateSequence = (index: number, value: string) => {
-    const newSeq = [...(audio.sequence || [])];
+    const newSeq = [...audio.sequence];
     newSeq[index] = value;
     updateField('sequence', newSeq);
   };
 
   const addSequenceItem = () => {
-    updateField('sequence', [...(audio.sequence || []), '']);
+    updateField('sequence', [...audio.sequence, '']);
   };
 
   const removeSequenceItem = (index: number) => {
-    updateField('sequence', audio.sequence.filter((_: any, i: number) => i !== index));
+    updateField('sequence', audio.sequence.filter((_, i) => i !== index));
   };
 
   return (
@@ -48,7 +55,7 @@ const AudioSequenceEditor = ({ audio, onChange }: any) => {
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Séquence d'audios</label>
         <div className="space-y-2">
-          {(audio.sequence || []).map((item: string, i: number) => (
+          {audio.sequence.map((item, i) => (
             <div key={i} className="flex gap-1 group">
               <input
                 className="flex-1 p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-purple-500 bg-white"
@@ -89,11 +96,21 @@ const AudioSequenceEditor = ({ audio, onChange }: any) => {
   );
 };
 
-const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashmaps }: any) => {
+interface NodeEditorProps {
+  node: Node<FlowGraphNodeData>;
+  nodes: Node<FlowGraphNodeData>[];
+  onUpdate: (nodeId: string, newData: FlowGraphNodeData) => void;
+  onClose: () => void;
+  onDelete: (nodeId: string) => void;
+  variables: FlowVariables;
+  hashmaps: FlowHashmaps;
+}
+
+const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashmaps }: NodeEditorProps) => {
   // Le parent doit monter ce composant avec key={node.id} : ainsi, changer de
   // nœud sélectionné remonte le composant et réinitialise "data" proprement,
   // sans synchroniser un state depuis un prop via un useEffect.
-  const [data, setData] = useState<any>(() => ({ ...node.data }));
+  const [data, setData] = useState<FlowGraphNodeData>(() => ({ ...node.data }));
 
   const handleDeleteClick = () => {
     if (window.confirm(`Supprimer le nœud "${node.id}" ? Cette action est irréversible (sauf via Undo).`)) {
@@ -101,24 +118,29 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
     }
   };
 
-  const handleChange = (path: string, value: any) => {
-    const newData = { ...data };
+  // Setter générique par chemin ("data_source.endpoint", "options", ...) : la
+  // forme exacte des champs dépend du type du nœud, donc cette fonction reste
+  // volontairement permissive en interne. Les points d'appel, eux, restent
+  // typés grâce au narrowing sur data.type dans le JSX ci-dessous.
+  const handleChange = (path: string, value: unknown) => {
+    const newData: Record<string, unknown> = { ...data };
     const parts = path.split('.');
-    let current = newData;
+    let current: Record<string, unknown> = newData;
     for (let i = 0; i < parts.length - 1; i++) {
       if (!current[parts[i]]) current[parts[i]] = {};
-      current = current[parts[i]];
+      current = current[parts[i]] as Record<string, unknown>;
     }
     current[parts[parts.length - 1]] = value;
-    setData(newData);
-    onUpdate(node.id, newData);
+    const typedData = newData as unknown as FlowGraphNodeData;
+    setData(typedData);
+    onUpdate(node.id, typedData);
   };
 
   // Changer de type régénère une structure propre pour le nouveau type
   // (sinon les champs de l'ancien type restent et le nœud devient incohérent).
   // Les champs communs et rédigés à la main (audio, commentaire, contrat) sont conservés.
   const handleTypeChange = (newType: string) => {
-    let freshData;
+    let freshData: FlowNodeData;
     switch (newType) {
       case 'root': freshData = createDefaultRootNode(node.id); break;
       case 'result': freshData = createDefaultResultNode(node.id); break;
@@ -133,7 +155,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
       audio: data.audio || freshData.audio,
       comment: data.comment || freshData.comment,
       json_response_contrat: data.json_response_contrat || freshData.json_response_contrat
-    };
+    } as FlowGraphNodeData;
 
     setData(newData);
     onUpdate(node.id, newData);
@@ -181,7 +203,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
 
           <AudioSequenceEditor
             audio={data.audio || { type: 'sequence', key: `${node.id}_intro`, sequence: [], fallback: 'intro/default.mp3' }}
-            onChange={(newAudio: any) => handleChange('audio', newAudio)}
+            onChange={(newAudio) => handleChange('audio', newAudio)}
           />
 
           {data.type === 'calendrier' && (
@@ -300,20 +322,20 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                 <Library size={12} /> Exemples de Réponses (Backend)
               </h4>
               <div className="space-y-3">
-                {(data.response_examples || []).map((ex: string, i: number) => (
+                {(data.response_examples || []).map((ex, i) => (
                   <div key={i} className="relative group">
                     <textarea
                       className="w-full p-2 border border-slate-200 rounded text-[10px] font-mono focus:ring-2 focus:ring-rose-500 outline-none min-h-[80px] bg-rose-50/20"
                       value={ex}
                       onChange={(e) => {
-                        const newEx = [...data.response_examples];
+                        const newEx = [...(data.response_examples || [])];
                         newEx[i] = e.target.value;
                         handleChange('response_examples', newEx);
                       }}
                     />
                     <button
                       onClick={() => {
-                        const newEx = data.response_examples.filter((_: any, idx: number) => idx !== i);
+                        const newEx = (data.response_examples || []).filter((_, idx) => idx !== i);
                         handleChange('response_examples', newEx);
                       }}
                       className="absolute top-2 right-2 p-1 text-slate-300 hover:text-red-500 transition-colors"
@@ -376,12 +398,12 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
             {data.type === 'root' && (
               <div className="space-y-3">
                 <label className="block text-xs font-bold text-slate-500">Options du Menu</label>
-                {data.options?.map((opt: any, i: number) => (
+                {data.options?.map((opt, i) => (
                   <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-bold text-slate-400">ID: {opt.id}</span>
                       <button onClick={() => {
-                        const newOpts = data.options.filter((_: any, idx: number) => idx !== i);
+                        const newOpts = data.options.filter((_, idx) => idx !== i);
                         handleChange('options', newOpts);
                       }} className="text-red-400 hover:text-red-600"><Trash2 size={14}/></button>
                     </div>
@@ -396,7 +418,7 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                       handleChange('options', newOpts);
                     }}>
                       <option value="">(Suivant)</option>
-                      {nodes.filter((n: any) => n.id !== node.id).map((n: any) => <option key={n.id} value={n.id}>{n.id}</option>)}
+                      {nodes.filter((n) => n.id !== node.id).map((n) => <option key={n.id} value={n.id}>{n.id}</option>)}
                     </select>
                   </div>
                 ))}
@@ -413,8 +435,8 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                   onChange={(e) => handleChange('next', e.target.value)}
                 >
                   <option value="">(Aucun)</option>
-                  {nodes.filter((n: any) => n.id !== node.id).map((n: any) => (
-                    <option key={n.id} value={n.id}>{n.id} ({n.data.label || n.data.type})</option>
+                  {nodes.filter((n) => n.id !== node.id).map((n) => (
+                    <option key={n.id} value={n.id}>{n.id} ({n.data.type})</option>
                   ))}
                 </select>
               </div>

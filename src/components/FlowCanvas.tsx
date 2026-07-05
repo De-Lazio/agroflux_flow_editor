@@ -15,6 +15,7 @@ import type {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
+import type { FlowGraphNodeData } from '../types/flow';
 
 const nodeTypes = {
   customNode: CustomNode,
@@ -32,12 +33,12 @@ const defaultEdgeOptions = {
 };
 
 interface FlowCanvasProps {
-  nodes: Node[];
+  nodes: Node<FlowGraphNodeData>[];
   edges: Edge[];
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
-  onNodeClick: (event: React.MouseEvent, node: Node) => void;
+  onNodeClick: (event: React.MouseEvent, node: Node<FlowGraphNodeData>) => void;
   onPaneClick: (event: React.MouseEvent) => void;
 }
 
@@ -63,8 +64,8 @@ const FlowCanvas = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onN
       >
         <Background color="#cbd5e1" gap={20} />
         <Controls />
-        <MiniMap 
-          nodeColor={(node: any) => {
+        <MiniMap
+          nodeColor={(node: Node<FlowGraphNodeData>) => {
             switch (node.data.type) {
               case 'root': return '#4f46e5';
               case 'grid': return '#06b6d4';

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ListChecks, Upload, Copy, Check, X as XIcon } from 'lucide-react';
 import { RESOURCE_EXTENSIONS } from '../utils/resourceInventory';
+import type { ResourceGroup } from '../types/flow';
 
 const extractFileNamesFromTree = (treeText: string): Set<string> => {
   const names = new Set<string>();
@@ -23,7 +24,7 @@ const extractFileNamesFromTree = (treeText: string): Set<string> => {
 };
 
 interface ResourceCheckPanelProps {
-  report: { audios: string[]; images: string[] };
+  report: ResourceGroup;
 }
 
 const ResourceCheckPanel = ({ report }: ResourceCheckPanelProps) => {
@@ -39,13 +40,13 @@ const ResourceCheckPanel = ({ report }: ResourceCheckPanelProps) => {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const handleImport = (e: any) => {
-    const file = e.target.files[0];
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event: any) => {
+    reader.onload = (event: ProgressEvent<FileReader>) => {
       setFileName(file.name);
-      setTreeText(event.target.result);
+      setTreeText(event.target?.result as string);
       setResults(null);
     };
     reader.readAsText(file);

@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { jsonToFlow, flowToJson } from './flowManager';
+import type { FlowData, RootNodeData, GridNodeData } from '../types/flow';
 
-const sampleFlow = {
+const sampleFlow: FlowData = {
   version: '1.0',
   entry: 'root',
+  variables: {},
+  hashmaps: {},
+  audio_mappings: {},
   nodes: {
     root: {
       type: 'root',
@@ -59,14 +63,14 @@ describe('flowToJson', () => {
     const rebuilt = flowToJson(nodes, { entry: 'root' });
 
     expect(Object.keys(rebuilt.nodes).sort()).toEqual(['grid_1', 'result_1', 'root']);
-    expect(rebuilt.nodes.grid_1.options_source).toBe('produits');
-    expect(rebuilt.nodes.root.options[0].next).toBe('grid_1');
+    expect((rebuilt.nodes.grid_1 as GridNodeData).options_source).toBe('produits');
+    expect((rebuilt.nodes.root as RootNodeData).options[0].next).toBe('grid_1');
   });
 
   it("retire le champ id injecté par jsonToFlow (il ne doit pas polluer le node.data exporté)", () => {
     const { nodes } = jsonToFlow(sampleFlow);
     const rebuilt = flowToJson(nodes, {});
-    expect(rebuilt.nodes.root.id).toBeUndefined();
+    expect((rebuilt.nodes.root as unknown as Record<string, unknown>).id).toBeUndefined();
   });
 
   it('retombe sur le premier nœud comme entry si aucun entry explicite n\'est fourni', () => {

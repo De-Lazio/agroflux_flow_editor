@@ -3,7 +3,7 @@ Analyse complète du projet Flow Editor
 
 Vue d'ensemble
 
-Après ce cycle de travail, l'éditeur est passé d'un outil à deux formats coexistants (dont un cassé) à un outil mono-format, cohérent et fonctionnellement complet, avec en plus une vraie chaîne de vérification des ressources (mapping → inventaire → comparaison disque). C'est une base saine. Voici le bilan complet.
+L'éditeur est passé d'un outil à deux formats coexistants (dont un cassé) à un outil mono-format, cohérent et fonctionnellement complet, avec une vraie chaîne de vérification des ressources (mapping → inventaire → comparaison disque), une suite de tests automatisés, une CI, et une base de code entièrement typée. Toutes les corrections identifiées dans l'analyse initiale ont été appliquées et vérifiées (build, lint, tests, et clic réel dans le navigateur). C'est une base saine et prête à être partagée avec l'équipe.
 
 ---
 1. Fonctionnalités implémentées
@@ -11,13 +11,15 @@ Après ce cycle de travail, l'éditeur est passé d'un outil à deux formats coe
 Éditeur / Canvas
 - Canvas ReactFlow (drag & drop, zoom, pan, sélection, minimap colorée par type)
 - Auto-layout automatique (Dagre)
-- Undo/Redo (historique de 50 étapes)
+- Undo/Redo (historique de 50 étapes, initialisé proprement au chargement)
 - Auto-sauvegarde en localStorage + restauration au chargement
 - Recherche de nœud par ID/label
 - Import/Export du flow en JSON
+- Toolbar compacte : actions secondaires (Variables/HashMaps/Mapping/Paramètres) regroupées dans un menu déroulant "Données", ne déborde plus même sur petit écran
 
 Modèle de données (format unique, "dynamic")
 - 5 types de nœuds : root, grid, result, calendrier, pre_filter, chacun avec son formulaire d'édition dédié
+- Changer le type d'un nœud régénère une structure propre pour le nouveau type (audio/commentaire/contrat conservés, reste réinitialisé)
 - Gestionnaire de Variables (listes réutilisables)
 - Gestionnaire de HashMaps (structures clé → valeurs imbriquées)
 - Mapping Audio & Image : dossier de ressources auto-généré pour chaque variable/hashmap, lecture seule + bouton "Régénérer", formats audio/image configurables
@@ -25,45 +27,57 @@ Modèle de données (format unique, "dynamic")
 
 Validation & Qualité
 - Erreurs bloquantes : audio.key manquant/dupliqué, JSON invalide (contrat + exemples), liens next/options.next cassés
-- Avertissements : séquence vide, nœud orphelin, mapping ressource manquant, collision de dossier entre mappings
+- Avertissements : séquence vide, nœud orphelin, cul-de-sac (nœud de navigation sans next), mapping ressource manquant, collision de dossier entre mappings
 - Rapport d'inventaire automatique : ressources référencées dans les nœuds + ressources générées (variables/hashmaps), avec détail par origine
 - Export du rapport en JSON
 - Vérification des ressources sur disque : génération de la commande tree, import du .txt, comparaison automatique avec l'inventaire
+- Confirmation avant toute suppression destructive (nouveau projet, suppression de nœud)
 
-C'est un socle robuste — les 3 dernières fonctionnalités (mapping, inventaire enrichi, vérification disque) forment une vraie chaîne de contrôle qualité qui n'existait dans aucun outil similaire habituellement bricolé en interne.
+Qualité du code
+- Schéma du flow entièrement typé (src/types/flow.ts) : union discriminée par type de nœud, plus aucun `any` dans le code source
+- Suite de tests automatisés (Vitest) sur validator.ts, flowManager.ts et resourceInventory.ts — 36 tests
+- CI GitHub Actions : lint, type-check, tests et build sur chaque push/PR (main et develop)
+- 0 vulnérabilité npm (audit fix appliqué, aucune rupture de compatibilité)
+- Documentation (GEMINI.md) à jour avec le format unique actuel
+
+C'est un socle robuste — mapping, inventaire enrichi, vérification disque, tests et CI forment ensemble une vraie chaîne de contrôle qualité qui n'existait dans aucun outil similaire habituellement bricolé en interne.
 
 ---
-2. Ce qui peut être amélioré — par ordre de criticité
+2. Historique des corrections apportées
 
-🔴 Important — à traiter avant que l'outil se généralise dans l'équipe
+Toutes les recommandations de l'analyse initiale ont été traitées :
 
-a) Le toolbar déborde maintenant. Avec l'ajout de "Mapping" et "Paramètres", j'ai constaté sur mes captures d'écran (largeur 1400px) que "Réorganiser" et parfois "Valider" sortent de l'écran. C'est un vrai bug visible, pas cosmétique — un utilisateur sur un écran standard ne peut plus cliquer "Valider" sans redimensionner. Recommandation : regrouper les boutons secondaires (Variables/HashMaps/Mapping/Paramètres) dans un menu déroulant "Données", ou passer sur deux rangées. À corriger rapidement.
+1. ✅ Débordement du toolbar corrigé (menu déroulant "Données")
+2. ✅ Confirmation ajoutée avant suppression de nœud
+3. ✅ GEMINI.md mis à jour
+4. ✅ Régénération de structure au changement de type de nœud
+5. ✅ Détection des culs-de-sac ajoutée dans validator.ts
+6. ✅ Tests Vitest mis en place (36 tests sur validator.ts / flowManager.ts / resourceInventory.ts)
+7. ✅ flow.legacy.json.bak supprimé
+8. ✅ setState synchrone dans un useEffect corrigé (NodeEditor : pattern `key` + initialiseur paresseux ; App.tsx : seed de l'historique déplacé hors d'un effet réactif)
+9. ✅ Dette de typage résorbée : schéma central `src/types/flow.ts`, 0 `any` restant dans tout le code source
+10. ✅ CI GitHub Actions mise en place (lint + tsc + tests + build)
+11. ✅ Vulnérabilités npm audit corrigées (4 → 0, toutes via des mises à jour compatibles semver)
 
-b) Pas de confirmation avant suppression d'un nœud. Le bouton corbeille dans NodeEditor supprime immédiatement, sans window.confirm — alors que "Nouveau Projet" en a un. Incohérent, et un clic malheureux perd un nœud sans recours (sauf undo, s'il est cliqué à temps). Recommandation : ajouter la même confirmation.
+Chaque étape a été vérifiée par compilation (`tsc -b`), lint, tests automatisés, build de production, et pour les changements de comportement UI, par un clic réel dans un Chrome headless piloté via CDP (captures d'écran à l'appui).
 
-c) Changer le type d'un nœud ne régénère pas sa structure. Passer un nœud de grid à result via le select laisse les anciens champs et ne crée pas data_source. Le nœud reste dans un état bâtard tant qu'on n'a pas rouvert/rechargé. Recommandation : sur changement de type, repasser par nodeFactory pour régénérer un objet propre (en gardant comment et id).
-
-d) Zéro test automatisé sur la logique critique. validator.ts, flowManager.ts et resourceInventory.ts sont exactement les modules où une régression silencieuse (comme l'oubli des hashmaps dans l'inventaire, découvert cette session) peut passer inaperçue. Vu que le JSON produit est un contrat consommé par le backend et Flutter, une erreur silencieuse ici a un coût réel en aval. Recommandation : un minimum de tests (Vitest) sur ces 3 fichiers — pas besoin de tout couvrir, juste les cas structurants (génération de ressources, détection de liens cassés, sync du mapping).
-
-e) La documentation (GEMINI.md) est maintenant fausse. Elle décrit encore MENU/FILTER/RESULTS/WIDGET comme les types "core" et ne mentionne ni root/grid/result/calendrier/pre_filter, ni le mapping, ni l'inventaire. Un nouveau développeur serait activement induit en erreur. Recommandation : mettre à jour GEMINI.md pour refléter le format unique actuel.
+---
+3. Ce qui reste, par ordre de criticité
 
 🟡 Mineur — utile mais pas bloquant
 
-- NodeEditor.tsx appelle setState de façon synchrone dans un useEffect (ligne 88-91). Fonctionne, mais c'est un anti-pattern React signalé par le linter (cascading renders). Facile à corriger avec key sur le composant plutôt qu'un effet.
-- ResourceCheckPanel compare par nom de fichier seul, pas par chemin complet. Si deux valeurs différentes (ex. une variable et un hashmap) produisent un fichier de même nom dans des dossiers différents, un faux positif est possible. Rare en pratique, mais bon à savoir — ce n'est pas un bug à corriger dans l'urgence, plutôt une limite documentée.
-- Pas de détection des "culs-de-sac" : un nœud grid/calendrier/pre_filter avec next vide n'est jamais signalé. Peu coûteux à ajouter dans validator.ts.
+- ResourceCheckPanel compare par nom de fichier seul, pas par chemin complet. Si deux valeurs différentes (ex. une variable et un hashmap) produisent un fichier de même nom dans des dossiers différents, un faux positif est possible. Rare en pratique — une limite documentée plutôt qu'un bug à corriger dans l'urgence.
 - dynamic_audio est chargé/sauvegardé mais reste une boîte noire sans UI ni doc — soit on lui donne un usage clair, soit on le retire du schéma.
-- flow.legacy.json.bak traîne à la racine du repo depuis la migration — à supprimer ou déplacer dans un dossier d'archive maintenant que tout est validé.
 - Le champ recherche ne centre pas le canvas sur le nœud trouvé, il ouvre juste l'éditeur — un petit fitView ciblé améliorerait l'usage sur les gros flows.
-- Dette de typage : 58 erreurs ESLint, quasi toutes no-explicit-any. Ça ne casse rien aujourd'hui, mais c'est l'endroit où j'investirais en premier si tu as du temps : des types réels (FlowNode, RootNodeData, GridNodeData, etc. en union discriminée sur type) auraient probablement évité l'incident cle/cles détecté plus tôt dans le projet, et sécuriseraient toute future extension du schéma.
+- Le setter générique par chemin dans NodeEditor (`handleChange`) reste volontairement permissif en interne (un seul cast documenté) : la forme exacte des champs dépend du type du nœud, et une réécriture stricte de cette fonction spécifique n'apporterait pas grand-chose par rapport à sa complexité.
 
 ⚪ Cosmétique — à ignorer sauf si tu as du temps libre
 
 - Bundle JS unique de ~520 Ko (Vite le signale) — sans impact réel pour un outil interne à usage occasionnel.
-- Pas de lecteur audio / prévisualisation image dans l'éditeur (déjà noté dans l'audit initial, toujours vrai).
+- Pas de lecteur audio / prévisualisation image dans l'éditeur.
 
 ---
-3. Revue de l'approche générale — faut-il changer quelque chose ?
+4. Revue de l'approche générale — faut-il changer quelque chose ?
 
 ┌────────────────────────────┬──────────────────────────────────────────────┬─────────────────────────────────────────────────────────────┐
 │    Choix architectural     │                   Verdict                    │                          Pourquoi                           │
@@ -82,31 +96,16 @@ e) La documentation (GEMINI.md) est maintenant fausse. Elle décrit encore MENU/
 │                            │                                              │ durable.                                                    │
 ├────────────────────────────┼──────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
 │ Un seul fichier            │ Découpage correct, la séparation avec        │                                                             │
-│ validator.ts qui fait      │ resourceInventory.ts faite cette session est │                                                             │
-│ validation + agrégation    │  la bonne direction — pas besoin d'aller     │                                                             │
-│ d'inventaire               │ plus loin.                                   │                                                             │
+│ validator.ts qui fait      │ resourceInventory.ts (et le schéma central   │                                                             │
+│ validation + agrégation    │ dans types/flow.ts) est la bonne direction   │                                                             │
+│ d'inventaire               │ — pas besoin d'aller plus loin.              │                                                             │
 ├────────────────────────────┼──────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
-│                            │                                              │ Voir point de dette technique ci-dessus. C'est le seul      │
-│ Typage any généralisé      │ À corriger, mais pas urgent                  │ choix architectural que je qualifierais de vraie faiblesse  │
-│                            │                                              │ structurelle, car le cœur de valeur de l'outil est          │
-│                            │                                              │ justement la forme exacte du JSON.                          │
+│ Typage strict du schéma    │ Fait — union discriminée FlowNodeData        │ C'était la plus grande faiblesse structurelle : le cœur de  │
+│ (types/flow.ts)            │                                               │ valeur de l'outil est la forme exacte du JSON, désormais    │
+│                            │                                               │ garantie par le compilateur plutôt que par convention.      │
 ├────────────────────────────┼──────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
-│ Absence de CI (aucune      │                                              │ Un simple workflow qui lance tsc -b, eslint et (une fois    │
-│ vérification automatique   │ À ajouter                                    │ écrits) les tests suffirait. Actuellement rien n'empêche un │
-│ avant merge)               │                                              │  commit cassé d'atterrir sur develop.                       │
+│ CI GitHub Actions          │ Fait — lint + tsc + tests + build sur        │ Plus aucun commit cassé ne peut atterrir sur main/develop   │
+│                            │ push/PR (main, develop)                      │ sans qu'une vérification échoue visiblement.                │
 └────────────────────────────┴──────────────────────────────────────────────┴─────────────────────────────────────────────────────────────┘
 
-Rien de ce que j'ai vu ne justifie une refonte. L'architecture actuelle (React + ReactFlow + état local + JSON plat) correspond bien à la mission de l'outil telle que décrite dans context.md. Les points à traiter sont des finitions ciblées (toolbar, confirmations, tests, doc), pas des choix à remettre en cause.
-
----
-4. Priorisation suggérée
-
-1. Corriger le débordement du toolbar (visible, gênant immédiatement)
-2. Ajouter la confirmation avant suppression de nœud
-3. Mettre à jour GEMINI.md
-4. Régénérer la structure au changement de type de nœud
-5. Ajouter des tests sur validator.ts / flowManager.ts / resourceInventory.ts
-6. Nettoyer flow.legacy.json.bak
-7. Le reste (typage, détection cul-de-sac, CI) — à faire au fil de l'eau
-
-Veux-tu que je commence par le toolbar et la confirmation de suppression (les deux corrections rapides et visibles) ?
+Rien de ce qui a été observé ne justifie une refonte. L'architecture actuelle (React + ReactFlow + état local + JSON plat, maintenant strictement typé et testé) correspond bien à la mission de l'outil telle que décrite dans context.md. Il ne reste que des points mineurs, documentés ci-dessus, à traiter au fil de l'eau si besoin.
