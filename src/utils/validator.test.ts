@@ -1,0 +1,203 @@
+import { describe, it, expect } from 'vitest';
+import { validateFlow } from './validator';
+import type { FlowData, RootNodeData, GridNodeData, ResultNodeData } from '../types/flow';
+
+// Construit un flowData minimal valide, que chaque test dérive et casse
+// volontairement sur un seul aspect à la fois.
+const baseAudio = (key: string) => ({
+  type: 'sequence' as const,
+  key,
+  sequence: [`intro/${key}.mp3`],
+  fallback: 'intro/default.mp3'
+});
+
+const buildFlow = (overrides: Partial<FlowData> = {}): FlowData => ({
+  version: '1.0',
+  entry: 'root',
+  audio_mappings: {},
+  variables: {},
+  hashmaps: {},
+  nodes: {
+    root: {
+      type: 'root',
+      audio: baseAudio('root'),
+      options: [{ id: 'go', next: 'grid_1' }]
+    },
+    grid_1: {
+      type: 'grid',
+      audio: baseAudio('grid_1'),
+      options_source: 'produits',
+      set: 'produits',
+      next: 'result_1'
+    },
+    result_1: {
+      type: 'result',
+      audio: baseAudio('result_1'),
+      data_source: { endpoint: 'api/x', params: ['produit'] }
+    }
+  },
+  ...overrides
+});
+
+describe('validateFlow — cas nominal', () => {
+  it('ne remonte aucune erreur ni avertissement sur un flow bien formé', () => {
+    const { errors, warnings } = validateFlow(buildFlow());
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
+  });
+});
+
+describe('validateFlow — erreurs bloquantes', () => {
+  it("signale l'absence de audio_mappings à la racine", () => {
+    // On simule un JSON externe malformé : audio_mappings est un champ requis
+    // du schéma, mais rien ne garantit qu'un fichier importé le respecte.
+    const { audio_mappings, ...incompleteFlow } = buildFlow();
+    const { errors } = validateFlow(incompleteFlow as FlowData);
+    expect(errors.some((e) => e.includes('audio_mappings'))).toBe(true);
+  });
+
+  it("signale l'absence de l'objet audio sur un nœud", () => {
+    const flow = buildFlow();
+    delete flow.nodes.grid_1.audio;
+    const { errors } = validateFlow(flow);
+    expect(errors.some((e) => e.includes('grid_1') && e.includes("'audio' est manquant"))).toBe(true);
+  });
+
+  it('signale deux nœuds partageant la même audio.key', () => {
+    const flow = buildFlow();
+    flow.nodes.grid_1.audio!.key = 'root';
+    const { errors } = validateFlow(flow);
+    expect(errors.some((e) => e.includes("déjà utilisée"))).toBe(true);
+  });
+
+  it('signale un json_response_contrat invalide', () => {
+    const flow = buildFlow();
+    flow.nodes.result_1.json_response_contrat = '{ invalide';
+    const { errors } = validateFlow(flow);
+    expect(errors.some((e) => e.includes('result_1') && e.includes('json_response_contrat'))).toBe(true);
+  });
+
+  it('signale un exemple de réponse invalide', () => {
+    const flow = buildFlow();
+    (flow.nodes.result_1 as ResultNodeData).response_examples = ['{ invalide'];
+    const { errors } = validateFlow(flow);
+    expect(errors.some((e) => e.includes("exemple de réponse"))).toBe(true);
+  });
+
+  it('signale une option pointant vers un ID inexistant', () => {
+    const flow = buildFlow();
+    (flow.nodes.root as RootNodeData).options[0].next = 'ne_existe_pas';
+    const { errors } = validateFlow(flow);
+    expect(errors.some((e) => e.includes('ne_existe_pas'))).toBe(true);
+  });
+
+  it('signale un next pointant vers un ID inexistant', () => {
+    const flow = buildFlow();
+    (flow.nodes.grid_1 as GridNodeData).next = 'ne_existe_pas';
+    const { errors } = validateFlow(flow);
+    expect(errors.some((e) => e.includes('grid_1') && e.includes('ne_existe_pas'))).toBe(true);
+  });
+});
+
+describe('validateFlow — avertissements', () => {
+  it('signale une séquence audio vide', () => {
+    const flow = buildFlow();
+    flow.nodes.grid_1.audio!.sequence = [];
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('grid_1') && w.includes('vide'))).toBe(true);
+  });
+
+  it('signale un nœud root sans option', () => {
+    const flow = buildFlow();
+    (flow.nodes.root as RootNodeData).options = [];
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('root') && w.includes('aucune option'))).toBe(true);
+  });
+
+  it('signale un nœud orphelin', () => {
+    const flow = buildFlow({
+      nodes: {
+        ...buildFlow().nodes,
+        orphelin: { type: 'grid', audio: baseAudio('orphelin'), options_source: 'produits', set: 'produits', next: 'result_1' }
+      }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('orphelin') && w.includes('référencé'))).toBe(true);
+  });
+
+  it('signale un cul-de-sac (grid/calendrier/pre_filter sans next)', () => {
+    const flow = buildFlow();
+    (flow.nodes.grid_1 as GridNodeData).next = '';
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('grid_1') && w.includes('cul-de-sac'))).toBe(true);
+  });
+
+  it("ne signale pas de cul-de-sac pour un nœud result (terminal par nature)", () => {
+    const { warnings } = validateFlow(buildFlow());
+    expect(warnings.some((w) => w.includes('result_1') && w.includes('cul-de-sac'))).toBe(false);
+  });
+
+  it('signale un mapping ressource manquant pour une variable déclarée', () => {
+    const flow = buildFlow({ variables: { produits: ['mais'] } });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('produits') && w.includes('mapping ressource'))).toBe(true);
+  });
+
+  it('ne signale rien si le mapping ressource est présent', () => {
+    const flow = buildFlow({ variables: { produits: ['mais'] }, audio_mappings: { produits: 'produits' } });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('mapping ressource'))).toBe(false);
+  });
+
+  it('signale une collision quand deux mappings pointent vers le même dossier', () => {
+    const flow = buildFlow({
+      variables: { produits: ['mais'] },
+      hashmaps: { produits_alt: { a: ['x'] } },
+      audio_mappings: { produits: 'partage', produits_alt: 'partage' }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('partage') && w.includes('partagé'))).toBe(true);
+  });
+});
+
+describe('validateFlow — rapport d\'inventaire', () => {
+  it('recense les audios référencés directement dans les nœuds', () => {
+    const { report } = validateFlow(buildFlow());
+    expect(report.audios).toContain('intro/root.mp3');
+    expect(report.audios).toContain('intro/default.mp3');
+  });
+
+  it('génère les ressources par variable, séparément des ressources par hashmap', () => {
+    const flow = buildFlow({
+      variables: { produits: ['mais', 'riz'] },
+      hashmaps: { marche_par_departement: { oueme: ['ouando'] } },
+      audio_mappings: { produits: 'produits', marche_par_departement: 'marche_par_departement' }
+    });
+
+    const { report } = validateFlow(flow);
+
+    expect(report.variableResources.audios).toEqual([
+      'audios/produits/mais.mp3',
+      'audios/produits/riz.mp3'
+    ]);
+    expect(report.hashmapResources.audios).toEqual([
+      'audios/marche_par_departement/oueme/ouando.mp3'
+    ]);
+
+    // Les ressources générées doivent aussi apparaître dans la liste globale
+    expect(report.audios).toContain('audios/produits/mais.mp3');
+    expect(report.audios).toContain('audios/marche_par_departement/oueme/ouando.mp3');
+  });
+
+  it('respecte les formats de ressources déclarés dans le flow', () => {
+    const flow = buildFlow({
+      variables: { produits: ['mais'] },
+      audio_mappings: { produits: 'produits' },
+      resource_formats: { audio: 'wav', image: 'png' }
+    });
+
+    const { report } = validateFlow(flow);
+    expect(report.variableResources.audios).toEqual(['audios/produits/mais.wav']);
+    expect(report.variableResources.images).toEqual(['images/produits/mais.png']);
+  });
+});

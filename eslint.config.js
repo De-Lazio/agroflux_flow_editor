@@ -19,5 +19,10 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Autorise `const { id, ...rest } = obj` quand `id` n'est volontairement
+      // pas utilisé : c'est l'idiome standard pour exclure une propriété.
+      '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
+    },
   },
 ])

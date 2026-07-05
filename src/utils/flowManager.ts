@@ -1,104 +1,89 @@
 import type { Node, Edge } from 'reactflow';
 import { Position } from 'reactflow';
 import dagre from 'dagre';
+import { DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './resourceInventory';
+import type {
+  FlowData,
+  FlowNodes,
+  FlowNodeData,
+  FlowGraphNodeData,
+  FlowVariables,
+  FlowHashmaps,
+  FlowMappings,
+  FlowConfig,
+  ResourceFormats
+} from '../types/flow';
 
-export const jsonToFlow = (flowData: any) => {
-  const nodes: Node[] = [];
+export const jsonToFlow = (flowData: FlowData) => {
+  const nodes: Node<FlowGraphNodeData>[] = [];
   const edges: Edge[] = [];
-  const isDynamic = flowData.variables || flowData.entry || flowData.dynamic_audio;
 
-  Object.entries(flowData.nodes).forEach(([id, node]: [string, any]) => {
-    // Add Node
+  Object.entries(flowData.nodes).forEach(([id, node]) => {
     nodes.push({
-      id: id,
+      id,
       type: 'customNode',
       data: { ...node, id },
       position: { x: 0, y: 0 },
     });
 
-    if (isDynamic) {
-      // Dynamic Format Edges
-      if (node.type === 'root' && node.options) {
-        node.options.forEach((opt: any) => {
-          if (opt.next) {
-            edges.push({
-              id: `e-${id}-${opt.id}-${opt.next}`,
-              source: id,
-              target: opt.next,
-              label: opt.id,
-              animated: true,
-            });
-          }
-        });
-      } else if (node.next) {
-        edges.push({
-          id: `e-${id}-next-${node.next}`,
-          source: id,
-          target: node.next,
-          animated: true,
-        });
-      }
-    } else {
-      // Legacy Format Edges
-      if (node.options) {
-        node.options.forEach((option: any) => {
-          if (option.next) {
-            edges.push({
-              id: `e-${id}-${option.id}-${option.next}`,
-              source: id,
-              target: option.next,
-              label: option.label,
-              animated: true,
-            });
-          }
-        });
-      }
-
-      if (node.next_filter) {
-        edges.push({
-          id: `e-${id}-nextfilter-${node.next_filter}`,
-          source: id,
-          target: node.next_filter,
-          label: 'next_filter',
-          style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '5,5' },
-        });
-      }
+    if (node.type === 'root') {
+      node.options.forEach((opt) => {
+        if (opt.next) {
+          edges.push({
+            id: `e-${id}-${opt.id}-${opt.next}`,
+            source: id,
+            target: opt.next,
+            label: opt.id,
+            animated: true,
+          });
+        }
+      });
+    } else if ('next' in node && node.next) {
+      edges.push({
+        id: `e-${id}-next-${node.next}`,
+        source: id,
+        target: node.next,
+        animated: true,
+      });
     }
   });
 
   return getLayoutedElements(nodes, edges);
 };
 
-export const flowToJson = (
-  nodes: Node[], 
-  _edges: Edge[], 
-  format: 'legacy' | 'dynamic' = 'legacy',
-  extraData: any = {}
-) => {
-  const flowNodes: any = {};
+export interface FlowExtraData {
+  entry?: string;
+  config?: FlowConfig | null;
+  variables?: FlowVariables;
+  hashmaps?: FlowHashmaps;
+  audioMappings?: FlowMappings;
+  resource_formats?: ResourceFormats;
+  dynamic_audio?: Record<string, unknown> | null;
+}
+
+export const flowToJson = (nodes: Node<FlowGraphNodeData>[], extraData: FlowExtraData = {}): FlowData => {
+  const flowNodes: FlowNodes = {};
 
   nodes.forEach((node) => {
     const { id, ...cleanData } = node.data;
-    flowNodes[node.id] = cleanData;
+    flowNodes[node.id] = cleanData as FlowNodeData;
   });
 
-  if (format === 'dynamic') {
-    return {
-      version: "1.0",
-      entry: extraData.entry || Object.keys(flowNodes)[0],
-      config: extraData.config || {
-        audio: { auto_play_prompt: true, auto_play_option: true, pause_between_ms: 600 }
-      },
-      variables: extraData.variables || {},
-      dynamic_audio: extraData.dynamic_audio || {},
-      nodes: flowNodes
-    };
-  }
-
   return {
-    version: extraData.version || "1.0",
-    default_language: extraData.defaultLanguage || "fon",
-    nodes: flowNodes,
+    version: "1.0",
+    entry: extraData.entry || Object.keys(flowNodes)[0],
+    config: extraData.config || {
+      audio: { auto_play_prompt: true, auto_play_option: true, pause_between_ms: 600 }
+    },
+    variables: extraData.variables || {},
+    hashmaps: extraData.hashmaps || {},
+    audio_mappings: extraData.audioMappings || {},
+    resource_formats: extraData.resource_formats || {
+      audio: DEFAULT_AUDIO_FORMAT,
+      image: DEFAULT_IMAGE_FORMAT
+    },
+    dynamic_audio: extraData.dynamic_audio || {},
+    nodes: flowNodes
   };
 };
 
@@ -108,12 +93,12 @@ dagreGraph.setDefaultEdgeLabel(() => ({}));
 const nodeWidth = 220;
 const nodeHeight = 150;
 
-export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
+export const getLayoutedElements = <T,>(nodes: Node<T>[], edges: Edge[], direction = 'TB') => {
   const isHorizontal = direction === 'LR';
-  dagreGraph.setGraph({ 
+  dagreGraph.setGraph({
     rankdir: direction,
-    ranksep: 100, 
-    nodesep: 80, 
+    ranksep: 100,
+    nodesep: 80,
   });
 
   nodes.forEach((node) => {

@@ -1,691 +1,384 @@
 {
   "version": "1.0",
-  "default_language": "fon",
-
+  "entry": "root",
+  "config": {
+    "audio": {
+      "auto_play_prompt": true,
+      "auto_play_option": true,
+      "pause_between_ms": 600
+    }
+  },
+  "variables": {
+    "produits": [
+      "mais",
+      "soja"
+    ],
+    "departements": [
+      "oueme",
+      "plateau",
+      "zou",
+      "collines",
+      "mono",
+      "couffo",
+      "atlantique",
+      "litoral",
+      "borgou",
+      "alibori",
+      "atacora",
+      "donga"
+    ],
+    "x_anime_x": [
+      "aujourdhui",
+      "demain",
+      "apres_demain",
+      "dans_trois_jours",
+      "dans_quatre_jours",
+      "hier",
+      "avant_hier",
+      "trois_jours_passe",
+      "quatre_jours_passe",
+      "cinq_jours_passe"
+    ],
+    "periode": [
+      "aujourdhui",
+      "cette_semaine",
+      "ce_mois",
+      "trois_derniers_mois",
+      "six_derniers_mois",
+      "cette_annee"
+    ],
+    "marches_suivis": [
+      "ikpinle",
+      "ketou",
+      "parakou",
+      "glazoue",
+      "save",
+      "malanville",
+      "kpedekpo"
+    ],
+    "type_info_marche": [
+      "resume_rapide",
+      "presentation_du_marche",
+      "produits_disponibles",
+      "calendrier_animation",
+      "opportunite_marche"
+    ],
+    "departements_et_tout": [
+      "tout_les_departements",
+      "oueme",
+      "plateau",
+      "zou",
+      "collines"
+    ]
+  },
+  "hashmaps": {
+    "marche_par_departement": {
+      "oueme": ["ouando", "adjohoun", "gbada", "bonou"],
+      "plateau": ["takon", "sakete", "ketou"]
+    }
+  },
+  "audio_mappings": {
+    "produits": "produits",
+    "departements": "departements",
+    "x_anime_x": "x_anime_x",
+    "periode": "periode",
+    "marches_suivis": "marches_suivis",
+    "type_info_marche": "type_info_marche",
+    "departements_et_tout": "departements_et_tout",
+    "marche_par_departement": "marche_par_departement"
+  },
+  "resource_formats": {
+    "audio": "mp3",
+    "image": "jpeg"
+  },
+  "dynamic_audio": {},
   "nodes": {
     "root": {
-      "id": "root",
-      "level": 1,
-      "type": "menu",
-
+      "type": "root",
       "audio": {
-        "context": ["welcome.mp3", "choose_approach.mp3"],
-        "auto_play": true
+        "type": "sequence",
+        "key": "root_intro",
+        "sequence": ["intro/root.mp3"],
+        "fallback": "intro/default.mp3"
       },
-
       "options": [
-        {
-          "id": "approach_market",
-          "number": 1,
-          "label": "Par Marché",
-          "image": "approaches/market.jpg",
-          "audio": ["approach_market.mp3"],
-          "keywords": ["marché", "place"],
-          "next": "menu_markets"
-        },
-        {
-          "id": "approach_product",
-          "number": 2,
-          "label": "Par Produit",
-          "image": "approaches/product.jpg",
-          "audio": ["approach_product.mp3"],
-          "keywords": ["produit", "article"],
-          "next": "menu_products"
-        }
+        { "id": "achete_produit", "next": "achete_produit" },
+        { "id": "vendre_produit", "next": "vendre_produit" },
+        { "id": "marche_anime_x", "next": "marche_anime_x" },
+        { "id": "marche_anime_calendrier", "next": "anime_calendrier_calendrier" },
+        { "id": "infos_march", "next": "infos_marche_departement" },
+        { "id": "explorer_produit", "next": "explorer_produit_produit" }
       ],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": false
-      },
-
-      "voice_filter": {
-        "enabled": false,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": false,
-        "show_home": false,
-        "breadcrumb": []
-      }
+      "json_response_contrat": "{}",
+      "comment": "Menu principal du flow AgroFlux : point d'entrée de tous les parcours."
     },
-
-    "menu_markets": {
-      "id": "menu_markets",
-      "level": 2,
-      "type": "menu",
-
+    "achete_produit": {
+      "type": "grid",
       "audio": {
-        "context": ["markets_menu_intro.mp3"],
-        "auto_play": true
+        "type": "sequence",
+        "key": "achete_produit_intro",
+        "sequence": ["intro/achete_produit_intro.mp3"],
+        "fallback": "intro/default.mp3"
       },
-
-      "options": [
-        {
-          "id": "markets_today",
-          "number": 1,
-          "label": "Marchés aujourd'hui",
-          "image": "markets/today.jpg",
-          "audio": ["markets_today.mp3"],
-          "keywords": ["aujourd'hui", "maintenant"],
-          "usable_filters": ["location"],
-          "params": {
-            "time_filter": "today"
-          }
-        },
-        {
-          "id": "markets_by_date",
-          "number": 2,
-          "label": "Marchés le jour X",
-          "image": "markets/calendar.jpg",
-          "audio": ["markets_date.mp3"],
-          "keywords": ["date", "jour", "quand"],
-          "usable_filters": ["time", "location"],
-          "params": {}
-        },
-        {
-          "id": "markets_by_location",
-          "number": 3,
-          "label": "Tous les marchés d'une localité",
-          "image": "markets/location.jpg",
-          "audio": ["markets_location.mp3"],
-          "keywords": ["localité", "ville", "région"],
-          "usable_filters": ["location"],
-          "params": {}
-        },
-        {
-          "id": "markets_by_name",
-          "number": 4,
-          "label": "Rechercher un marché par nom",
-          "image": "markets/search.jpg",
-          "audio": ["markets_search.mp3"],
-          "keywords": ["nom", "chercher", "trouver"],
-          "usable_filters": ["market"],
-          "params": {}
-        },
-        {
-          "id": "markets_by_product",
-          "number": 5,
-          "label": "Marchés vendant un produit",
-          "image": "markets/product.jpg",
-          "audio": ["markets_product.mp3"],
-          "keywords": ["produit", "vendre", "acheter"],
-          "usable_filters": ["product", "location"],
-          "params": {}
-        }
+      "options_source": "produits",
+      "set": "produits",
+      "next": "acheter_result",
+      "json_response_contrat": "{}",
+      "comment": "Nœud de démarrage du flow \"acheter un produit\". Permet de choisir le produit à acheter."
+    },
+    "vendre_produit": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "vendre_produit_intro",
+        "sequence": ["intro/vendre_produit_intro.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "produits",
+      "set": "produits",
+      "next": "vendre_result",
+      "json_response_contrat": "{}",
+      "comment": "Nœud de démarrage du flow \"vendre un produit\". Permet de choisir le produit à vendre."
+    },
+    "marche_anime_x": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "marche_anime_x_intro",
+        "sequence": ["questions/marche_anime_x.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "x_anime_x",
+      "set": "x_anime_x",
+      "next": "anime_x_departement",
+      "json_response_contrat": "{}",
+      "comment": "Choix du jour (aujourd'hui, demain, etc.) pour connaître les marchés animés."
+    },
+    "acheter_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/acheter_produit",
+        "params": ["produit", "departement"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "acheter_result_intro",
+        "sequence": ["intro/acheter_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    { \"audios\": [\"intro/vous_cherchez_acheter.mp3\", \"{produit}\", \"intro/dans_departement.mp3\", \"{departement}\"], \"image\": \"images/intro/acheter.png\" },\n    { \"audios\": [\"ordre/premier_marche.mp3\", \"marches/bohicon.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/marches/bohicon.png\" },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_a.mp3\", \"{prix:1000}\", \"unites/kg.mp3\"], \"image\": \"images/produits/mais_local.png\" }\n  ],\n  \"meta\": { \"auto_play\": true, \"pause_ms\": 600 }\n}",
+      "response_examples": [],
+      "comment": "Résultats du parcours \"acheter un produit\" : liste des marchés avec les meilleurs prix pour le produit choisi."
+    },
+    "vendre_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/vendre_produit",
+        "params": ["produit", "departement"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "vendre_result_intro",
+        "sequence": ["intro/vendre_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    { \"audios\": [\"intro/vous_cherchez_vendre.mp3\", \"{produit}\", \"intro/dans_departement.mp3\", \"{departement}\"], \"image\": \"images/intro/vendre.png\" },\n    { \"audios\": [\"ordre/premier_marche.mp3\", \"marches/bohicon.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/marches/bohicon.png\" },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_vendu_a.mp3\", \"{prix:1000}\", \"unites/kg.mp3\"], \"image\": \"images/produits/mais_local.png\" }\n  ],\n  \"meta\": { \"auto_play\": true, \"pause_ms\": 600 }\n}",
+      "response_examples": [],
+      "comment": "Résultats du parcours \"vendre un produit\" : liste des marchés avec les meilleurs prix de vente pour le produit choisi."
+    },
+    "anime_x_departement": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "anime_x_departement_intro",
+        "sequence": ["questions/anime_x_departement.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_x_result",
+      "json_response_contrat": "{}",
+      "comment": "Choix du département (ou tous les départements) pour la liste des marchés animés à la date choisie."
+    },
+    "anime_x_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/anime_x",
+        "params": ["date", "departement"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "anime_x_result_intro",
+        "sequence": ["intro/anime_x_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{}",
+      "response_examples": [
+        "{\n  \"type\": \"audio_sequence\",\n  \"sequence\": [\n    { \"audios\": [\"intro/les_marches_actifs_sont.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/calendar/date.png\" },\n    { \"audios\": [\"location/dans_le_departement.mp3\", \"{departement}\"], \"image\": \"images/localites/atlantique.png\" },\n    { \"audios\": [\"marches/bohicon.mp3\"], \"image\": \"images/marches/bohicon.png\" }\n  ]\n}"
       ],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": false,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil"]
-      }
+      "comment": "Liste des marchés animés à la date et dans le département choisis."
     },
-
-    "menu_products": {
-      "id": "menu_products",
-      "level": 2,
-      "type": "menu",
-
+    "anime_calendrier_calendrier": {
+      "type": "calendrier",
       "audio": {
-        "context": ["products_menu_intro.mp3"],
-        "auto_play": true
+        "type": "sequence",
+        "key": "anime_calendrier_calendrier_intro",
+        "sequence": ["questions/date_anime_calendrier_calendrier.mp3"],
+        "fallback": "intro/default.mp3"
       },
-
-      "options": [
-        {
-          "id": "product_best_price",
-          "number": 1,
-          "label": "Où acheter au meilleur prix ?",
-          "image": "products/best_price.jpg",
-          "audio": ["product_best_price.mp3"],
-          "keywords": ["prix", "meilleur", "moins cher"],
-          "usable_filters": ["product", "location"],
-          "params": {
-            "sort": "price_asc"
-          }
-        },
-        {
-          "id": "product_current_price",
-          "number": 2,
-          "label": "Prix actuel d'un produit",
-          "image": "products/price.jpg",
-          "audio": ["product_price.mp3"],
-          "keywords": ["prix", "coût", "combien"],
-          "usable_filters": ["product"],
-          "params": {}
-        },
-        {
-          "id": "product_varieties",
-          "number": 3,
-          "label": "Variétés disponibles",
-          "image": "products/varieties.jpg",
-          "audio": ["product_varieties.mp3"],
-          "keywords": ["variété", "type", "sorte"],
-          "usable_filters": ["product"],
-          "params": {}
-        },
-        {
-          "id": "product_search",
-          "number": 4,
-          "label": "Rechercher un produit par nom",
-          "image": "products/search.jpg",
-          "audio": ["product_search.mp3"],
-          "keywords": ["chercher", "trouver", "nom"],
-          "usable_filters": ["product"],
-          "params": {}
-        }
+      "periode": 7,
+      "cadran": "centrer",
+      "next": "anime_calendrier_departement",
+      "json_response_contrat": "{}",
+      "comment": "Sélection de la date (widget calendrier) pour connaître les marchés animés."
+    },
+    "anime_calendrier_departement": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "anime_calendrier_departement_intro",
+        "sequence": ["questions/anime_calendrier_departement.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_calendrier_result",
+      "json_response_contrat": "{}",
+      "comment": "Choix du département après sélection de la date via le calendrier."
+    },
+    "anime_calendrier_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/anime_calendrier",
+        "params": ["date", "departement"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "anime_calendrier_result_intro",
+        "sequence": ["intro/anime_calendrier_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{}",
+      "response_examples": [],
+      "comment": "Liste des marchés animés pour la date sélectionnée via le calendrier."
+    },
+    "infos_marche_departement": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "infos_marche_departement_intro",
+        "sequence": ["questions/infos_marche_departement.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "departements",
+      "set": "departements",
+      "next": "explorer_produit_marche_filter",
+      "json_response_contrat": "{}",
+      "comment": "Choix du département pour explorer les informations d'un marché."
+    },
+    "explorer_produit_marche_filter": {
+      "type": "pre_filter",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_marche_filter_intro",
+        "sequence": ["questions/filtre.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "cle": "departements",
+      "filtre_source": "marche_par_departement",
+      "next": "infos_marche_infos_type",
+      "json_response_contrat": "{}",
+      "comment": "Filtre interne : réduit la liste des marchés proposés au département choisi, via le hashmap marche_par_departement."
+    },
+    "infos_marche_infos_type": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "infos_marche_infos_type_intro",
+        "sequence": ["questions/infos_marche_infos_type.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "type_info_marche",
+      "set": "type_info_marche",
+      "next": "infos_marche_result",
+      "json_response_contrat": "{}",
+      "comment": "Choix du type d'information souhaité sur le marché (résumé, calendrier, produits disponibles...)."
+    },
+    "infos_marche_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/infos_marches",
+        "params": ["marche", "info_type"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "infos_marche_result_intro",
+        "sequence": ["questions/infos_marche_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{\n  \"type\": \"calendar\",\n  \"version\": \"1.0\",\n  \"data\": {\n    \"marche\": { \"id\": 12, \"nom\": \"takon\" },\n    \"regle\": { \"type\": \"hebdomadaire\", \"valeur\": { \"jours\": [2, 5] } },\n    \"description\": \"Marché tous les mardi et vendredi\",\n    \"intro\": [\"intro/calendrier_marche.mp3\", \"marches/takon.mp3\"],\n    \"outro\": [\"frequence/hebdomadaire.mp3\"]\n  }\n}",
+      "response_examples": [],
+      "comment": "Informations sur le marché choisi. La règle de calendrier peut être hebdomadaire, par intervalle ou mensuelle (voir json_response_contrat)."
+    },
+    "explorer_produit_produit": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_produit_intro",
+        "sequence": ["questions/explorer_produit_produit.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "produits",
+      "set": "produits",
+      "next": "explorer_produit_marche",
+      "json_response_contrat": "{}",
+      "comment": "Choix du produit dont on veut explorer l'historique des prix."
+    },
+    "explorer_produit_marche": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_marche_intro",
+        "sequence": ["questions/explorer_produit_marche.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "marches_suivis",
+      "set": "marches_suivis",
+      "next": "explorer_produit_periode",
+      "json_response_contrat": "{}",
+      "comment": "Choix du marché suivi pour l'historique des prix."
+    },
+    "explorer_produit_periode": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_periode_intro",
+        "sequence": ["questions/explorer_produit_periode.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "periode",
+      "set": "periode",
+      "next": "explorer_produit_result",
+      "json_response_contrat": "{}",
+      "comment": "Choix de la période d'historique des prix à afficher."
+    },
+    "explorer_produit_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "explorer_prix",
+        "params": ["marche", "produit", "periode"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_result_intro",
+        "sequence": ["questions/explorer_produit_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{}",
+      "response_examples": [
+        "{\n  \"type\": \"audio_sequence\",\n  \"sequence\": [\n    { \"audios\": [\"intro/historique_prix.mp3\", \"{produit}\", \"intro/dans_marche.mp3\", \"{marche}\", \"{periode}\"], \"image\": \"images/intro/historique.png\" },\n    { \"audios\": [\"{date:2026-01-10}\"], \"image\": null },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_a.mp3\", \"{prix:8000}\", \"unites/bassine_10kg.mp3\"], \"image\": \"images/produits/mais_local.png\" },\n    { \"audios\": [\"variation/hausse.mp3\", \"conseils/tendance_hausse.mp3\"], \"image\": \"images/icons/trend_up.png\" }\n  ]\n}"
       ],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": false,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil"]
-      }
-    },
-
-    "filter_location": {
-      "id": "filter_location",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "location",
-      "filter_step": "region",
-
-      "audio": {
-        "context": ["choose_region.mp3"],
-        "auto_play": true
-      },
-
-      "options": [],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": true,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Marchés"]
-      },
-
-      "api": {
-        "endpoint": "/filters/locations/regions",
-        "method": "GET",
-        "params_from_history": true
-      },
-
-      "next_filter": "filter_location_department"
-    },
-
-    "filter_location_department": {
-      "id": "filter_location_department",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "location",
-      "filter_step": "department",
-
-      "audio": {
-        "context": ["choose_department.mp3"],
-        "auto_play": true
-      },
-
-      "options": [],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": true,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Marchés", "Région"]
-      },
-
-      "api": {
-        "endpoint": "/filters/locations/departments",
-        "method": "GET",
-        "params_from_history": true
-      },
-
-      "next_filter": "filter_location_commune"
-    },
-
-    "filter_location_commune": {
-      "id": "filter_location_commune",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "location",
-      "filter_step": "commune",
-
-      "audio": {
-        "context": ["choose_commune.mp3"],
-        "auto_play": true
-      },
-
-      "options": [],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": true,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Marchés", "Région", "Département"]
-      },
-
-      "api": {
-        "endpoint": "/filters/locations/communes",
-        "method": "GET",
-        "params_from_history": true
-      },
-
-      "next_filter": null
-    },
-
-    "filter_time": {
-      "id": "filter_time",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "time",
-      "filter_step": "period",
-
-      "audio": {
-        "context": ["choose_period.mp3"],
-        "auto_play": true
-      },
-
-      "options": [
-        {
-          "id": "time_past",
-          "number": 1,
-          "label": "Passé",
-          "image": "time/past.jpg",
-          "audio": ["time_past.mp3"],
-          "keywords": ["passé", "avant", "hier"],
-          "next": "filter_time_past"
-        },
-        {
-          "id": "time_future",
-          "number": 2,
-          "label": "Futur",
-          "image": "time/future.jpg",
-          "audio": ["time_future.mp3"],
-          "keywords": ["futur", "après", "demain"],
-          "next": "filter_time_future"
-        },
-        {
-          "id": "time_calendar",
-          "number": 3,
-          "label": "Calendrier",
-          "image": "time/calendar.jpg",
-          "audio": ["time_calendar.mp3"],
-          "keywords": ["calendrier", "date", "choisir"],
-          "next": "filter_time_calendar"
-        }
-      ],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": false
-      },
-
-      "voice_filter": {
-        "enabled": false,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Marchés"]
-      },
-
-      "next_filter": null
-    },
-
-    "filter_time_past": {
-      "id": "filter_time_past",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "time",
-      "filter_step": "past",
-
-      "audio": {
-        "context": ["choose_past_date.mp3"],
-        "auto_play": true
-      },
-
-      "options": [
-        {
-          "id": "past_yesterday",
-          "number": 1,
-          "label": "Hier",
-          "image": "time/day.jpg",
-          "audio": ["past_yesterday.mp3"],
-          "keywords": ["hier"],
-          "params": {"date_offset": -1}
-        },
-        {
-          "id": "past_2days",
-          "number": 2,
-          "label": "Avant-hier",
-          "image": "time/day.jpg",
-          "audio": ["past_2days.mp3"],
-          "keywords": ["avant-hier"],
-          "params": {"date_offset": -2}
-        },
-        {
-          "id": "past_3days",
-          "number": 3,
-          "label": "Il y a 3 jours",
-          "image": "time/day.jpg",
-          "audio": ["past_3days.mp3"],
-          "keywords": ["trois jours"],
-          "params": {"date_offset": -3}
-        },
-        {
-          "id": "past_4days",
-          "number": 4,
-          "label": "Il y a 4 jours",
-          "image": "time/day.jpg",
-          "audio": ["past_4days.mp3"],
-          "keywords": ["quatre jours"],
-          "params": {"date_offset": -4}
-        },
-        {
-          "id": "past_5days",
-          "number": 5,
-          "label": "Il y a 5 jours",
-          "image": "time/day.jpg",
-          "audio": ["past_5days.mp3"],
-          "keywords": ["cinq jours"],
-          "params": {"date_offset": -5}
-        }
-      ],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": false,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Marchés", "Période"]
-      },
-
-      "next_filter": null
-    },
-
-    "filter_time_future": {
-      "id": "filter_time_future",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "time",
-      "filter_step": "future",
-
-      "audio": {
-        "context": ["choose_future_date.mp3"],
-        "auto_play": true
-      },
-
-      "options": [
-        {
-          "id": "future_today",
-          "number": 1,
-          "label": "Aujourd'hui",
-          "image": "time/day.jpg",
-          "audio": ["future_today.mp3"],
-          "keywords": ["aujourd'hui", "maintenant"],
-          "params": {"date_offset": 0}
-        },
-        {
-          "id": "future_tomorrow",
-          "number": 2,
-          "label": "Demain",
-          "image": "time/day.jpg",
-          "audio": ["future_tomorrow.mp3"],
-          "keywords": ["demain"],
-          "params": {"date_offset": 1}
-        },
-        {
-          "id": "future_2days",
-          "number": 3,
-          "label": "Après-demain",
-          "image": "time/day.jpg",
-          "audio": ["future_2days.mp3"],
-          "keywords": ["après-demain"],
-          "params": {"date_offset": 2}
-        },
-        {
-          "id": "future_3days",
-          "number": 4,
-          "label": "Dans 3 jours",
-          "image": "time/day.jpg",
-          "audio": ["future_3days.mp3"],
-          "keywords": ["trois jours"],
-          "params": {"date_offset": 3}
-        },
-        {
-          "id": "future_4days",
-          "number": 5,
-          "label": "Dans 4 jours",
-          "image": "time/day.jpg",
-          "audio": ["future_4days.mp3"],
-          "keywords": ["quatre jours"],
-          "params": {"date_offset": 4}
-        }
-      ],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": false,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Marchés", "Période"]
-      },
-
-      "next_filter": null
-    },
-
-    "filter_time_calendar": {
-      "id": "filter_time_calendar",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "time",
-      "filter_step": "calendar",
-      "widget_type": "calendar",
-
-      "audio": {
-        "context": ["choose_calendar_date.mp3"],
-        "auto_play": true
-      },
-
-      "options": [],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": false
-      },
-
-      "voice_filter": {
-        "enabled": false,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Marchés", "Période"]
-      },
-
-      "next_filter": null
-    },
-
-    "filter_market": {
-      "id": "filter_market",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "market",
-      "filter_step": "name",
-
-      "audio": {
-        "context": ["choose_market.mp3"],
-        "auto_play": true
-      },
-
-      "options": [],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": true,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Marchés"]
-      },
-
-      "api": {
-        "endpoint": "/filters/markets",
-        "method": "GET",
-        "params_from_history": true
-      },
-
-      "next_filter": null
-    },
-
-    "filter_product": {
-      "id": "filter_product",
-      "level": 3,
-      "type": "filter",
-      "filter_category": "product",
-      "filter_step": "name",
-
-      "audio": {
-        "context": ["choose_product.mp3"],
-        "auto_play": true
-      },
-
-      "options": [],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": true,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": ["Accueil", "Produits"]
-      },
-
-      "api": {
-        "endpoint": "/filters/products",
-        "method": "GET",
-        "params_from_history": true
-      },
-
-      "next_filter": null
-    },
-
-    "results": {
-      "id": "results",
-      "level": 4,
-      "type": "results",
-
-      "audio": {
-        "context": [],
-        "auto_play": true
-      },
-
-      "options": [],
-
-      "pagination": {
-        "items_per_page": 5,
-        "allow_swipe": true
-      },
-
-      "voice_filter": {
-        "enabled": true,
-        "trigger_threshold": 10
-      },
-
-      "navigation": {
-        "show_back": true,
-        "show_home": true,
-        "breadcrumb": []
-      },
-
-      "api": {
-        "endpoint": "/search/results",
-        "method": "POST",
-        "params_from_history": true
-      }
+      "comment": "Historique des prix : le backend regroupe les prix par date, ne garde que les dates où le prix change, calcule la tendance (hausse/baisse/stable) et génère un conseil final."
     }
   }
 }

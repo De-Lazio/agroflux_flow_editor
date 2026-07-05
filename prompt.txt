@@ -1,425 +1,506 @@
-# PROMPT POUR GEMINI - ÉDITEUR DE FLOW AGROFLUX
-
-## CONTEXTE
-
-Tu vas créer un **éditeur visuel de flow de navigation** pour l'application mobile AgroFlux. Cet éditeur permet de concevoir et modifier la navigation audio multi-étapes en langues locales.
-
-J'ai fourni :
-1. ✅ L'analyse complète de la structure des nœuds (4 types identifiés)
-2. ✅ Le fichier `flow.json` actuel avec la structure existante
-
----
-
-## TON TRAVAIL
-
-Crée une **application web standalone** avec **React 18 + React Flow** qui permet de :
-
-### 1. VISUALISER le flow
-- Afficher tous les nœuds du JSON sous forme de graphe interactif
-- Utiliser React Flow pour le rendu visuel
-- Colorer les nœuds selon leur type :
-  - 🟦 **Bleu** : type "menu"
-  - 🟩 **Vert** : type "filter"  
-  - 🟨 **Jaune** : type "results"
-  - 🟪 **Violet** : type "widget"
-- Afficher les connexions entre nœuds (flèches) basées sur :
-  - `option.next` (pour les options)
-  - `next_filter` (pour les filtres)
-
-### 2. ÉDITER les nœuds
-Quand on clique sur un nœud, afficher un **panel latéral droit** avec tous les champs éditables :
-
-**Section Général**
-- Input : `id` (lecture seule)
-- Input : `label` (à ajouter au JSON si absent)
-- Select : `type` (menu | filter | results | widget)
-- Number : `level`
-
-**Section Audio**
-- Liste des fichiers audio contexte (`audio.context[]`)
-- Bouton "+ Ajouter audio"
-- Checkbox : `audio.auto_play`
-
-**Section Options** (si type = menu ou filter)
-- Liste éditable des options avec pour chaque :
-  - Input : `id`
-  - Number : `number` (1-5)
-  - Input : `label`
-  - Input : `image` (chemin)
-  - Liste : `audio[]` (fichiers)
-  - Tags : `keywords[]`
-  - Select : `next` (dropdown tous les nœuds)
-  - JSON editor : `params`
-  - Bouton : 🗑️ Supprimer
-- Bouton : **+ Ajouter option**
-
-**Section Pagination**
-- Number : `items_per_page`
-- Checkbox : `allow_swipe`
-
-**Section Navigation**
-- Checkbox : `show_back`
-- Checkbox : `show_home`
-- Tags éditables : `breadcrumb[]`
-
-**Section API** (si présent)
-- Input : `endpoint`
-- Select : `method` (GET | POST)
-- Checkbox : `params_from_history`
-
-**Section Filtres** (si type = filter)
-- Select : `filter_category`
-- Input : `filter_step`
-- Select : `next_filter` (dropdown nœuds)
-
-### 3. AJOUTER de nouveaux nœuds
-- Bouton flottant "+ Nouveau nœud"
-- Modal avec choix du type :
-  - Menu
-  - Filter
-  - Results
-  - Widget
-- Créer nœud avec structure par défaut selon le type
-- Placer visuellement sur le canvas
-
-### 4. CONNECTER les nœuds
-- Drag & drop pour créer connexions entre nœuds
-- Mise à jour automatique du JSON (`next`, `next_filter`)
-
-### 5. SUPPRIMER nœuds/connexions
-- Sélectionner nœud → touche Delete → Supprime nœud
-- Clic sur connexion → Bouton supprimer → Supprime lien
-
-### 6. SAUVEGARDER / CHARGER
-- Bouton **💾 Télécharger JSON** : Exporte le flow édité
-- Bouton **📂 Charger JSON** : Upload un fichier JSON
-- Auto-save dans localStorage toutes les 30 secondes
-
-### 7. VALIDER le flow
-- Bouton **✅ Valider**
-- Vérifications :
-  - ❌ Nœuds avec `next` pointant vers ID inexistant → Erreur
-  - ⚠️ Nœuds orphelins (aucun nœud ne pointe vers eux, sauf root) → Warning
-  - ⚠️ Nœuds sans options (si type menu/filter) → Warning
-- Afficher résultats validation en haut de l'écran
-
----
-
-## STRUCTURE DU CODE
-
-Organise l'application ainsi :
-
-```
-flow-editor/
-├── public/
-│   └── index.html
-├── src/
-│   ├── App.jsx                  # Composant principal
-│   ├── components/
-│   │   ├── FlowCanvas.jsx       # Canvas React Flow
-│   │   ├── NodeEditor.jsx       # Panel édition nœud (droite)
-│   │   ├── Toolbar.jsx          # Barre d'outils (haut)
-│   │   ├── CustomNode.jsx       # Nœud personnalisé React Flow
-│   │   └── ValidationPanel.jsx  # Résultats validation
-│   ├── utils/
-│   │   ├── flowManager.js       # Logique gestion du flow
-│   │   ├── validator.js         # Validation flow
-│   │   └── nodeFactory.js       # Création nœuds par défaut
-│   ├── styles/
-│   │   └── App.css              # Styles globaux
-│   └── index.jsx                # Point d'entrée
-├── package.json
-└── README.md
-```
-
----
-
-## DÉPENDANCES REQUISES
-
-```json
 {
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "reactflow": "^11.10.0",
-    "lucide-react": "^0.300.0"
+  "version": "1.0",
+  "entry": "root",
+  "config": {
+    "audio": {
+      "auto_play_prompt": true,
+      "auto_play_option": true,
+      "pause_between_ms": 600
+    }
+  },
+  "variables": {
+    "produits": [
+      "mais",
+      "soja"
+    ],
+    "departements": [
+      "oueme",
+      "plateau",
+      "zou",
+      "collines",
+      "mono",
+      "couffo",
+      "atlantique",
+      "litoral",
+      "borgou",
+      "alibori",
+      "atacora",
+      "donga"
+    ],
+    "x_anime_x": [
+      "aujourdhui",
+      "demain",
+      "apres_demain",
+      "dans_trois_jours",
+      "dans_quatre_jours",
+      "hier",
+      "avant_hier",
+      "trois_jours passe",
+      "quatre_jours passe",
+      "cinq_jours passe"
+    ],
+    "periode": [
+      "aujourdhui",
+      "cette_semaine",
+      "ce_mois",
+      "trois_derniers_mois",
+      "six_derniers_mois",
+      "cette_annee"
+    ],
+    "marches_suivis": [
+      "ikpinle",
+      "ketou",
+      "parakou",
+      "glazoue",
+      "save",
+      "malanville",
+      "kpedekpo"
+    ],
+    "type_info_marche": [
+      "resume_rapide",
+      "presentation_du_marche",
+      "produits_disponibles",
+      "calendrier_animation",
+      "opportunite_marche"
+    ],
+    "departements_et_tout": [
+      "tout_les_departements",
+      "oueme",
+      "plateau",
+      "zou",
+      "colline"
+    ]
+  },
+  "hashmaps": {
+    "marche_par_departement": {
+      "oueme": [
+        "ouando",
+        "adjohoun",
+        "gbada",
+        "bonou"
+      ],
+      "plateau": [
+        "takon",
+        "sakete",
+        "ketou"
+      ]
+    }
+  },
+  "dynamic_audio": {},
+  "nodes": {
+    "root": {
+      "type": "root",
+      "audio_prompt": "intro/root.mp3",
+      "options": [
+        {
+          "id": "achete_produit",
+          "next": "achete_produit"
+        },
+        {
+          "id": "vendre_produit",
+          "next": "vendre_produit"
+        },
+        {
+          "id": "marche_anime_x",
+          "next": "marche_anime_x"
+        },
+        {
+          "id": "marche_anime_calendrier",
+          "next": "anime_calendrier_calendrier"
+        },
+        {
+          "id": "infos_march",
+          "next": "infos_marche_departement"
+        },
+        {
+          "id": "explorer_produit",
+          "next": "explorer_produit_produit"
+        }
+      ]
+    },
+    "achete_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/achete_produit.mp3",
+      "options_source": "produits",
+      "set": "produits",
+      "next": "acheter_departement"
+    },
+    "vendre_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/vendre_produit.mp3",
+      "options_source": "produits",
+      "set": "produits",
+      "next": "vendre_departement"
+    },
+    "marche_anime_x": {
+      "type": "grid",
+      "audio_prompt": "questions/marche_anime_x.mp3",
+      "options_source": "x_anime_x",
+      "set": "",
+      "next": "anime_x_departement"
+    },
+    "acheter_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/acheter_departement.mp3",
+      "options_source": "departements",
+      "set": "departements",
+      "next": "acheter_result"
+    },
+    "acheter_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/acheter_produit",
+        "params": [
+          "produit",
+          "departement"
+        ]
+      },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_acheter.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_sont.mp3\"\n      ],\n      \"image\": \"images/intro/acheter.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_bas_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/comparer_qualite.mp3\"\n      ],\n      \"image\": \"images/icons/attention_transport.png\"\n    }\n  ]\n}"
+    },
+    "vendre_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/vendre_departement.mp3",
+      "options_source": "departements",
+      "set": "departements",
+      "next": "vendre_result"
+    },
+    "vendre_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/vendre_produit",
+        "params": [
+          "produit",
+          "departement"
+        ]
+      },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_vendre.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_vente.mp3\"\n      ],\n      \"image\": \"images/intro/vendre.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_eleve_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/vendre_maintenant_si_possible.mp3\"\n      ],\n      \"image\": \"images/icons/opportunity_transport.png\"\n    }\n  ]\n}"
+    },
+    "anime_x_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/anime_x_departement.mp3",
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_x_result"
+    },
+    "anime_x_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/anime_x",
+        "params": [
+          "date",
+          "departement"
+        ]
+      },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}"
+    },
+    "anime_calendrier_calendrier": {
+      "type": "calendrier",
+      "audio_prompt": "questions/date_anime_calendrier_calendrier.mp3",
+      "periode": 7,
+      "cadran": "centrer",
+      "next": "anime_calendrier_departement"
+    },
+    "anime_calendrier_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "",
+        "params": []
+      },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}"
+    },
+    "infos_marche_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/infos_marche_departement.mp3",
+      "options_source": "departements",
+      "set": "departements",
+      "next": "explorer_produit_marche_filter"
+    },
+    "infos_marche_infos_type": {
+      "type": "grid",
+      "audio_prompt": "questions/infos_marche_infos_type.mp3",
+      "options_source": "type_info_marche",
+      "set": "type_info_marche",
+      "next": "infos_marche_result"
+    },
+    "infos_marche_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/infos_marches",
+        "params": [
+          "marche",
+          "info_type"
+        ]
+      },
+      "audio_sequence": [
+        "questions/infos_marche_result.mp3"
+      ],
+      "comment": "🧠 1️⃣ RÉSUMÉ RAPIDE (ultra court)\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    {\n      \"audios\": [\n        \"intro/marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"intro/se_trouve_a.mp3\",\n        \"localites/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"intro/est_anime.mp3\",\n        \"frequence/tous_les_4_jours.mp3\"\n      ],\n      \"image\": \"images/icons/calendrier.png\"\n    },\n\n    {\n      \"audios\": [\n        \"intro/produits_principaux.mp3\",\n        \"produits/mais.mp3\",\n        \"produits/gari.mp3\",\n        \"produits/soja.mp3\"\n      ],\n      \"image\": \"images/produits/group.png\"\n    }\n\n  ]\n}\n🧠 2️⃣ PRÉSENTATION DU MARCHÉ\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    {\n      \"audios\": [\n        \"intro/presentation_marche.mp3\",\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"intro/localisation.mp3\",\n        \"localites/bohicon.mp3\"\n      ],\n      \"image\": \"images/localites/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"intro/regle_animation.mp3\",\n        \"frequence/tous_les_4_jours.mp3\"\n      ],\n      \"image\": \"images/icons/calendrier.png\"\n    },\n\n    {\n      \"audios\": [\n        \"intro/produits_principaux.mp3\",\n        \"produits/mais.mp3\",\n        \"produits/gari.mp3\",\n        \"produits/soja.mp3\"\n      ],\n      \"image\": \"images/produits/group.png\"\n    }\n\n  ]\n}\n🧠 3️⃣ PRODUITS DISPONIBLES (avec regroupement + détail)\n\n👉 comme tu l’as bien décidé : regroupé + détaillé\n\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    {\n      \"audios\": [\n        \"intro/produits_disponibles.mp3\",\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* PRODUIT : MAÏS */\n\n    {\n      \"audios\": [\n        \"produits/mais.mp3\",\n        \"phrases/disponible_en_varietes.mp3\",\n        \"produits/mais_local.mp3\",\n        \"produits/mais_blanc.mp3\",\n        \"produits/mais_jaune.mp3\"\n      ],\n      \"image\": \"images/produits/mais_group.png\"\n    },\n\n    {\n      \"audios\": [\n        \"intro/unites_vente.mp3\",\n        \"unites/kg.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/unites/mix.png\"\n    },\n\n    /* PRODUIT : GARI */\n\n    {\n      \"audios\": [\n        \"produits/gari.mp3\",\n        \"phrases/disponible_en_varietes.mp3\",\n        \"produits/gari_blanc.mp3\",\n        \"produits/gari_jaune.mp3\"\n      ],\n      \"image\": \"images/produits/gari_group.png\"\n    }\n\n  ]\n}\n🧠 4️⃣ CALENDRIER (audio + widget)\n\n👉 audio court + app gère le calendrier\n\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"calendar_data\": {\n    \"marche\": \"bohicon\",\n    \"regle\": \"tous_les_4_jours\"\n  },\n\n  \"sequence\": [\n\n    {\n      \"audios\": [\n        \"intro/calendrier_marche.mp3\",\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/icons/calendrier.png\"\n    },\n\n    {\n      \"audios\": [\n        \"frequence/tous_les_4_jours.mp3\"\n      ],\n      \"image\": null\n    }\n\n  ]\n}\n🧠 5️⃣ OPPORTUNITÉ DU MARCHÉ 🔥\n\n👉 ton différenciateur IA\n\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    {\n      \"audios\": [\n        \"intro/analyse_marche.mp3\",\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"tendance/prix_eleve.mp3\"\n      ],\n      \"image\": \"images/icons/trend_up.png\"\n    },\n\n    {\n      \"audios\": [\n        \"recommandation/bon_pour_vendre.mp3\"\n      ],\n      \"image\": \"images/icons/opportunity.png\"\n    }\n\n  ]\n}"
+    },
+    "explorer_produit_produit": {
+      "type": "grid",
+      "audio_prompt": "questions/explorer_produit_produit.mp3",
+      "options_source": "produits",
+      "set": "produits",
+      "next": "explorer_produit_marche"
+    },
+    "explorer_produit_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "explorer_prix",
+        "params": [
+          "marche",
+          "produit",
+          "periode"
+        ]
+      },
+      "audio_sequence": [
+        "questions/explorer_produit_result.mp3"
+      ],
+      "comment": "🧠 🎯 Objectif du backend\n\nConstruire un moteur qui transforme des données de prix agricoles en narration audio structurée (JSON).\n\n⚙️ 🔥 GRANDES LIGNES À DONNER AU DEV\n1️⃣ Récupération des données\nInput API :\nproduit\nmarché\npériode (semaine, mois, 6 mois, etc.)\nRequête :\nrécupérer les prix historiques du produit dans le marché\ninclure toutes les variétés\ntrier par date croissante\n2️⃣ Structuration des données\nRegrouper les données par date\nÀ chaque date :\nliste des variétés\nprix + unité\n\n👉 Format interne attendu :\n\n[\n  {\n    \"date\": \"2026-01-10\",\n    \"varieties\": [...]\n  }\n]\n3️⃣ Filtrage intelligent des dates (CRUCIAL)\nNe garder que :\nla première date\nles dates où au moins un prix change\n\n👉 Règle :\n\ncomparer avec la date précédente\ndétecter changement par variété\n4️⃣ Calcul de tendance (🔺🔻➖)\nCalculer variation entre deux dates\nBasé sur prix moyen ou dominant\n\n👉 Règle simple :\n\nhausse → 🔺\nbaisse → 🔻\nstable → ➖\n\n👉 Ajouter seuil (~5%) pour éviter bruit\n\n5️⃣ Enrichissement (mapping assets)\n\nPour chaque élément récupérer :\n\naudio (clé fichier)\nimage associée\n\n👉 Exemple :\n\nproduit → produits/mais.mp3\nmarché → marches/takon.mp3\nunité → unites/kg.mp3\n6️⃣ Génération de la séquence audio\n\nConstruire un JSON structuré avec :\n\n🔹 INTRO\nphrase complète :\nhistorique + produit + marché + période\n🔹 POUR CHAQUE DATE\nBloc date\naudio date\nvariation (sauf première date)\nBloc variétés\npour chaque variété :\nnom\nprix\nunité\n7️⃣ Gestion des cas réels (IMPORTANT)\n\nLe backend doit gérer :\n\n1 seule variété → simple\nplusieurs variétés → boucle\ndonnées manquantes → ignorer proprement\nunités différentes → cohérence obligatoire\n8️⃣ Génération dynamique des audios\n\nLe backend doit pouvoir générer :\n\n📅 dates → date/YYYY_MM_DD.mp3\n💰 prix → prix/XXXX_fcfa.mp3\n📊 variation → variation/hausse.mp3\n9️⃣ Génération du conseil final (IA simple)\n\nBasé sur tendance globale :\n\nhausse → conseil vendre / attendre\nbaisse → conseil acheter\nstable → conseil neutre\n\n\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/historique_prix.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_marche.mp3\",\n        \"marches/takon.mp3\",\n        \"periode/six_derniers_mois.mp3\"\n      ],\n      \"image\": \"images/intro/historique.png\"\n    },\n\n    /* ================= DATE 1 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_10.mp3\"\n      ],\n      \"image\": null\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/8000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= DATE 2 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_20.mp3\",\n        \"variation/hausse.mp3\"\n      ],\n      \"image\": \"images/icons/hausse.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/6000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/9000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= CONSEIL IA ================= */\n\n    {\n      \"audios\": [\n        \"conseils/tendance_hausse.mp3\",\n        \"conseils/attendre_peut_etre.mp3\"\n      ],\n      \"image\": \"images/icons/trend_up.png\"\n    }\n  ]\n}"
+    },
+    "explorer_produit_periode": {
+      "type": "grid",
+      "audio_prompt": "questions/explorer_produit_periode.mp3",
+      "options_source": "periode",
+      "set": "periode",
+      "next": "explorer_produit_result"
+    },
+    "anime_calendrier_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/anime_calendrier_departement.mp3",
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_calendrier_result"
+    },
+    "explorer_produit_marche": {
+      "type": "grid",
+      "audio_prompt": "questions/explorer_produit_marche.mp3",
+      "options_source": "marches_suivis",
+      "set": "marches_suivis",
+      "next": "explorer_produit_periode"
+    },
+    "explorer_produit_marche_filter": {
+      "type": "pre_filter",
+      "audio_prompt": "questions/filtre.mp3",
+      "cles": [
+        "produits"
+      ],
+      "filtre_source": "marche_par_departement",
+      "next": "infos_marche_infos_type",
+      "cle": "departements"
+    }
   }
 }
-```
 
-**Pas d'autres librairies** pour garder simple.
 
----
 
-## TEMPLATES DE NŒUDS PAR TYPE
 
-Quand on crée un nouveau nœud, utilise ces templates :
+Encore queleques modifications : 
 
-### Template MENU
-```json
-{
-  "id": "new_menu_X",
-  "level": 2,
-  "type": "menu",
-  "audio": {
-    "context": [],
-    "auto_play": true
-  },
-  "options": [],
-  "pagination": {
-    "items_per_page": 5,
-    "allow_swipe": true
-  },
-  "voice_filter": {
-    "enabled": false,
-    "trigger_threshold": 10
-  },
-  "navigation": {
-    "show_back": true,
-    "show_home": true,
-    "breadcrumb": []
-  }
+
+dans tout type de noeud, il y à un champs pour l'audio d'introduction de la page l'atribu : audio_prompt
+
+Ex : Choissiser le departement.
+
+
+or parfoit l'introduction est une séquence d'audio dynamique : 
+
+Ex : pour la série : "acheter un produit"
+le 1er noeud demane le produit à acheter, donc l'intro pourrait être : 
+
+Intro : "Quel produit voulez vous acheter ?"
+
+l'utilisateur fait le choix du produit. 
+2ème noeud : il faut choisir le departement voulu par l'utilisateur, en ce moment l'introduction devient : 
+
+Intro : "Vous voulez vendre votre {produit choisir précedament} dans quel departement ?"
+
+Là le produit choisir pécedement est déjà stocker dans un variable et sera injecter dans l'intro.
+
+donc en vrai les intro seront de séquences audios avec la possibilité  d'introduire des audio par variable. Ces variable sont définie d'avance comme tu le voir dans le .json.
+
+
+le neud de type result ont déjà un champ : audio_sequence mais il faut bien l'adapter. pour que l'introduction des resultat puisse aussi respecter le format dynamique. 
+
+
+
+Donc voici ce que je pense : 
+
+🔥 🧠 OBJECTIF GLOBAL
+
+Unifier tout le système audio pour qu’il soit :
+
+100% dynamique
+sans oubli possible
+exploitable automatiquement (React + génération assets)
+✅ 1. SUPPRESSION DU SYSTÈME ACTUEL
+
+❌ À supprimer partout :
+
+"audio_prompt": "..."
+
+❌ À éviter :
+
+"audio_sequence": []
+
+👉 Pourquoi :
+→ 2 systèmes = bugs + oublis + complexité
+
+✅ 2. NOUVEAU FORMAT STANDARD (OBLIGATOIRE)
+
+👉 Dans TOUS les nodes, ajouter :
+
+"audio": {
+  "type": "sequence",
+  "key": "unique_audio_id",
+  "sequence": []
 }
-```
+🧠 3. INTRO = AUSSI UNE SÉQUENCE DYNAMIQUE
 
-### Template FILTER
-```json
-{
-  "id": "new_filter_X",
-  "level": 3,
-  "type": "filter",
-  "filter_category": "location",
-  "filter_step": "",
-  "audio": {
-    "context": [],
-    "auto_play": true
-  },
-  "options": [],
-  "pagination": {
-    "items_per_page": 5,
-    "allow_swipe": true
-  },
-  "voice_filter": {
-    "enabled": true,
-    "trigger_threshold": 10
-  },
-  "navigation": {
-    "show_back": true,
-    "show_home": true,
-    "breadcrumb": []
-  },
-  "api": {
-    "endpoint": "",
-    "method": "GET",
-    "params_from_history": true
-  },
-  "next_filter": null
+👉 Exemple simple :
+
+"audio": {
+  "type": "sequence",
+  "key": "acheter_produit_intro",
+  "sequence": [
+    "intro/quel_produit_acheter.mp3"
+  ]
 }
-```
 
-### Template RESULTS
-```json
-{
-  "id": "new_results_X",
-  "level": 4,
-  "type": "results",
-  "audio": {
-    "context": [],
-    "auto_play": true
-  },
-  "options": [],
-  "pagination": {
-    "items_per_page": 5,
-    "allow_swipe": true
-  },
-  "voice_filter": {
-    "enabled": true,
-    "trigger_threshold": 10
-  },
-  "navigation": {
-    "show_back": true,
-    "show_home": true,
-    "breadcrumb": []
-  },
-  "api": {
-    "endpoint": "/search/results",
-    "method": "POST",
-    "params_from_history": true
-  }
+👉 Exemple dynamique (IMPORTANT) :
+
+"audio": {
+  "type": "sequence",
+  "key": "acheter_departement_intro",
+  "sequence": [
+    "intro/vous_voulez_acheter.mp3",
+    "{produit}",
+    "intro/dans_quel_departement.mp3"
+  ]
 }
-```
+✅ 4. INTRODUCTION DES VARIABLES {}
 
----
+👉 Nouveau concept :
 
-## FONCTIONNALITÉS IMPORTANTES
+"{produit}"
+"{departement}"
+"{marche}"
+"{periode}"
+🧠 RÈGLE À IMPLÉMENTER
 
-### Auto-layout
-- Utilise React Flow `dagre` layout pour organiser automatiquement les nœuds
-- Bouton **🔄 Réorganiser** pour appliquer auto-layout
+Dans le moteur :
 
-### Mini-map
-- Afficher mini-map React Flow en bas à droite
-- Permet navigation rapide dans flow complexe
+si "string" → audio direct
+si "{variable}" → résoudre dynamiquement
+✅ 5. AJOUT D’UN MAPPING GLOBAL (OBLIGATOIRE)
 
-### Zoom & Pan
-- Molette souris = zoom
-- Click & drag = pan
-- Boutons +/- pour zoom
+Dans ton JSON racine :
 
-### Undo / Redo
-- Stack historique des modifications
-- Boutons ↩️ Undo / ↪️ Redo dans toolbar
-- Raccourcis Ctrl+Z / Ctrl+Y
+"audio_mappings": {
+  "produit": "produits/",
+  "departement": "localites/",
+  "marche": "marches/",
+  "periode": "periode/"
+}
+🧠 RÉSOLUTION
+{produit} → "mais"
+→ produits/mais.mp3
+✅ 6. SUPPORT DES VARIABLES DYNAMIQUES AVANCÉES
 
-### Recherche
-- Input recherche dans toolbar
-- Recherche par ID ou label de nœud
-- Centrer canvas sur nœud trouvé
+👉 À prévoir dès maintenant :
 
----
+"{prix:1000}"
+"{date:2026-03-10}"
 
-## CONTRAINTES TECHNIQUES
+👉 Rendu :
 
-1. **JSON valide** : Toujours maintenir structure JSON valide
-2. **IDs uniques** : Vérifier qu'aucun ID n'est dupliqué
-3. **Connexions valides** : `next` et `next_filter` doivent pointer vers IDs existants
-4. **Pas de cycles** : Détecter et empêcher cycles infinis dans le flow
-5. **Performance** : Optimiser pour 50+ nœuds minimum
+prix → prix/1000_fcfa.mp3
+date → date/2026_03_10.mp3
+✅ 7. UNIFICATION DES RESULT
 
----
+❌ Avant :
 
-## UI/UX
+"audio_sequence": []
 
-### Couleurs
-- Background canvas : `#f8f9fa` (gris clair)
-- Nœud menu : `#3b82f6` (bleu)
-- Nœud filter : `#10b981` (vert)
-- Nœud results : `#f59e0b` (jaune/orange)
-- Nœud widget : `#8b5cf6` (violet)
-- Connexions : `#64748b` (gris foncé)
-- Sélection : `#ef4444` (rouge)
+✅ Maintenant :
 
-### Toolbar (en haut)
-```
-[Logo AgroFlux] | [📂 Charger] [💾 Sauvegarder] | [+ Nœud] | [🔍 Recherche] | [↩️] [↪️] | [🔄 Réorganiser] | [✅ Valider]
-```
+"audio": {
+  "type": "sequence",
+  "key": "acheter_result_intro",
+  "sequence": [
+    "intro/vous_cherchez_acheter.mp3",
+    "{produit}",
+    "intro/dans_departement.mp3",
+    "{departement}"
+  ]
+}
+✅ 8. CONSERVER LES GROS BLOCS (audio narratif)
 
-### Layout
-```
-┌─────────────────────────────────────────────────┐
-│              TOOLBAR (haut)                      │
-├────────────────────────────┬────────────────────┤
-│                            │                    │
-│      CANVAS REACT FLOW     │   PANEL ÉDITION    │
-│      (zone principale)     │   (nœud sélect.)   │
-│                            │                    │
-│       [Mini-map ici]       │                    │
-│                            │                    │
-└────────────────────────────┴────────────────────┘
-```
+👉 Tu gardes ton système actuel MAIS :
 
----
+🔥 TU AUTORISES LES VARIABLES
+"audios": [
+  "produits/mais.mp3",
+  "{prix:1000}",
+  "{date:2026-03-10}"
+]
+✅ 9. AJOUT D’UN FALLBACK (SÉCURITÉ)
 
-## GESTION DES ERREURS
+Dans chaque audio :
 
-- **Fichier JSON invalide** : Message d'erreur clair + garde l'ancien flow
-- **Nœud sans ID** : Génère ID automatique `node_${timestamp}`
-- **Option sans next** : Pas d'erreur, juste warning
-- **Connexion vers ID inexistant** : Erreur rouge, supprime connexion
+"fallback": "intro/default.mp3"
 
----
+👉 évite crash si variable absente
 
-## EXEMPLES D'UTILISATION
+✅ 10. NORMALISATION DES CLÉS (TRÈS IMPORTANT)
 
-### Cas 1 : Modifier un nœud existant
-1. Cliquer sur nœud "menu_markets"
-2. Panel s'ouvre à droite
-3. Modifier label : "Marchés agricoles"
-4. Ajouter fichier audio : "markets_intro_fon.mp3"
-5. Modifications auto-sauvegardées
+👉 Tous les key doivent être :
 
-### Cas 2 : Ajouter nouvelle option à un menu
-1. Sélectionner nœud "root"
-2. Dans section Options, cliquer "+ Ajouter option"
-3. Remplir :
-   - number: 3
-   - label: "Par Prix"
-   - next: "menu_prices" (sélectionner dans dropdown)
-4. Sauvegarder
+uniques
+lisibles
+structurés
 
-### Cas 3 : Créer nouveau parcours
-1. Cliquer "+ Nouveau nœud"
-2. Choisir type "Menu"
-3. Placer sur canvas
-4. Éditer propriétés (ID, options...)
-5. Connecter depuis un nœud existant (drag & drop)
+Exemple :
 
-### Cas 4 : Valider le flow
-1. Cliquer "✅ Valider"
-2. Voir résultats :
-   - ❌ Erreur : "filter_product_bis" → next pointe vers "unknown_node"
-   - ⚠️ Warning : "menu_test" est orphelin
-3. Corriger erreurs
-4. Revalider
+acheter_produit_intro
+acheter_departement_intro
+vendre_result_intro
+anime_x_intro
+✅ 11. CONTRAINTES À AJOUTER DANS TON ÉDITEUR
 
----
+Ton éditeur doit bloquer si :
 
-## CE QUE JE FOURNIS
+❌ erreurs :
+audio sans key
+variable non définie
+mapping manquant
+fichier mal formé
+✅ 12. FEATURE CLÉ À INTÉGRER DANS TON ÉDITEUR
 
-1. ✅ **Analyse complète** structure nœuds (déjà lue)
-2. ✅ **Fichier flow.json** (structure actuelle du flow)
-3. ✅ **Ce prompt** avec toutes les spécifications
+🔥 Générer automatiquement :
 
----
-
-## TON LIVRABLE
-
-Fournis-moi le **code source complet** avec :
-
-1. **Tous les fichiers** organisés selon la structure proposée
-2. **package.json** avec dépendances
-3. **README.md** avec :
-   - Instructions installation (`npm install`)
-   - Instructions lancement (`npm start`)
-   - Guide utilisation rapide
-4. **Code commenté** aux endroits clés (en français)
-5. **App fonctionnelle** qui :
-   - ✅ Charge le flow.json fourni
-   - ✅ Affiche graphe visuel
-   - ✅ Permet édition nœuds
-   - ✅ Sauvegarde/Charge JSON
-   - ✅ Valide le flow
-
----
-
-## FORMAT DE RÉPONSE
-
-Réponds en fournissant :
-
-1. **Code de chaque fichier** séparément avec nom du fichier en commentaire
-2. **Instructions** d'installation et lancement
-3. **Captures d'écran** du résultat (si possible, sinon description visuelle)
-
----
-
-## PRIORITÉS
-
-Si tu dois faire des choix, priorise dans cet ordre :
-
-1. ✅ **Visualisation graphe** (React Flow fonctionnel)
-2. ✅ **Édition propriétés nœud** (panel latéral)
-3. ✅ **Sauvegarde/Chargement JSON**
-4. ✅ **Validation flow**
-5. ⚠️ **Ajout nouveaux nœuds** (si temps)
-6. ⚠️ **Drag connexions** (si temps)
-7. ⚠️ **Undo/Redo** (bonus)
-
----
-
-## COMMENCE MAINTENANT
-
-Voici le fichier **flow.json** à utiliser :
-
-[COLLER ICI LE CONTENU DU flow.json]
-
-**Génère le code complet de l'éditeur de flow.** 🚀
+✔ liste de tous les audios nécessaires
+✔ liste des images
+✔ variables utilisées
+✔ audios manquants
+✅ 13. STRUCTURE FINALE D’UN NODE
+{
+  "type": "grid",
+  "audio": {
+    "type": "sequence",
+    "key": "acheter_departement_intro",
+    "sequence": [
+      "intro/vous_voulez_acheter.mp3",
+      "{produit}",
+      "intro/dans_quel_departement.mp3"
+    ],
+    "fallback": "intro/default.mp3"
+  },
+  "options_source": "departements",
+  "set": "departements",
+  "next": "acheter_result"
+}
