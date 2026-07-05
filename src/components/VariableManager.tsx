@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Database } from 'lucide-react';
+import type { Node } from 'reactflow';
+import type { FlowGraphNodeData, FlowNodeProbe, FlowVariables } from '../types/flow';
 
 interface VariableManagerProps {
-  variables: Record<string, string[]>;
-  onUpdate: (variables: Record<string, string[]>) => void;
+  variables: FlowVariables;
+  onUpdate: (variables: FlowVariables) => void;
   onClose: () => void;
-  nodes: any[];
+  nodes: Node<FlowGraphNodeData>[];
 }
 
 const VariableManager = ({ variables, onUpdate, onClose, nodes }: VariableManagerProps) => {
@@ -19,10 +21,10 @@ const VariableManager = ({ variables, onUpdate, onClose, nodes }: VariableManage
 
   const removeVariable = (name: string) => {
     // Vérifier si la variable est utilisée
-    const isUsed = nodes.some(node => 
-      node.data.options_source === name || 
-      node.data.set === name
-    );
+    const isUsed = nodes.some((node) => {
+      const fields = node.data as FlowNodeProbe;
+      return fields.options_source === name || fields.set === name;
+    });
 
     if (isUsed) {
       alert(`La variable "${name}" est en cours d'utilisation dans un ou plusieurs nœuds et ne peut pas être supprimée.`);

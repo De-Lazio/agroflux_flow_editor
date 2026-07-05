@@ -1,7 +1,26 @@
-import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database } from 'lucide-react';
+import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download, Layers, Library } from 'lucide-react';
+import ResourceCheckPanel from './ResourceCheckPanel';
+import type { ValidationReport } from '../types/flow';
 
-const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
+interface ValidationPanelProps {
+  errors: string[];
+  warnings: string[];
+  report?: ValidationReport;
+  onClose: () => void;
+}
+
+const ValidationPanel = ({ errors, warnings, report, onClose }: ValidationPanelProps) => {
   if (errors.length === 0 && warnings.length === 0 && !report) return null;
+
+  const handleExportReport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(report, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "rapport_inventaire.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
 
   return (
     <div className="absolute top-[70px] left-1/2 -translate-x-1/2 w-[95%] max-w-[900px] bg-white border border-slate-200 rounded-lg shadow-2xl z-[100] max-h-[80vh] overflow-y-auto p-0 animate-in fade-in slide-in-from-top-4 duration-300 border-t-4 border-t-indigo-500">
@@ -50,11 +69,20 @@ const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
 
         {report && (
           <div className="pt-4 border-t border-slate-100">
-            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <FileText size={18} className="text-indigo-500" />
-              Rapport d'inventaire automatique
-            </h4>
-            
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <FileText size={18} className="text-indigo-500" />
+                Rapport d'inventaire automatique
+              </h4>
+              <button
+                onClick={handleExportReport}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100"
+                title="Exporter le rapport en JSON"
+              >
+                <Download size={14} /> Exporter en JSON
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Audios */}
               <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
@@ -98,6 +126,43 @@ const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
                 </div>
               </div>
             </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100">
+              <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                Détail des ressources générées automatiquement
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Ressources générées depuis les Variables */}
+                <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
+                  <div className="flex items-center gap-2 mb-3 text-teal-700 font-bold text-xs uppercase">
+                    <Layers size={14} /> Variables ({(report.variableResources?.audios?.length || 0) + (report.variableResources?.images?.length || 0)})
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto space-y-1 pr-2">
+                    {[...(report.variableResources?.audios || []), ...(report.variableResources?.images || [])].map((r: string, i: number) => (
+                      <div key={i} className="text-[10px] font-mono bg-white p-1 rounded border border-teal-50 text-teal-600 break-all">
+                        {r}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Ressources générées depuis les HashMaps */}
+                <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100">
+                  <div className="flex items-center gap-2 mb-3 text-orange-700 font-bold text-xs uppercase">
+                    <Library size={14} /> HashMaps ({(report.hashmapResources?.audios?.length || 0) + (report.hashmapResources?.images?.length || 0)})
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto space-y-1 pr-2">
+                    {[...(report.hashmapResources?.audios || []), ...(report.hashmapResources?.images || [])].map((r: string, i: number) => (
+                      <div key={i} className="text-[10px] font-mono bg-white p-1 rounded border border-orange-50 text-orange-600 break-all">
+                        {r}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <ResourceCheckPanel report={report} />
           </div>
         )}
       </div>
