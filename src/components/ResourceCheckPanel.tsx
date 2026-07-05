@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ListChecks, Upload, Copy, Check, X as XIcon } from 'lucide-react';
-
-const RESOURCE_EXTENSIONS = ['mp3', 'wav', 'ogg', 'm4a', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
+import { RESOURCE_EXTENSIONS } from '../utils/resourceInventory';
 
 const extractFileNamesFromTree = (treeText: string): Set<string> => {
   const names = new Set<string>();

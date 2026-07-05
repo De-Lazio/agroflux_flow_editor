@@ -1,4 +1,4 @@
-import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download } from 'lucide-react';
+import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download, Layers, Library } from 'lucide-react';
 import ResourceCheckPanel from './ResourceCheckPanel';
 
 const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
@@ -115,6 +115,41 @@ const ValidationPanel = ({ errors, warnings, report, onClose }: any) => {
                       {"{"}{v}{"}"}
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100">
+              <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                Détail des ressources générées automatiquement
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Ressources générées depuis les Variables */}
+                <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
+                  <div className="flex items-center gap-2 mb-3 text-teal-700 font-bold text-xs uppercase">
+                    <Layers size={14} /> Variables ({(report.variableResources?.audios?.length || 0) + (report.variableResources?.images?.length || 0)})
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto space-y-1 pr-2">
+                    {[...(report.variableResources?.audios || []), ...(report.variableResources?.images || [])].map((r: string, i: number) => (
+                      <div key={i} className="text-[10px] font-mono bg-white p-1 rounded border border-teal-50 text-teal-600 break-all">
+                        {r}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Ressources générées depuis les HashMaps */}
+                <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100">
+                  <div className="flex items-center gap-2 mb-3 text-orange-700 font-bold text-xs uppercase">
+                    <Library size={14} /> HashMaps ({(report.hashmapResources?.audios?.length || 0) + (report.hashmapResources?.images?.length || 0)})
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto space-y-1 pr-2">
+                    {[...(report.hashmapResources?.audios || []), ...(report.hashmapResources?.images || [])].map((r: string, i: number) => (
+                      <div key={i} className="text-[10px] font-mono bg-white p-1 rounded border border-orange-50 text-orange-600 break-all">
+                        {r}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

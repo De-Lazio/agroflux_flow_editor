@@ -1,6 +1,7 @@
 import type { Node, Edge } from 'reactflow';
 import { Position } from 'reactflow';
 import dagre from 'dagre';
+import { DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './resourceInventory';
 
 export const jsonToFlow = (flowData: any) => {
   const nodes: Node[] = [];
@@ -56,6 +57,10 @@ export const flowToJson = (nodes: Node[], extraData: any = {}) => {
     variables: extraData.variables || {},
     hashmaps: extraData.hashmaps || {},
     audio_mappings: extraData.audioMappings || {},
+    resource_formats: extraData.resource_formats || {
+      audio: DEFAULT_AUDIO_FORMAT,
+      image: DEFAULT_IMAGE_FORMAT
+    },
     dynamic_audio: extraData.dynamic_audio || {},
     nodes: flowNodes
   };

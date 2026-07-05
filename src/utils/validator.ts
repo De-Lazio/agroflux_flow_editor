@@ -1,14 +1,29 @@
+import { buildVariableResources, buildHashmapResources, DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './resourceInventory';
+
+type ResourceGroup = { audios: string[], images: string[] };
+
 export const validateFlow = (flowData: any) => {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const report: { audios: string[], images: string[], variables: string[] } = {
+  const report: {
+    audios: string[],
+    images: string[],
+    variables: string[],
+    variableResources: ResourceGroup,
+    hashmapResources: ResourceGroup
+  } = {
     audios: [],
     images: [],
-    variables: []
+    variables: [],
+    variableResources: { audios: [], images: [] },
+    hashmapResources: { audios: [], images: [] }
   };
 
   const nodes = flowData.nodes;
   const nodeIds = Object.keys(nodes);
+  const variables = flowData.variables || {};
+  const hashmaps = flowData.hashmaps || {};
+  const mappings = flowData.audio_mappings || {};
 
   const audioKeys = new Set<string>();
   const audioFiles = new Set<string>();
@@ -41,11 +56,7 @@ export const validateFlow = (flowData: any) => {
           if (!item) return;
           const match = item.match(/\{([^}:]+)(?::[^}]+)?\}/);
           if (match) {
-            const varName = match[1];
-            usedVars.add(varName);
-            if (flowData.audio_mappings && !flowData.audio_mappings[varName]) {
-              warnings.push(`Nœud "${id}" : La variable audio "{${varName}}" n'est pas définie dans 'audio_mappings'.`);
-            }
+            usedVars.add(match[1]);
           } else {
             audioFiles.add(item);
           }
@@ -124,9 +135,48 @@ export const validateFlow = (flowData: any) => {
     }
   });
 
+  // Validation du mapping de ressources (variables + hashmaps)
+  const mappingNames = [...Object.keys(variables), ...Object.keys(hashmaps)];
+  const folderOwners: Record<string, string[]> = {};
+
+  mappingNames.forEach((name) => {
+    if (!mappings[name]) {
+      warnings.push(`Le mapping ressource de "${name}" est manquant. Ouvrez "Mapping Audio & Image" et cliquez sur "Régénérer".`);
+    }
+    const folder = mappings[name] || name;
+    if (!folderOwners[folder]) folderOwners[folder] = [];
+    folderOwners[folder].push(name);
+  });
+
+  Object.entries(folderOwners).forEach(([folder, owners]) => {
+    if (owners.length > 1) {
+      warnings.push(`Le dossier de ressources "${folder}" est partagé par plusieurs mappings : ${owners.join(', ')}.`);
+    }
+  });
+
+  // Ressources générées automatiquement pour chaque valeur de variable/hashmap
+  const audioFormat = flowData.resource_formats?.audio || DEFAULT_AUDIO_FORMAT;
+  const imageFormat = flowData.resource_formats?.image || DEFAULT_IMAGE_FORMAT;
+
+  const variableResources = buildVariableResources(variables, mappings, audioFormat, imageFormat);
+  const hashmapResources = buildHashmapResources(hashmaps, mappings, audioFormat, imageFormat);
+
+  variableResources.audios.forEach((a) => audioFiles.add(a));
+  variableResources.images.forEach((i) => imageFiles.add(i));
+  hashmapResources.audios.forEach((a) => audioFiles.add(a));
+  hashmapResources.images.forEach((i) => imageFiles.add(i));
+
   report.audios = Array.from(audioFiles).sort();
   report.images = Array.from(imageFiles).sort();
   report.variables = Array.from(usedVars).sort();
+  report.variableResources = {
+    audios: [...variableResources.audios].sort(),
+    images: [...variableResources.images].sort()
+  };
+  report.hashmapResources = {
+    audios: [...hashmapResources.audios].sort(),
+    images: [...hashmapResources.images].sort()
+  };
 
   return { errors, warnings, report };
 };

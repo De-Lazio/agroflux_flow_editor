@@ -18,10 +18,11 @@ import NodeEditor from './components/NodeEditor';
 import ValidationPanel from './components/ValidationPanel';
 import VariableManager from './components/VariableManager';
 import HashMapManager from './components/HashMapManager';
-import AudioMappingManager from './components/AudioMappingManager';
+import ResourceMappingManager from './components/ResourceMappingManager';
 import FlowSettingsManager from './components/FlowSettingsManager';
 import { jsonToFlow, flowToJson, getLayoutedElements } from './utils/flowManager';
 import { validateFlow } from './utils/validator';
+import { DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './utils/resourceInventory';
 import {
   createDefaultRootNode,
   createDefaultGridNode,
@@ -31,12 +32,7 @@ import {
 } from './utils/nodeFactory';
 import initialFlow from '../flow.json';
 
-const defaultAudioMappings = {
-  "produit": "produits/",
-  "departement": "localites/",
-  "marche": "marches/",
-  "periode": "periode/"
-};
+const defaultAudioMappings: Record<string, string> = {};
 
 const App = () => {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -49,12 +45,14 @@ const App = () => {
   const [variables, setVariables] = useState<Record<string, string[]>>({});
   const [hashmaps, setHashmaps] = useState<Record<string, Record<string, string[]>>>({});
   const [audioMappings, setAudioMappings] = useState<Record<string, string>>(defaultAudioMappings);
+  const [audioFormat, setAudioFormat] = useState<string>(DEFAULT_AUDIO_FORMAT);
+  const [imageFormat, setImageFormat] = useState<string>(DEFAULT_IMAGE_FORMAT);
   const [config, setConfig] = useState<any>(null);
   const [dynamicAudio, setDynamicAudio] = useState<any>(null);
   const [entryNode, setEntryNode] = useState<string>("");
   const [isVariableManagerOpen, setIsVariableManagerOpen] = useState(false);
   const [isHashMapManagerOpen, setIsHashMapManagerOpen] = useState(false);
-  const [isAudioMappingManagerOpen, setIsAudioMappingManagerOpen] = useState(false);
+  const [isMappingManagerOpen, setIsMappingManagerOpen] = useState(false);
   const [isFlowSettingsOpen, setIsFlowSettingsOpen] = useState(false);
 
   // État de verrouillage pour le chargement
@@ -75,6 +73,8 @@ const App = () => {
             setVariables(session.variables || {});
             setHashmaps(session.hashmaps || {});
             setAudioMappings(session.audioMappings || defaultAudioMappings);
+            setAudioFormat(session.audioFormat || DEFAULT_AUDIO_FORMAT);
+            setImageFormat(session.imageFormat || DEFAULT_IMAGE_FORMAT);
             setConfig(session.config || null);
             setDynamicAudio(session.dynamicAudio || null);
             setEntryNode(session.entryNode || "");
@@ -93,6 +93,8 @@ const App = () => {
       setVariables((initialFlow as any).variables || {});
       setHashmaps((initialFlow as any).hashmaps || {});
       setAudioMappings((initialFlow as any).audio_mappings || defaultAudioMappings);
+      setAudioFormat((initialFlow as any).resource_formats?.audio || DEFAULT_AUDIO_FORMAT);
+      setImageFormat((initialFlow as any).resource_formats?.image || DEFAULT_IMAGE_FORMAT);
       setConfig((initialFlow as any).config || null);
       setDynamicAudio((initialFlow as any).dynamic_audio || null);
       setEntryNode((initialFlow as any).entry || "");
@@ -112,6 +114,8 @@ const App = () => {
       variables,
       hashmaps,
       audioMappings,
+      audioFormat,
+      imageFormat,
       config,
       dynamicAudio,
       entryNode,
@@ -119,7 +123,7 @@ const App = () => {
     };
 
     localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
-  }, [nodes, edges, variables, hashmaps, audioMappings, config, dynamicAudio, entryNode, isAppReady]);
+  }, [nodes, edges, variables, hashmaps, audioMappings, audioFormat, imageFormat, config, dynamicAudio, entryNode, isAppReady]);
 
   // Ajouter à l'historique seulement quand l'app est prête
   useEffect(() => {
@@ -215,6 +219,8 @@ const App = () => {
     setVariables({});
     setHashmaps({});
     setAudioMappings(defaultAudioMappings);
+    setAudioFormat(DEFAULT_AUDIO_FORMAT);
+    setImageFormat(DEFAULT_IMAGE_FORMAT);
     setConfig(null);
     setDynamicAudio(null);
     setEntryNode("");
@@ -265,6 +271,7 @@ const App = () => {
     variables,
     hashmaps,
     audioMappings,
+    resource_formats: { audio: audioFormat, image: imageFormat },
     config,
     dynamic_audio: dynamicAudio,
     entry: entryNode
@@ -300,6 +307,8 @@ const App = () => {
           setVariables(json.variables || {});
           setHashmaps(json.hashmaps || {});
           setAudioMappings(json.audio_mappings || defaultAudioMappings);
+          setAudioFormat(json.resource_formats?.audio || DEFAULT_AUDIO_FORMAT);
+          setImageFormat(json.resource_formats?.image || DEFAULT_IMAGE_FORMAT);
           setConfig(json.config || null);
           setDynamicAudio(json.dynamic_audio || null);
           setEntryNode(json.entry || "");
@@ -360,7 +369,7 @@ const App = () => {
         onNewProject={handleNewProject}
         onOpenVariables={() => setIsVariableManagerOpen(true)}
         onOpenHashMaps={() => setIsHashMapManagerOpen(true)}
-        onOpenAudioMappings={() => setIsAudioMappingManagerOpen(true)}
+        onOpenMappings={() => setIsMappingManagerOpen(true)}
         onOpenSettings={() => setIsFlowSettingsOpen(true)}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
@@ -390,11 +399,17 @@ const App = () => {
         />
       )}
 
-      {isAudioMappingManagerOpen && (
-        <AudioMappingManager
+      {isMappingManagerOpen && (
+        <ResourceMappingManager
+          variables={variables}
+          hashmaps={hashmaps}
           mappings={audioMappings}
-          onUpdate={setAudioMappings}
-          onClose={() => setIsAudioMappingManagerOpen(false)}
+          onUpdateMappings={setAudioMappings}
+          audioFormat={audioFormat}
+          imageFormat={imageFormat}
+          onAudioFormatChange={setAudioFormat}
+          onImageFormatChange={setImageFormat}
+          onClose={() => setIsMappingManagerOpen(false)}
         />
       )}
 

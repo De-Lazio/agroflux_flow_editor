@@ -78,10 +78,18 @@
     }
   },
   "audio_mappings": {
-    "produit": "produits/",
-    "departement": "localites/",
-    "marche": "marches/",
-    "periode": "periode/"
+    "produits": "produits",
+    "departements": "departements",
+    "x_anime_x": "x_anime_x",
+    "periode": "periode",
+    "marches_suivis": "marches_suivis",
+    "type_info_marche": "type_info_marche",
+    "departements_et_tout": "departements_et_tout",
+    "marche_par_departement": "marche_par_departement"
+  },
+  "resource_formats": {
+    "audio": "mp3",
+    "image": "jpeg"
   },
   "dynamic_audio": {},
   "nodes": {

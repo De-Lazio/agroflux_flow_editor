@@ -11,7 +11,7 @@ import {
   FilePlus,
   Database,
   Library,
-  Music,
+  FolderTree,
   Settings
 } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const Toolbar = ({
   onNewProject,
   onOpenVariables,
   onOpenHashMaps,
-  onOpenAudioMappings,
+  onOpenMappings,
   onOpenSettings,
   onAddNode,
   onAutoLayout, 
@@ -64,10 +64,10 @@ const Toolbar = ({
         </button>
         <button
           className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-          onClick={onOpenAudioMappings}
-          title="Gérer les Mappages Audio"
+          onClick={onOpenMappings}
+          title="Mapping Audio & Image"
         >
-          <Music size={18} /> <span className="hidden lg:inline">Audios</span>
+          <FolderTree size={18} /> <span className="hidden lg:inline">Mapping</span>
         </button>
         <button
           className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
