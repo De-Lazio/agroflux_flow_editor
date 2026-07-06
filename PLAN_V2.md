@@ -1,3 +1,7 @@
+> **Note (voir PLAN_STUDIO.md, Phase 1.3)** : ce plan est historique (déjà exécuté). Les
+> mentions de `dynamic_audio` ci-dessous sont obsolètes — ce champ a depuis été retiré
+> entièrement du schéma, il ne fait plus partie de l'architecture cible.
+
 # Plan — Ne garder que le format V2 (Dynamic)
 
 Objectif : supprimer tout le code du format "Legacy" (menu/filter/results/widget) pour ne garder

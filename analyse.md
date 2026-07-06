@@ -67,7 +67,7 @@ Chaque étape a été vérifiée par compilation (`tsc -b`), lint, tests automat
 🟡 Mineur — utile mais pas bloquant
 
 - ResourceCheckPanel compare par nom de fichier seul, pas par chemin complet. Si deux valeurs différentes (ex. une variable et un hashmap) produisent un fichier de même nom dans des dossiers différents, un faux positif est possible. Rare en pratique — une limite documentée plutôt qu'un bug à corriger dans l'urgence.
-- dynamic_audio est chargé/sauvegardé mais reste une boîte noire sans UI ni doc — soit on lui donne un usage clair, soit on le retire du schéma.
+- ~~dynamic_audio est chargé/sauvegardé mais reste une boîte noire sans UI ni doc~~ — tranché : retiré du schéma (voir PLAN_STUDIO.md, Phase 1.3), le nouveau moteur repose uniquement sur les séquences audio et les ressources.
 - Le champ recherche ne centre pas le canvas sur le nœud trouvé, il ouvre juste l'éditeur — un petit fitView ciblé améliorerait l'usage sur les gros flows.
 - Le setter générique par chemin dans NodeEditor (`handleChange`) reste volontairement permissif en interne (un seul cast documenté) : la forme exacte des champs dépend du type du nœud, et une réécriture stricte de cette fonction spécifique n'apporterait pas grand-chose par rapport à sa complexité.
 

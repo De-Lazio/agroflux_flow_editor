@@ -8,6 +8,7 @@ const sampleFlow: FlowData = {
   variables: {},
   hashmaps: {},
   audio_mappings: {},
+  languages: ['fr'],
   nodes: {
     root: {
       type: 'root',
@@ -89,5 +90,17 @@ describe('flowToJson', () => {
     const { nodes } = jsonToFlow(sampleFlow);
     const rebuilt = flowToJson(nodes, { resource_formats: { audio: 'wav', image: 'png' } });
     expect(rebuilt.resource_formats).toEqual({ audio: 'wav', image: 'png' });
+  });
+
+  it('inclut les langues par défaut si non précisées', () => {
+    const { nodes } = jsonToFlow(sampleFlow);
+    const rebuilt = flowToJson(nodes, {});
+    expect(rebuilt.languages).toEqual(['fr', 'fon', 'yoruba', 'dendi', 'adja']);
+  });
+
+  it('propage les langues personnalisées', () => {
+    const { nodes } = jsonToFlow(sampleFlow);
+    const rebuilt = flowToJson(nodes, { languages: ['fr', 'mina'] });
+    expect(rebuilt.languages).toEqual(['fr', 'mina']);
   });
 });

@@ -140,14 +140,16 @@ const ResourceMappingManager = ({
             <p>
               Pour la variable <code className="bg-slate-200 px-1 rounded text-slate-700">produits</code> mappée
               au dossier <code className="bg-slate-200 px-1 rounded text-slate-700">produits</code>, chaque valeur
-              (ex. <code className="bg-slate-200 px-1 rounded text-slate-700">riz</code>) génère les ressources{' '}
-              <code className="bg-slate-200 px-1 rounded text-slate-700">audios/produits/riz.{audioFormat}</code> et{' '}
+              (ex. <code className="bg-slate-200 px-1 rounded text-slate-700">riz</code>) génère une ressource audio{' '}
+              <strong>par langue active</strong> (ex.{' '}
+              <code className="bg-slate-200 px-1 rounded text-slate-700">audio/fon/produits/riz.{audioFormat}</code>) et
+              une seule image, jamais dupliquée par langue :{' '}
               <code className="bg-slate-200 px-1 rounded text-slate-700">images/produits/riz.{imageFormat}</code>.
             </p>
             <p>
               Pour un hashmap, chaque valeur génère{' '}
-              <code className="bg-slate-200 px-1 rounded text-slate-700">audios/nom/cle/valeur.{audioFormat}</code>{' '}
-              et l'équivalent en image.
+              <code className="bg-slate-200 px-1 rounded text-slate-700">audio/{'{langue}'}/nom/cle/valeur.{audioFormat}</code>{' '}
+              (une par langue) et l'équivalent en image, sans segment langue.
             </p>
           </div>
         </div>

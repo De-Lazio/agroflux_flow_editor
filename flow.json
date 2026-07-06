@@ -91,7 +91,7 @@
     "audio": "mp3",
     "image": "jpeg"
   },
-  "dynamic_audio": {},
+  "languages": ["fr", "fon", "yoruba", "dendi", "adja"],
   "nodes": {
     "root": {
       "type": "root",

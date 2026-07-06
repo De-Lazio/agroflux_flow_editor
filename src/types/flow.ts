@@ -14,9 +14,20 @@ export interface RootOption {
   next: string;
 }
 
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+// Seule autorité pour la méthode par défaut d'un data_source sans `method` —
+// à importer partout où cette convention est appliquée (validator, NodeEditor,
+// backendContract) plutôt que de reécrire le littéral 'POST'.
+export const DEFAULT_HTTP_METHOD: HttpMethod = 'POST';
+
 export interface DataSource {
   endpoint: string;
   params: string[];
+  // Absent = DEFAULT_HTTP_METHOD (convention par défaut : tous les params
+  // partent en JSON body, jamais de placeholder dans l'URL — voir
+  // PLAN_STUDIO.md, Phase 0.3).
+  method?: HttpMethod;
 }
 
 interface BaseNodeData {
@@ -98,7 +109,9 @@ export interface FlowData {
   hashmaps: FlowHashmaps;
   audio_mappings: FlowMappings;
   resource_formats?: ResourceFormats;
-  dynamic_audio?: Record<string, unknown>;
+  // Langues actives pour la génération des ressources audio (voir src/utils/languages.ts).
+  // Seul l'audio est multilingue : les images ne dépendent jamais de la langue.
+  languages: string[];
   nodes: FlowNodes;
 }
 
@@ -133,4 +146,13 @@ export interface ValidationResult {
   errors: string[];
   warnings: string[];
   report: ValidationReport;
+}
+
+// "manquant" (attendu mais absent du disque) et "orphelin" (présent sur le
+// disque mais plus attendu par le flow) sont un seul et même concept vu sous
+// deux angles : la comparaison entre ressources attendues et ressources
+// réellement présentes. Voir src/utils/resourceReconciliation.ts.
+export interface ReconciliationResult {
+  missing: string[];
+  orphaned: string[];
 }

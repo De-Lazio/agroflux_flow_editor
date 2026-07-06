@@ -13,6 +13,7 @@ import {
   Database,
   Library,
   FolderTree,
+  FolderOpen,
   Settings,
   ChevronDown,
   Layers
@@ -26,6 +27,7 @@ interface ToolbarProps {
   onOpenHashMaps: () => void;
   onOpenMappings: () => void;
   onOpenSettings: () => void;
+  onOpenAssetRepository: () => void;
   onAddNode: () => void;
   onAutoLayout: () => void;
   onValidate: () => void;
@@ -44,6 +46,7 @@ const Toolbar = ({
   onOpenHashMaps,
   onOpenMappings,
   onOpenSettings,
+  onOpenAssetRepository,
   onAddNode,
   onAutoLayout,
   onValidate,
@@ -181,6 +184,14 @@ const Toolbar = ({
         title="Réorganiser"
       >
         <Layout size={18} /> <span className="hidden lg:inline">Réorganiser</span>
+      </button>
+
+      <button
+        className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+        onClick={onOpenAssetRepository}
+        title="Asset Repository"
+      >
+        <FolderOpen size={18} /> <span className="hidden lg:inline">Asset Repository</span>
       </button>
 
       <button

@@ -2,6 +2,7 @@ import type { Node, Edge } from 'reactflow';
 import { Position } from 'reactflow';
 import dagre from 'dagre';
 import { DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './resourceInventory';
+import { DEFAULT_LANGUAGES } from './languages';
 import type {
   FlowData,
   FlowNodes,
@@ -58,7 +59,7 @@ export interface FlowExtraData {
   hashmaps?: FlowHashmaps;
   audioMappings?: FlowMappings;
   resource_formats?: ResourceFormats;
-  dynamic_audio?: Record<string, unknown> | null;
+  languages?: string[];
 }
 
 export const flowToJson = (nodes: Node<FlowGraphNodeData>[], extraData: FlowExtraData = {}): FlowData => {
@@ -82,7 +83,7 @@ export const flowToJson = (nodes: Node<FlowGraphNodeData>[], extraData: FlowExtr
       audio: DEFAULT_AUDIO_FORMAT,
       image: DEFAULT_IMAGE_FORMAT
     },
-    dynamic_audio: extraData.dynamic_audio || {},
+    languages: extraData.languages || DEFAULT_LANGUAGES,
     nodes: flowNodes
   };
 };
