@@ -404,6 +404,22 @@ correction du menu "Données"). Affiche le résultat structuré (comme `Validati
 sections erreurs / avertissements / manifest / réconciliation, avec les mêmes codes couleur
 déjà en place.
 
+Décision prise pour cette phase (4) : bouton toolbar autonome (`BuildPanel.tsx`), pas de
+`StudioPanel.tsx` tout de suite — regrouper Asset Repository + Build + Publication à ce moment-là
+aurait forcé à deviner la forme de la Publication (Phase 5) avant qu'elle existe.
+`useDirectoryHandle` (`src/hooks/`) et les clés `RESOURCES_DIRECTORY_KEY`/
+`BUILD_OUTPUT_DIRECTORY_KEY` (`fsAccess.ts`) étaient déjà partagées entre les deux panneaux,
+pour que la consolidation à venir soit un déplacement de JSX, pas une réécriture.
+
+**Fait en Phase 5** : consolidation en `StudioPanel.tsx` (onglets Ressources / Build /
+Publication). `AssetRepositoryPanel.tsx` et `BuildPanel.tsx` sont devenus `AssetRepositoryTab.tsx`
+et `BuildTab.tsx` (contenu seul, sans coquille modale ni vérification navigateur — remontées une
+seule fois dans `StudioPanel.tsx`). Le bouton toolbar unique "Studio" a remplacé "Asset
+Repository" + "Build". Les trois onglets restent montés simultanément (juste masqués en CSS) pour
+ne pas perdre un scan/build en cours de consultation en changeant d'onglet. `ReconciliationLists.tsx`
+et `src/utils/format.ts` (`formatBytes`/`truncateHash`) ont aussi été extraits, utilisés par les
+trois onglets.
+
 ---
 
 ## Phase 5 — Publication

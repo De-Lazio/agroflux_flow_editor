@@ -1,4 +1,5 @@
 import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download, Layers, Library, Server } from 'lucide-react';
+import ErrorsWarningsSummary from './ErrorsWarningsSummary';
 import { exportReportAsJson, exportReportAsMarkdown, exportReportAsHtml } from '../utils/reportExport';
 import { exportBackendContractAsJson, exportBackendContractAsMarkdown } from '../utils/backendContract';
 import type { BackendContract } from '../utils/backendContract';
@@ -43,37 +44,7 @@ const ValidationPanel = ({ errors, warnings, report, backendContract, onClose }:
       </div>
 
       <div className="p-4 space-y-6">
-        {errors.length > 0 && (
-          <div>
-            <div className="text-xs font-bold text-red-600 mb-2 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-              Erreurs Bloquantes ({errors.length})
-            </div>
-            <div className="space-y-1">
-              {errors.map((err: string, i: number) => (
-                <div key={i} className="p-3 bg-red-50 border-l-4 border-red-500 text-sm text-red-800 rounded-r-md">
-                  {err}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {warnings.length > 0 && (
-          <div>
-            <div className="text-xs font-bold text-amber-600 mb-2 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-              Avertissements ({warnings.length})
-            </div>
-            <div className="space-y-1">
-              {warnings.map((warn: string, i: number) => (
-                <div key={i} className="p-3 bg-amber-50 border-l-4 border-amber-500 text-sm text-amber-800 rounded-r-md">
-                  {warn}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <ErrorsWarningsSummary errors={errors} warnings={warnings} />
 
         {report && (
           <div className="pt-4 border-t border-slate-100">

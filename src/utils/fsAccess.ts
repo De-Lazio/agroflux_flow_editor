@@ -6,7 +6,13 @@
 const DB_NAME = 'agroflux-studio';
 const DB_VERSION = 1;
 const STORE_NAME = 'handles';
-const RESOURCES_DIRECTORY_KEY = 'resources-directory';
+
+// Clés de persistance des différents dossiers que le Studio connecte (un seul
+// magasin IndexedDB, une clé par rôle) — un seul dossier de ressources, mais
+// un dossier de sortie distinct par usage (Build vs. Publication, Phase 5).
+export const RESOURCES_DIRECTORY_KEY = 'resources-directory';
+export const BUILD_OUTPUT_DIRECTORY_KEY = 'build-output-directory';
+export const PUBLISH_DIRECTORY_KEY = 'publish-directory';
 
 export const isFileSystemAccessSupported = (): boolean =>
   typeof window !== 'undefined' && 'showDirectoryPicker' in window;
@@ -34,12 +40,12 @@ const openHandleStore = (): Promise<IDBDatabase> =>
     request.onerror = () => reject(request.error);
   });
 
-export const persistDirectoryHandle = async (handle: FileSystemDirectoryHandle): Promise<void> => {
+export const persistDirectoryHandle = async (handle: FileSystemDirectoryHandle, key: string): Promise<void> => {
   const db = await openHandleStore();
   try {
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(handle, RESOURCES_DIRECTORY_KEY);
+      tx.objectStore(STORE_NAME).put(handle, key);
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
@@ -48,12 +54,12 @@ export const persistDirectoryHandle = async (handle: FileSystemDirectoryHandle):
   }
 };
 
-export const restoreDirectoryHandle = async (): Promise<FileSystemDirectoryHandle | null> => {
+export const restoreDirectoryHandle = async (key: string): Promise<FileSystemDirectoryHandle | null> => {
   const db = await openHandleStore();
   try {
     return await new Promise<FileSystemDirectoryHandle | null>((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
-      const request = tx.objectStore(STORE_NAME).get(RESOURCES_DIRECTORY_KEY);
+      const request = tx.objectStore(STORE_NAME).get(key);
       request.onsuccess = () => resolve(request.result ?? null);
       request.onerror = () => reject(request.error);
     });
@@ -123,15 +129,12 @@ export const readFileSize = async (fileHandle: FileSystemFileHandle): Promise<nu
   return file.size;
 };
 
-/**
- * Écrit un fichier texte à un chemin relatif donné, en créant les sous-dossiers manquants
- * au passage (getDirectoryHandle({ create: true })).
- */
-export const writeTextFile = async (
+// Résout (en créant au passage) le FileSystemFileHandle d'un chemin relatif,
+// partagé par writeTextFile et copyFile — seule la nature du contenu écrit diffère.
+const getNestedFileHandle = async (
   dirHandle: FileSystemDirectoryHandle,
-  relativePath: string,
-  content: string
-): Promise<void> => {
+  relativePath: string
+): Promise<FileSystemFileHandle> => {
   const segments = relativePath.split('/').filter(Boolean);
   const fileName = segments.pop();
   if (!fileName) {
@@ -143,8 +146,39 @@ export const writeTextFile = async (
     currentDir = await currentDir.getDirectoryHandle(segment, { create: true });
   }
 
-  const fileHandle = await currentDir.getFileHandle(fileName, { create: true });
+  return currentDir.getFileHandle(fileName, { create: true });
+};
+
+/**
+ * Écrit un fichier texte à un chemin relatif donné, en créant les sous-dossiers manquants
+ * au passage (getDirectoryHandle({ create: true })).
+ */
+export const writeTextFile = async (
+  dirHandle: FileSystemDirectoryHandle,
+  relativePath: string,
+  content: string
+): Promise<void> => {
+  const fileHandle = await getNestedFileHandle(dirHandle, relativePath);
   const writable = await fileHandle.createWritable();
   await writable.write(content);
+  await writable.close();
+};
+
+/**
+ * Copie un fichier réel (audio/image, contenu binaire) d'un dossier vers un
+ * autre — utilisé par la Publication pour ne recopier que les ressources
+ * effectivement référencées par le flow. `FileSystemWritableFileStream.write`
+ * accepte un `Blob` directement (un `File` en est un), inutile de repasser par
+ * un ArrayBuffer intermédiaire.
+ */
+export const copyFile = async (
+  sourceFileHandle: FileSystemFileHandle,
+  destDirHandle: FileSystemDirectoryHandle,
+  relativePath: string
+): Promise<void> => {
+  const file = await sourceFileHandle.getFile();
+  const destFileHandle = await getNestedFileHandle(destDirHandle, relativePath);
+  const writable = await destFileHandle.createWritable();
+  await writable.write(file);
   await writable.close();
 };
