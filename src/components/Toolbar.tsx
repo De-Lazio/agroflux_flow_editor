@@ -16,7 +16,8 @@ import {
   LayoutGrid,
   Settings,
   ChevronDown,
-  Layers
+  Layers,
+  CloudDownload
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -27,6 +28,7 @@ interface ToolbarProps {
   onOpenHashMaps: () => void;
   onOpenMappings: () => void;
   onOpenSettings: () => void;
+  onOpenApiImport: () => void;
   onOpenStudio: () => void;
   onAddNode: () => void;
   onAutoLayout: () => void;
@@ -46,6 +48,7 @@ const Toolbar = ({
   onOpenHashMaps,
   onOpenMappings,
   onOpenSettings,
+  onOpenApiImport,
   onOpenStudio,
   onAddNode,
   onAutoLayout,
@@ -115,6 +118,13 @@ const Toolbar = ({
                   onClick={() => openDataItem(onOpenSettings)}
                 >
                   <Settings size={16} /> Paramètres du Flow
+                </button>
+                <div className="h-px bg-slate-100 my-1" />
+                <button
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors text-left"
+                  onClick={() => openDataItem(onOpenApiImport)}
+                >
+                  <CloudDownload size={16} /> Importer depuis API
                 </button>
               </div>
             </>

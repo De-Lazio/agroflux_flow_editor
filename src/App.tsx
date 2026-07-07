@@ -20,6 +20,7 @@ import VariableManager from './components/VariableManager';
 import HashMapManager from './components/HashMapManager';
 import ResourceMappingManager from './components/ResourceMappingManager';
 import FlowSettingsManager from './components/FlowSettingsManager';
+import ApiImportPanel from './components/ApiImportPanel';
 import StudioPanel from './components/StudioPanel';
 import { jsonToFlow, flowToJson, getLayoutedElements } from './utils/flowManager';
 import { validateFlow } from './utils/validator';
@@ -86,6 +87,7 @@ const App = () => {
   const [isHashMapManagerOpen, setIsHashMapManagerOpen] = useState(false);
   const [isMappingManagerOpen, setIsMappingManagerOpen] = useState(false);
   const [isFlowSettingsOpen, setIsFlowSettingsOpen] = useState(false);
+  const [isApiImportOpen, setIsApiImportOpen] = useState(false);
   const [isStudioOpen, setIsStudioOpen] = useState(false);
 
   // État de verrouillage pour le chargement
@@ -417,6 +419,7 @@ const App = () => {
         onOpenHashMaps={() => setIsHashMapManagerOpen(true)}
         onOpenMappings={() => setIsMappingManagerOpen(true)}
         onOpenSettings={() => setIsFlowSettingsOpen(true)}
+        onOpenApiImport={() => setIsApiImportOpen(true)}
         onOpenStudio={() => setIsStudioOpen(true)}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
@@ -470,6 +473,18 @@ const App = () => {
           onLanguagesChange={setLanguages}
           nodes={nodes}
           onClose={() => setIsFlowSettingsOpen(false)}
+        />
+      )}
+
+      {isApiImportOpen && (
+        <ApiImportPanel
+          variables={variables}
+          hashmaps={hashmaps}
+          onImport={(newVariables, newHashmaps) => {
+            setVariables(newVariables);
+            setHashmaps(newHashmaps);
+          }}
+          onClose={() => setIsApiImportOpen(false)}
         />
       )}
 
