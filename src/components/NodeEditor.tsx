@@ -9,6 +9,7 @@ import {
   createDefaultPreFilterNode
 } from '../utils/nodeFactory';
 import type { AudioSequence, FlowNodeData, FlowGraphNodeData, FlowVariables, FlowHashmaps } from '../types/flow';
+import { DEFAULT_HTTP_METHOD } from '../types/flow';
 
 interface AudioSequenceEditorProps {
   audio: AudioSequence | undefined;
@@ -291,6 +292,23 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                 {Object.keys(variables || {}).map(v => <option key={v} value={v}>{v}</option>)}
               </select>
             </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs font-bold text-slate-500">Autoriser le choix « Tout »</span>
+              <input
+                type="checkbox"
+                checked={data.can_choix_all ?? false}
+                onChange={(e) => handleChange('can_choix_all', e.target.checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500">N'afficher que les options actives</span>
+              <input
+                type="checkbox"
+                checked={data.controle_active ?? false}
+                onChange={(e) => handleChange('controle_active', e.target.checked)}
+              />
+            </div>
           </section>
         )}
 
@@ -300,20 +318,42 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
             <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <Globe size={16} /> Source de Données API
             </h3>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Endpoint</label>
-              <input
-                className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                value={data.data_source?.endpoint || ''}
-                onChange={(e) => handleChange('data_source.endpoint', e.target.value)}
-              />
+            <div className="flex gap-2">
+              <div className="w-28 flex-none">
+                <label className="block text-xs font-bold text-slate-500 mb-1">Méthode</label>
+                <select
+                  className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  value={data.data_source?.method || DEFAULT_HTTP_METHOD}
+                  onChange={(e) => handleChange('data_source.method', e.target.value)}
+                >
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
+                  <option value="DELETE">DELETE</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-bold text-slate-500 mb-1">Endpoint</label>
+                <input
+                  className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  value={data.data_source?.endpoint || ''}
+                  onChange={(e) => handleChange('data_source.endpoint', e.target.value)}
+                />
+              </div>
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1">Paramètres (Séparés par virgule)</label>
               <input
                 className="w-full p-2 border border-slate-200 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 value={data.data_source?.params?.join(', ') || ''}
-                onChange={(e) => handleChange('data_source.params', e.target.value.split(',').map(s => s.trim()))}
+                onChange={(e) => {
+                  // Un champ entièrement vidé doit donner params: [] (avertissement "vide"),
+                  // pas [''] (erreur bloquante "nom vide") — mais une virgule en fin de saisie
+                  // ("produit, ") doit rester affichable telle quelle pendant que l'utilisateur tape.
+                  const raw = e.target.value;
+                  const params = raw.trim() === '' ? [] : raw.split(',').map(s => s.trim());
+                  handleChange('data_source.params', params);
+                }}
               />
             </div>
 
@@ -384,6 +424,23 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                 <option value="">(Choisir un hashmap)</option>
                 {Object.keys(hashmaps || {}).map(h => <option key={h} value={h}>{h}</option>)}
               </select>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs font-bold text-slate-500">Autoriser le choix « Tout »</span>
+              <input
+                type="checkbox"
+                checked={data.can_choix_all ?? false}
+                onChange={(e) => handleChange('can_choix_all', e.target.checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500">N'afficher que les options actives</span>
+              <input
+                type="checkbox"
+                checked={data.controle_active ?? false}
+                onChange={(e) => handleChange('controle_active', e.target.checked)}
+              />
             </div>
           </section>
         )}

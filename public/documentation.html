@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroFlux Studio — Documentation</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --bg-elevated: #ffffff;
+    --bg-subtle: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --text-faint: #94a3b8;
+    --accent: #4f46e5;
+    --accent-bg: #eef2ff;
+    --accent-border: #c7d2fe;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --red: #e11d48;
+    --red-bg: #fff1f2;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --emerald: #059669;
+    --emerald-bg: #ecfdf5;
+    --cyan: #0891b2;
+    --violet: #7c3aed;
+    --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220;
+      --bg-elevated: #131c2e;
+      --bg-subtle: #1a2436;
+      --border: #263349;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-faint: #64748b;
+      --accent: #818cf8;
+      --accent-bg: #1e2540;
+      --accent-border: #3730a3;
+      --code-bg: #0a0f1c;
+      --code-text: #cbd5e1;
+      --red: #fb7185;
+      --red-bg: #2a1520;
+      --amber: #fbbf24;
+      --amber-bg: #2a2210;
+      --emerald: #34d399;
+      --emerald-bg: #0f2a20;
+      --cyan: #22d3ee;
+      --violet: #a78bfa;
+      --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc; --bg-elevated: #ffffff; --bg-subtle: #f1f5f9; --border: #e2e8f0;
+    --text: #1e293b; --text-muted: #64748b; --text-faint: #94a3b8;
+    --accent: #4f46e5; --accent-bg: #eef2ff; --accent-border: #c7d2fe;
+    --code-bg: #0f172a; --code-text: #e2e8f0;
+    --red: #e11d48; --red-bg: #fff1f2; --amber: #d97706; --amber-bg: #fffbeb;
+    --emerald: #059669; --emerald-bg: #ecfdf5; --cyan: #0891b2; --violet: #7c3aed;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b1220; --bg-elevated: #131c2e; --bg-subtle: #1a2436; --border: #263349;
+    --text: #e2e8f0; --text-muted: #94a3b8; --text-faint: #64748b;
+    --accent: #818cf8; --accent-bg: #1e2540; --accent-border: #3730a3;
+    --code-bg: #0a0f1c; --code-text: #cbd5e1;
+    --red: #fb7185; --red-bg: #2a1520; --amber: #fbbf24; --amber-bg: #2a2210;
+    --emerald: #34d399; --emerald-bg: #0f2a20; --cyan: #22d3ee; --violet: #a78bfa;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  code, pre, .mono { font-family: ui-monospace, "SF Mono", Consolas, Menlo, monospace; }
+
+  a { color: var(--accent); }
+
+  /* ---------- Layout ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    background: var(--bg-elevated);
+    padding: 24px 16px 60px;
+  }
+  @media (max-width: 900px) {
+    .sidebar {
+      position: fixed;
+      z-index: 50;
+      left: 0; right: 0; top: 0;
+      height: auto;
+      max-height: 80vh;
+      transform: translateY(-110%);
+      transition: transform .25s ease;
+      box-shadow: var(--shadow-lg);
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar.open { transform: translateY(0); }
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .brand-badge {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 15px; flex: none;
+  }
+  .brand div strong { display: block; font-size: 14px; }
+  .brand div span { display: block; font-size: 11px; color: var(--text-muted); }
+
+  .nav-group { margin-bottom: 4px; }
+  .nav-group-title {
+    font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text-faint); padding: 16px 8px 6px;
+  }
+  .nav-link {
+    display: block; padding: 7px 8px; margin: 1px 0; border-radius: 7px;
+    font-size: 13.5px; color: var(--text-muted); text-decoration: none;
+    border-left: 2px solid transparent;
+  }
+  .nav-link:hover { background: var(--bg-subtle); color: var(--text); }
+  .nav-link.active { background: var(--accent-bg); color: var(--accent); font-weight: 700; border-left-color: var(--accent); }
+  .nav-link.sub { padding-left: 20px; font-size: 12.5px; }
+
+  .theme-toggle {
+    display: flex; gap: 6px; margin-top: 18px; padding: 8px; background: var(--bg-subtle);
+    border-radius: 8px; border: 1px solid var(--border);
+  }
+  .theme-toggle button {
+    flex: 1; border: none; background: transparent; padding: 6px 4px; border-radius: 6px;
+    font-size: 11.5px; font-weight: 700; color: var(--text-muted); cursor: pointer;
+  }
+  .theme-toggle button.active { background: var(--bg-elevated); color: var(--text); box-shadow: var(--shadow); }
+
+  .mobile-bar {
+    display: none;
+    position: sticky; top: 0; z-index: 40;
+    background: var(--bg-elevated); border-bottom: 1px solid var(--border);
+    padding: 12px 16px; align-items: center; justify-content: space-between;
+  }
+  @media (max-width: 900px) { .mobile-bar { display: flex; } }
+  .mobile-bar button {
+    border: 1px solid var(--border); background: var(--bg-subtle); border-radius: 8px;
+    padding: 8px 12px; font-weight: 700; font-size: 13px; color: var(--text); cursor: pointer;
+  }
+
+  /* ---------- Main content ---------- */
+  main { min-width: 0; padding: 48px 40px 120px; max-width: 880px; }
+  @media (max-width: 640px) { main { padding: 28px 18px 100px; } }
+
+  .hero { margin-bottom: 48px; }
+  .hero h1 { font-size: 34px; margin: 0 0 10px; letter-spacing: -.02em; }
+  .hero p.tagline { font-size: 16px; color: var(--text-muted); max-width: 640px; margin: 0 0 20px; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; font-weight: 700; padding: 5px 10px; border-radius: 999px;
+    background: var(--bg-subtle); border: 1px solid var(--border); color: var(--text-muted);
+  }
+
+  h2 {
+    font-size: 24px; margin: 56px 0 16px; padding-top: 8px; scroll-margin-top: 20px;
+    border-top: 1px solid var(--border); padding-top: 24px;
+  }
+  h2:first-of-type { border-top: none; }
+  h3 { font-size: 18px; margin: 32px 0 12px; scroll-margin-top: 20px; }
+  h4 { font-size: 14.5px; margin: 22px 0 8px; color: var(--text); scroll-margin-top: 20px; }
+  p { color: var(--text); }
+  p.muted { color: var(--text-muted); }
+
+  .callout {
+    border-radius: 10px; padding: 14px 16px; margin: 16px 0; border: 1px solid;
+    font-size: 14px;
+  }
+  .callout.info { background: var(--accent-bg); border-color: var(--accent-border); }
+  .callout.warn { background: var(--amber-bg); border-color: var(--amber); }
+  .callout.tip { background: var(--emerald-bg); border-color: var(--emerald); }
+  .callout strong.label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px; margin: 20px 0;
+  }
+  .card {
+    border: 1px solid var(--border); background: var(--bg-elevated); border-radius: 12px;
+    padding: 16px; box-shadow: var(--shadow);
+  }
+  .card h4 { margin: 0 0 6px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .card p { margin: 0; font-size: 13px; color: var(--text-muted); }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-faint); font-weight: 700; }
+  tr:last-child td { border-bottom: none; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  .table-wrap table { margin: 0; }
+  .table-wrap th, .table-wrap td { border-color: var(--border); }
+
+  code.inline {
+    background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 5px;
+    padding: 1px 6px; font-size: 12.5px;
+  }
+  pre {
+    background: var(--code-bg); color: var(--code-text); border-radius: 10px;
+    padding: 16px 18px; overflow-x: auto; font-size: 12.8px; line-height: 1.55;
+  }
+
+  .node-pill {
+    display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 11px;
+    padding: 3px 9px; border-radius: 999px; letter-spacing: .03em;
+  }
+  .node-pill .dot { width: 8px; height: 8px; border-radius: 999px; }
+  .node-root { background: #eef2ff; color: #4338ca; }
+  .node-grid { background: #ecfeff; color: #0e7490; }
+  .node-result { background: #fff1f2; color: #be123c; }
+  .node-calendrier { background: #f5f3ff; color: #6d28d9; }
+  .node-prefilter { background: #fffbeb; color: #b45309; }
+  @media (prefers-color-scheme: dark) {
+    .node-root { background: #1e2540; color: #a5b4fc; }
+    .node-grid { background: #103544; color: #67e8f9; }
+    .node-result { background: #2a1520; color: #fda4af; }
+    .node-calendrier { background: #241a3d; color: #c4b5fd; }
+    .node-prefilter { background: #2a2210; color: #fcd34d; }
+  }
+
+  .kbd {
+    border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 6px;
+    background: var(--bg-subtle); padding: 1px 7px; font-size: 12px; font-family: ui-monospace, monospace;
+  }
+
+  .steps { counter-reset: step; list-style: none; padding: 0; margin: 16px 0; }
+  .steps li {
+    counter-increment: step; position: relative; padding-left: 40px; margin-bottom: 14px; font-size: 14.5px;
+  }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: -1px;
+    width: 26px; height: 26px; border-radius: 999px; background: var(--accent);
+    color: white; font-weight: 800; font-size: 12.5px; display: flex; align-items: center; justify-content: center;
+  }
+
+  .btn-label {
+    display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12.5px;
+    padding: 3px 10px; border-radius: 7px; background: var(--bg-subtle); border: 1px solid var(--border);
+  }
+
+  .pipeline {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 20px 0;
+  }
+  .pipeline .stage {
+    flex: 1; min-width: 130px; background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px; text-align: center; font-size: 12.5px; font-weight: 700;
+    box-shadow: var(--shadow);
+  }
+  .pipeline .stage span { display: block; font-weight: 400; color: var(--text-muted); font-size: 11px; margin-top: 3px; }
+  .pipeline .arrow { color: var(--text-faint); font-size: 18px; }
+  @media (max-width: 640px) { .pipeline .arrow { transform: rotate(90deg); } }
+
+  .toc-inline { font-size: 13.5px; }
+  .toc-inline a { text-decoration: none; }
+
+  footer.page-footer {
+    margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border);
+    color: var(--text-faint); font-size: 12.5px;
+  }
+
+  .anchor-offset { scroll-margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<div class="mobile-bar">
+  <strong>AgroFlux Studio — Docs</strong>
+  <button id="navToggle" type="button">☰ Menu</button>
+</div>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-badge">AF</div>
+      <div>
+        <strong>AgroFlux Studio</strong>
+        <span>Documentation du projet</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <a class="nav-link" href="#vue-ensemble">Vue d'ensemble</a>
+      <a class="nav-link" href="#pipeline">Pipeline de travail</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Concepts clés</div>
+      <a class="nav-link sub" href="#concept-nodes">Types de nœuds</a>
+      <a class="nav-link sub" href="#concept-variables">Variables &amp; HashMaps</a>
+      <a class="nav-link sub" href="#concept-active-state">États actif / inactif</a>
+      <a class="nav-link sub" href="#concept-langues">Langues</a>
+      <a class="nav-link sub" href="#concept-ressources">Ressources (audio/image)</a>
+      <a class="nav-link sub" href="#concept-contrat">Contrats Backend</a>
+      <a class="nav-link sub" href="#concept-fichiers">Fichiers générés</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Fonctionnalités</div>
+      <a class="nav-link sub" href="#fonctionnalites">Vue d'ensemble des fonctionnalités</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Guide d'utilisation</div>
+      <a class="nav-link sub" href="#guide-toolbar">Barre d'outils</a>
+      <a class="nav-link sub" href="#guide-canvas">Le canevas</a>
+      <a class="nav-link sub" href="#guide-node-editor">Éditer un nœud</a>
+      <a class="nav-link sub" href="#guide-variables">Gestionnaire de Variables</a>
+      <a class="nav-link sub" href="#guide-hashmaps">Gestionnaire de HashMaps</a>
+      <a class="nav-link sub" href="#guide-mapping">Mapping Audio &amp; Image</a>
+      <a class="nav-link sub" href="#guide-settings">Paramètres du Flow</a>
+      <a class="nav-link sub" href="#guide-import-export">Import / Export / Nouveau</a>
+      <a class="nav-link sub" href="#guide-validation">Validation du flow</a>
+      <a class="nav-link sub" href="#guide-studio">Le Studio</a>
+      <a class="nav-link sub" href="#guide-studio-resources">→ Onglet Ressources</a>
+      <a class="nav-link sub" href="#guide-studio-build">→ Onglet Build</a>
+      <a class="nav-link sub" href="#guide-studio-publish">→ Onglet Publication</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Référence</div>
+      <a class="nav-link sub" href="#compatibilite">Compatibilité navigateur</a>
+      <a class="nav-link sub" href="#faq">FAQ &amp; Dépannage</a>
+      <a class="nav-link sub" href="#glossaire">Glossaire</a>
+    </div>
+
+    <div class="theme-toggle">
+      <button type="button" data-theme-choice="light">☀️ Clair</button>
+      <button type="button" data-theme-choice="dark">🌙 Sombre</button>
+      <button type="button" data-theme-choice="auto" class="active">🖥️ Auto</button>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="hero anchor-offset" id="vue-ensemble">
+      <h1>AgroFlux Studio</h1>
+      <p class="tagline">
+        L'outil visuel qui conçoit, valide et publie le parcours de navigation audio de
+        l'application mobile AgroFlux Bénin — un flow JSON qui fait office de contrat officiel
+        pour le backend et l'application Flutter.
+      </p>
+      <div class="badge-row">
+        <span class="badge">React 19 + TypeScript</span>
+        <span class="badge">React Flow</span>
+        <span class="badge">Vite 8</span>
+        <span class="badge">Tailwind CSS 4</span>
+        <span class="badge">Vitest</span>
+      </div>
+
+      <h3>À quoi sert ce projet ?</h3>
+      <p>
+        AgroFlux Bénin est une plateforme qui aide les producteurs et revendeurs agricoles du Bénin
+        à accéder aux informations de marché (prix, calendriers d'animation, disponibilité des
+        produits) via une application mobile pilotée par la voix, en français et en langues locales
+        (Fon, Yoruba, Dendi, Adja...). L'application ne contient aucune logique de navigation codée
+        en dur : elle exécute un fichier <code class="inline">flow.json</code> qui décrit chaque
+        écran, chaque question posée à l'oral, chaque option, chaque appel API et chaque ressource
+        audio/image nécessaire.
+      </p>
+      <p>
+        <strong>AgroFlux Studio</strong> — ce projet — est l'éditeur visuel de ce
+        <code class="inline">flow.json</code>. Il permet de dessiner le parcours sous forme de
+        graphe, de le valider automatiquement, de gérer les variables et ressources multilingues,
+        puis de produire un dossier complet (contrat + ressources) prêt à être consommé par le
+        backend et l'application Flutter — sans jamais toucher au code de ces deux applications.
+      </p>
+
+      <div class="callout info">
+        <strong class="label">Idée centrale</strong>
+        Le Studio ne se contente pas d'éditer un fichier : il <strong>définit le contrat officiel</strong>
+        entre trois systèmes (Studio, backend, Flutter). Toute route API, tout format de ressource,
+        toute langue supportée passe par ce que le Studio génère.
+      </div>
+    </section>
+
+    <section id="pipeline">
+      <h2>Pipeline de travail</h2>
+      <p>Le travail dans le Studio suit toujours à peu près le même enchaînement :</p>
+      <div class="pipeline">
+        <div class="stage">1. Concevoir<span>Graphe, variables, ressources</span></div>
+        <div class="arrow">→</div>
+        <div class="stage">2. Valider<span>Erreurs, avertissements, contrat</span></div>
+        <div class="arrow">→</div>
+        <div class="stage">3. Ressources<span>Scanner le dossier réel</span></div>
+        <div class="arrow">→</div>
+        <div class="stage">4. Build<span>Vérifier/itérer en local</span></div>
+        <div class="arrow">→</div>
+        <div class="stage">5. Publier<span>Dossier propre final</span></div>
+      </div>
+      <p class="muted">
+        Les étapes 3 à 5 se trouvent dans le panneau <strong>Studio</strong> (voir plus bas) et ont
+        besoin d'un navigateur Chrome, Edge ou Opera (accès réel au disque).
+      </p>
+    </section>
+
+    <!-- ======================= CONCEPTS ======================= -->
+
+    <h2 id="concept-nodes">Types de nœuds</h2>
+    <p>
+      Un flow est un graphe de <strong>nœuds</strong> reliés entre eux. Chaque nœud a un type, qui
+      détermine ses champs et son rôle dans la conversation. Un seul point d'entrée
+      (<code class="inline">entry</code>) démarre le parcours.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Type</th><th>Couleur</th><th>Rôle</th><th>Champs propres</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="node-pill node-root"><span class="dot" style="background:#4f46e5"></span>ROOT</span></td>
+            <td>Indigo</td>
+            <td>Menu principal : liste d'options, chacune menant à un autre nœud.</td>
+            <td><code class="inline">options: [{ id, next }]</code></td>
+          </tr>
+          <tr>
+            <td><span class="node-pill node-grid"><span class="dot" style="background:#06b6d4"></span>GRID</span></td>
+            <td>Cyan</td>
+            <td>Présente les valeurs d'une variable comme choix (ex. liste des produits).</td>
+            <td><code class="inline">options_source</code>, <code class="inline">set</code>, <code class="inline">next</code>, <code class="inline">can_choix_all</code>, <code class="inline">controle_active</code></td>
+          </tr>
+          <tr>
+            <td><span class="node-pill node-prefilter"><span class="dot" style="background:#f59e0b"></span>PRE_FILTER</span></td>
+            <td>Ambre</td>
+            <td>Filtre interne : réduit une liste à l'aide d'un HashMap, sans poser de question à l'utilisateur.</td>
+            <td><code class="inline">cle</code>, <code class="inline">filtre_source</code>, <code class="inline">next</code>, <code class="inline">can_choix_all</code>, <code class="inline">controle_active</code></td>
+          </tr>
+          <tr>
+            <td><span class="node-pill node-result"><span class="dot" style="background:#f43f5e"></span>RESULT</span></td>
+            <td>Rose</td>
+            <td>Nœud terminal : affiche la réponse d'un appel API (le flow s'arrête ici).</td>
+            <td><code class="inline">data_source: { endpoint, method, params }</code>, <code class="inline">response_examples</code></td>
+          </tr>
+          <tr>
+            <td><span class="node-pill node-calendrier"><span class="dot" style="background:#8b5cf6"></span>CALENDRIER</span></td>
+            <td>Violet</td>
+            <td>Sélecteur de date/période spécialisé.</td>
+            <td><code class="inline">periode</code> (jours), <code class="inline">cadran</code> (passé/centrer/future), <code class="inline">next</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Tous les types de nœuds partagent aussi ces champs communs :</p>
+    <ul>
+      <li><code class="inline">audio</code> — une <strong>séquence audio</strong> jouée à l'arrivée sur ce nœud (voir <a href="#guide-node-editor">Éditer un nœud</a>).</li>
+      <li><code class="inline">comment</code> — note libre pour les concepteurs du flow, sans effet fonctionnel.</li>
+      <li><code class="inline">json_response_contrat</code> — un exemple JSON du contrat de réponse attendu pour ce nœud (documentation, validé comme JSON mais jamais interprété).</li>
+    </ul>
+
+    <div class="callout warn">
+      <strong class="label">Cul-de-sac</strong>
+      Un nœud <code class="inline">grid</code>, <code class="inline">calendrier</code> ou
+      <code class="inline">pre_filter</code> doit toujours avoir un <code class="inline">next</code>.
+      S'il n'en a pas, la validation le signale comme un cul-de-sac (avertissement). Seul
+      <code class="inline">result</code> est terminal par nature.
+    </div>
+
+    <h2 id="concept-variables">Variables &amp; HashMaps</h2>
+    <h3>Variables</h3>
+    <p>
+      Une variable est une liste réutilisable de valeurs (ex. <code class="inline">produits: ["mais", "soja"]</code>).
+      Un nœud <code class="inline">grid</code> présente ces valeurs comme options
+      (<code class="inline">options_source</code>) et peut mémoriser le choix de l'utilisateur dans
+      une autre variable (<code class="inline">set</code>), réutilisable plus loin dans le flow
+      (par exemple dans les <code class="inline">params</code> d'un nœud <code class="inline">result</code>).
+    </p>
+    <h3>HashMaps</h3>
+    <p>
+      Un HashMap est une structure clé → liste de valeurs (ex.
+      <code class="inline">marche_par_departement: { oueme: ["ouando", "bonou"], plateau: ["takon"] } }</code>).
+      Il sert à filtrer une liste en fonction d'une clé choisie ailleurs dans le flow — c'est le
+      rôle du nœud <code class="inline">pre_filter</code> : il prend une variable contenant la clé
+      (<code class="inline">cle</code>) et un HashMap (<code class="inline">filtre_source</code>),
+      et restreint silencieusement les valeurs disponibles pour la suite du parcours.
+    </p>
+
+    <h2 id="concept-active-state">États actif / inactif</h2>
+    <p>
+      Chaque valeur de variable et chaque clé/valeur de HashMap peut être marquée
+      <strong>inactive</strong> sans jamais être supprimée. C'est une couche à part
+      (<code class="inline">active_overrides</code>) qui ne modifie ni <code class="inline">variables</code>
+      ni <code class="inline">hashmaps</code> : elle ne liste que les <em>exceptions</em> inactives,
+      tout le reste est actif par défaut.
+    </p>
+    <div class="callout info">
+      <strong class="label">Le Studio montre toujours tout</strong>
+      Marquer une valeur inactive ne la masque jamais dans le Studio (Gestionnaire de Variables /
+      HashMaps) : pendant la phase pilote, l'intégralité des variables et HashMaps reste développée
+      et visible ici. L'état actif/inactif n'est qu'une <strong>donnée transmise</strong> — c'est
+      l'application mobile et le backend qui décident, à l'exécution, d'afficher ou non une option
+      en fonction de cette donnée.
+    </div>
+    <p>
+      Dans le Gestionnaire de Variables, chaque valeur affiche une icône œil cliquable
+      (<span class="btn-label">👁 actif</span> / <span class="btn-label">🚫 inactif</span>). Dans le
+      Gestionnaire de HashMaps, la même icône existe à la fois sur chaque <strong>clé</strong>
+      (catégorie entière) et sur chaque <strong>valeur</strong> de sa liste. Désactiver une clé
+      désactive automatiquement toutes ses valeurs en cascade, même celles non marquées
+      individuellement.
+    </p>
+    <p>
+      Supprimer une valeur, une clé ou une variable/HashMap entière nettoie automatiquement son
+      exception dans <code class="inline">active_overrides</code> — aucune action manuelle requise.
+      Une ressource (audio/image) reste générée pour une valeur inactive : elle pourra être
+      réactivée plus tard sans qu'il manque de fichier.
+    </p>
+    <h3>can_choix_all / controle_active (nœuds GRID et PRE_FILTER)</h3>
+    <p>Deux cases à cocher, propres à chaque nœud <code class="inline">grid</code> et <code class="inline">pre_filter</code> :</p>
+    <ul>
+      <li><code class="inline">can_choix_all</code> — <strong>« Autoriser le choix « Tout » »</strong> : l'application mobile doit proposer, en plus de la liste, une option pour tout sélectionner.</li>
+      <li><code class="inline">controle_active</code> — <strong>« N'afficher que les options actives »</strong> : ce nœud précis doit filtrer sa liste selon <code class="inline">active_overrides</code>. Décoché (par défaut), le nœud affiche toutes les valeurs, actives ou non, comme avant l'introduction de cette fonctionnalité.</li>
+    </ul>
+    <div class="callout warn">
+      <strong class="label">Décision prise nœud par nœud</strong>
+      Les deux cases sont décochées par défaut sur tout nœud, existant ou nouveau. Rien ne change
+      tant qu'un concepteur de flow ne les active pas explicitement sur un nœud précis.
+    </div>
+
+    <h2 id="concept-langues">Langues</h2>
+    <p>
+      Le flow déclare une liste de langues actives (<code class="inline">languages: string[]</code>),
+      éditable librement (voir <a href="#guide-settings">Paramètres du Flow</a>) — aucune langue
+      n'est figée dans le code du Studio. Par défaut :
+    </p>
+    <p><code class="inline">fr</code> (référence/débogage), <code class="inline">fon</code>, <code class="inline">yoruba</code>, <code class="inline">dendi</code>, <code class="inline">adja</code>.</p>
+    <div class="callout info">
+      <strong class="label">Seul l'audio dépend de la langue</strong>
+      Une image ne dépend jamais de la langue de navigation (une photo de maïs reste la même quel
+      que soit l'idiome parlé) — elle n'est donc jamais dupliquée par langue. Voir la convention de
+      chemin ci-dessous.
+    </div>
+
+    <h2 id="concept-ressources">Ressources (audio &amp; image)</h2>
+    <p>
+      Pour chaque valeur de variable/HashMap, le Studio calcule automatiquement les chemins de
+      ressources attendus, selon une convention fixe :
+    </p>
+    <pre>audio/{langue}/{dossier}/{valeur}.{format}          — une entrée PAR langue déclarée
+audio/{langue}/{dossier}/{clé}/{valeur}.{format}     — pour un HashMap
+
+images/{dossier}/{valeur}.{format}                   — une seule entrée, jamais par langue
+images/{dossier}/{clé}/{valeur}.{format}             — pour un HashMap</pre>
+    <p>Exemple concret avec la variable <code class="inline">produits: ["mais"]</code> et les langues <code class="inline">fon</code>/<code class="inline">yoruba</code> :</p>
+    <pre>audio/fon/produits/mais.mp3
+audio/yoruba/produits/mais.mp3
+images/produits/mais.jpeg</pre>
+    <p>
+      Le <strong>dossier</strong> associé à chaque variable/HashMap est configurable dans
+      <a href="#guide-mapping">Mapping Audio &amp; Image</a> ; le <strong>format</strong> (mp3/wav/ogg/m4a
+      pour l'audio, jpeg/jpg/png/webp pour l'image) y est réglé globalement.
+    </p>
+
+    <h2 id="concept-contrat">Contrats Backend</h2>
+    <p>
+      Chaque nœud <code class="inline">result</code> déclare une <code class="inline">data_source</code> :
+      un <code class="inline">endpoint</code> (chemin plat, sans placeholder), une
+      <code class="inline">method</code> HTTP (GET/POST/PUT/DELETE, POST par défaut si absente) et une
+      liste de <code class="inline">params</code>. Convention fixée avec le backend : l'application
+      Flutter empaquette ces paramètres tels quels dans un corps JSON — jamais dans l'URL.
+    </p>
+    <pre>// Nœud "result" :
+"data_source": { "endpoint": "api/app/acheter_produit", "method": "POST", "params": ["produit", "departement"] }
+
+// Flutter envoie :
+POST api/app/acheter_produit
+{ "produit": "mais", "departement": "zou" }</pre>
+    <p>
+      Le Studio dérive automatiquement de tout le flow un <strong>Contrat Backend</strong> : la
+      liste consolidée de toutes les routes à implémenter, avec méthode, paramètres et un exemple de
+      réponse — voir <a href="#guide-validation">Validation du flow</a>.
+    </p>
+
+    <h2 id="concept-fichiers">Fichiers générés</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fichier</th><th>Contenu</th><th>Généré par</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">flow.json</code></td><td>Le flow complet (nœuds, variables, langues, config...).</td><td>Enregistrer / Build / Publication</td></tr>
+          <tr><td><code class="inline">resource_inventory.json</code></td><td>Toutes les ressources attendues (audio/image), par variable et par HashMap.</td><td>Build / Publication</td></tr>
+          <tr><td><code class="inline">manifest.json</code></td><td>Liste des fichiers réellement scannés sur disque : chemin, hash SHA-256, taille, date.</td><td>Ressources / Build / Publication</td></tr>
+          <tr><td><code class="inline">repository.json</code></td><td>Hash global du dépôt de ressources + nombre d'entrées.</td><td>Ressources / Build / Publication</td></tr>
+          <tr><td><code class="inline">validation_report.json</code> / <code class="inline">.md</code></td><td>Rapport complet (erreurs, avertissements, inventaire).</td><td>Validation / Build / Publication</td></tr>
+          <tr><td><code class="inline">backend_contract.json</code> / <code class="inline">.md</code></td><td>Liste des routes à implémenter par le backend.</td><td>Validation / Build / Publication</td></tr>
+          <tr><td><code class="inline">assets/</code></td><td>Copie des seules ressources réellement référencées par le flow.</td><td>Publication uniquement</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ======================= FEATURES OVERVIEW ======================= -->
+
+    <h2 id="fonctionnalites">Vue d'ensemble des fonctionnalités</h2>
+    <div class="card-grid">
+      <div class="card"><h4>🗺️ Éditeur de graphe</h4><p>Canevas interactif (zoom, pan, drag, connexion) basé sur React Flow, avec mini-carte et réorganisation automatique.</p></div>
+      <div class="card"><h4>🧩 Éditeur de nœud</h4><p>Panneau contextuel adapté au type de nœud sélectionné (audio, navigation, source API...).</p></div>
+      <div class="card"><h4>🔤 Variables</h4><p>Listes de valeurs réutilisables dans les menus et filtres.</p></div>
+      <div class="card"><h4>🗂️ HashMaps</h4><p>Structures clé → valeurs pour les filtres internes.</p></div>
+      <div class="card"><h4>🎧 Mapping Audio &amp; Image</h4><p>Dossier et format de ressource par variable/HashMap.</p></div>
+      <div class="card"><h4>⚙️ Paramètres du Flow</h4><p>Point d'entrée, configuration audio globale, langues actives.</p></div>
+      <div class="card"><h4>✅ Validation</h4><p>Erreurs bloquantes, avertissements, détection de cycles, cohérence des contrats API.</p></div>
+      <div class="card"><h4>📄 Exports</h4><p>Rapport de validation et contrat backend en JSON, Markdown et/ou HTML.</p></div>
+      <div class="card"><h4>📁 Asset Repository</h4><p>Scan réel du dossier de ressources, hash SHA-256, réconciliation manquants/orphelins.</p></div>
+      <div class="card"><h4>🔨 Build</h4><p>Valide + scanne + écrit un dossier de sortie complet (contrat + diagnostics).</p></div>
+      <div class="card"><h4>☁️ Publication</h4><p>Dossier "propre" prêt à consommer : contrat + ressources réellement référencées.</p></div>
+      <div class="card"><h4>💾 Sessions &amp; JSON</h4><p>Auto-sauvegarde locale, import/export de <code class="inline">flow.json</code>, undo/redo.</p></div>
+    </div>
+
+    <!-- ======================= GUIDE ======================= -->
+
+    <h2 id="guide-toolbar">Guide d'utilisation — Barre d'outils</h2>
+    <p>La barre d'outils, toujours visible en haut de l'écran, regroupe les actions globales :</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Bouton</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><span class="btn-label">➕ Nouveau</span></td><td>Vide entièrement le projet en cours (avec confirmation) et réinitialise toutes les valeurs par défaut, y compris les langues.</td></tr>
+          <tr><td><span class="btn-label">▤ Données ▾</span></td><td>Menu déroulant : Variables, HashMaps, Mapping Audio &amp; Image, Paramètres du Flow.</td></tr>
+          <tr><td><span class="btn-label">⬆ Importer</span></td><td>Charge un fichier <code class="inline">flow.json</code> depuis le disque et reconstruit le graphe.</td></tr>
+          <tr><td><span class="btn-label">⬇ Enregistrer</span></td><td>Télécharge le flow courant sous forme de <code class="inline">flow.json</code>.</td></tr>
+          <tr><td><span class="btn-label">+ Nœud</span></td><td>Demande un type et un identifiant, puis ajoute un nouveau nœud au canevas.</td></tr>
+          <tr><td>Champ de recherche</td><td>Filtre les nœuds par identifiant (sous-chaîne) et ouvre l'éditeur du premier trouvé.</td></tr>
+          <tr><td><span class="btn-label">↶ / ↷</span></td><td>Annuler / rétablir (historique des 50 derniers états du graphe, variables et HashMaps inclus).</td></tr>
+          <tr><td><span class="btn-label">⛶ Réorganiser</span></td><td>Recalcule automatiquement la position de tous les nœuds (algorithme Dagre, dispositions verticale).</td></tr>
+          <tr><td><span class="btn-label">⬜ Studio</span></td><td>Ouvre le panneau Studio (Ressources / Build / Publication) — voir plus bas.</td></tr>
+          <tr><td><span class="btn-label">✔ Valider</span></td><td>Lance la validation complète du flow et ouvre le rapport — voir <a href="#guide-validation">Validation du flow</a>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="guide-canvas">Guide d'utilisation — Le canevas</h2>
+    <ul>
+      <li><strong>Zoom</strong> : molette de la souris (ou les boutons +/− en bas à gauche).</li>
+      <li><strong>Déplacement</strong> : clic-glissé sur le fond, ou molette (pan).</li>
+      <li><strong>Sélection multiple</strong> : glisser un rectangle de sélection sur le fond.</li>
+      <li><strong>Sélectionner un nœud</strong> : cliquer dessus — ouvre l'éditeur de nœud à droite.</li>
+      <li><strong>Relier deux nœuds</strong> : cliquer-glisser depuis le point (<em>handle</em>) en bas d'un nœud vers le point en haut d'un autre.</li>
+      <li><strong>Mini-carte</strong> : en bas à droite, colorée par type de nœud, pour naviguer sur un grand flow.</li>
+    </ul>
+    <p class="muted">Les liens d'un nœud <code class="inline">root</code> sont étiquetés par l'identifiant de l'option ; les autres liens (<code class="inline">next</code>) sont de simples flèches.</p>
+
+    <h2 id="guide-node-editor">Guide d'utilisation — Éditer un nœud</h2>
+    <p>Cliquer sur un nœud ouvre un panneau à droite avec les sections suivantes :</p>
+
+    <h4>Général (tous les types)</h4>
+    <ul>
+      <li><strong>ID</strong> — lecture seule (l'identifiant du nœud).</li>
+      <li><strong>Type de Nœud</strong> — changer de type régénère une structure propre pour le nouveau type (les champs incompatibles sont perdus), en conservant l'audio, le commentaire et le contrat de réponse déjà saisis.</li>
+      <li><strong>Configuration Audio (Séquence)</strong> :
+        <ul>
+          <li><em>ID unique de l'audio (key)</em> — doit être unique dans tout le flow (la validation le vérifie).</li>
+          <li><em>Séquence d'audios</em> — liste ordonnée de chemins ou de variables entre accolades, ex. <code class="inline">{'{'}produit{'}'}</code> ou <code class="inline">{'{'}prix:1000{'}'}</code> pour un formatage spécifique.</li>
+          <li><em>Fallback</em> — audio joué si un élément de la séquence est introuvable.</li>
+        </ul>
+      </li>
+      <li><strong>Commentaire / Documentation</strong> — note libre, sans effet fonctionnel.</li>
+      <li><strong>Contrat de Réponse Backend (JSON)</strong> — un exemple JSON, validé syntaxiquement (mais jamais interprété) lors de la validation.</li>
+    </ul>
+
+    <h4>Champs spécifiques par type</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Champs additionnels</th></tr></thead>
+        <tbody>
+          <tr><td><span class="node-pill node-calendrier">CALENDRIER</span></td><td>Période (jours), Cadran (passé / centrer / future).</td></tr>
+          <tr><td><span class="node-pill node-grid">GRID</span></td><td>Source des options (variable), Variable de stockage (Set), Autoriser le choix « Tout », N'afficher que les options actives.</td></tr>
+          <tr><td><span class="node-pill node-result">RESULT</span></td><td>Méthode HTTP + Endpoint, Paramètres (séparés par virgule), Exemples de réponses (backend) — ajout/suppression libre d'exemples JSON.</td></tr>
+          <tr><td><span class="node-pill node-prefilter">PRE_FILTER</span></td><td>Variable de Clé (Filtre), Source du HashMap (filtre_source), Autoriser le choix « Tout », N'afficher que les options actives.</td></tr>
+          <tr><td><span class="node-pill node-root">ROOT</span></td><td>Options du menu — chacune avec un identifiant et un nœud suivant.</td></tr>
+          <tr><td>GRID / CALENDRIER / PRE_FILTER</td><td>Nœud Suivant (Next) — un seul lien de sortie.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <strong class="label">Astuce</strong>
+      Pour <code class="inline">result</code>, vider entièrement le champ Paramètres donne une liste
+      vide (avertissement "probable oubli"), pas une erreur — une virgule en fin de saisie reste
+      affichée normalement pendant que vous tapez le paramètre suivant.
+    </div>
+    <p class="muted">
+      Détail de <code class="inline">can_choix_all</code> et <code class="inline">controle_active</code>
+      (GRID / PRE_FILTER) : voir <a href="#concept-active-state">États actif / inactif</a>.
+    </p>
+
+    <h2 id="guide-variables">Guide d'utilisation — Gestionnaire de Variables</h2>
+    <p>Accessible via <span class="btn-label">Données ▾ → Variables</span>.</p>
+    <ol class="steps">
+      <li>Tapez un nom dans le champ de gauche (ex. <code class="inline">produits</code>) puis cliquez sur <strong>+</strong> pour créer la variable.</li>
+      <li>Cliquez sur son nom pour voir ses valeurs à droite ; tapez une valeur puis <span class="kbd">Entrée</span> pour l'ajouter.</li>
+      <li>Cliquez sur l'icône œil d'une valeur pour basculer son état actif/inactif (voir <a href="#concept-active-state">États actif / inactif</a>) — une valeur inactive apparaît barrée et grisée.</li>
+      <li>Retirez une valeur avec le <strong>×</strong> à côté d'elle.</li>
+      <li>Supprimez toute la variable avec l'icône corbeille — <strong>refusé</strong> si elle est encore utilisée par un nœud (<code class="inline">options_source</code> ou <code class="inline">set</code>).</li>
+    </ol>
+
+    <h2 id="guide-hashmaps">Guide d'utilisation — Gestionnaire de HashMaps</h2>
+    <p>Accessible via <span class="btn-label">Données ▾ → HashMaps</span>.</p>
+    <ol class="steps">
+      <li>Créez un HashMap en lui donnant un nom (ex. <code class="inline">marche_par_departement</code>).</li>
+      <li>Sélectionnez-le dans la liste de gauche pour voir son contenu.</li>
+      <li>Ajoutez une clé (ex. <code class="inline">oueme</code>) via le champ en haut à droite.</li>
+      <li>Dans chaque carte de clé, ajoutez des valeurs avec <span class="kbd">Entrée</span>, comme pour les variables.</li>
+      <li>L'icône œil sur l'en-tête d'une carte bascule l'état actif de <strong>toute la clé</strong> ; l'icône œil sur une valeur bascule uniquement <strong>cette valeur</strong>. Désactiver une clé désactive ses valeurs en cascade (voir <a href="#concept-active-state">États actif / inactif</a>).</li>
+    </ol>
+    <p class="muted">Un HashMap se consomme ensuite dans un nœud <code class="inline">pre_filter</code> via <code class="inline">filtre_source</code>.</p>
+
+    <h2 id="guide-mapping">Guide d'utilisation — Mapping Audio &amp; Image</h2>
+    <p>Accessible via <span class="btn-label">Données ▾ → Mapping Audio &amp; Image</span>.</p>
+    <ul>
+      <li><strong>Format Audio</strong> / <strong>Format Image</strong> — format de fichier global appliqué à toutes les ressources générées.</li>
+      <li><strong>Régénérer</strong> — recalcule le mapping dossier pour chaque variable/HashMap : ajoute une entrée par défaut (dossier = nom) pour celles qui n'en ont pas, et retire les entrées obsolètes. Les mappings déjà personnalisés sont conservés.</li>
+      <li>Le tableau est en <strong>lecture seule</strong> ici : pour changer le dossier d'une variable, éditez <code class="inline">audio_mappings</code> directement dans le JSON, ou renommez la variable.</li>
+      <li><strong>Switch à côté de chaque HashMap</strong> — active (par défaut) ou désactive la génération de ses propres ressources audio/image. À désactiver quand la clé et les valeurs du HashMap correspondent déjà à des variables existantes ailleurs dans le flow : le mobile réutilise alors leurs ressources, sans dupliquer les fichiers audio/image. Ce choix est stocké dans <code class="inline">hashmaps_no_resources</code> (liste des HashMaps exclus, tout le reste génère ses ressources par défaut) et retire immédiatement les entrées correspondantes du rapport de validation (audios <em>et</em> images).</li>
+    </ul>
+    <div class="callout info">
+      <strong class="label">Rappel</strong>
+      Deux variables ne devraient jamais partager le même dossier de ressources — la validation le
+      signale comme avertissement ("dossier partagé par plusieurs mappings").
+    </div>
+
+    <h2 id="guide-settings">Guide d'utilisation — Paramètres du Flow</h2>
+    <p>Accessible via <span class="btn-label">Données ▾ → Paramètres du Flow</span>.</p>
+    <ul>
+      <li><strong>Nœud d'entrée (entry)</strong> — le nœud par lequel démarre le parcours (par défaut, le premier nœud du fichier).</li>
+      <li><strong>Audio global</strong> :
+        <ul>
+          <li>Lire automatiquement la question (prompt) / les options — comportement par défaut de lecture audio dans l'app mobile.</li>
+          <li>Pause entre audios (ms) — silence entre deux éléments d'une séquence.</li>
+        </ul>
+      </li>
+      <li><strong>Langues</strong> — liste éditable : chaque langue apparaît comme une puce retirable ; tapez un nom (ex. <code class="inline">mina</code>) et cliquez sur <strong>Ajouter</strong> pour en créer une nouvelle (normalisée automatiquement en minuscules, sans doublon).</li>
+    </ul>
+    <div class="callout warn">
+      <strong class="label">Attention</strong>
+      Vider entièrement la liste des langues fait tomber à zéro le nombre de ressources audio
+      attendues dans le rapport de validation (les images continuent d'être attendues normalement).
+    </div>
+
+    <h2 id="guide-import-export">Guide d'utilisation — Import / Export / Nouveau projet</h2>
+    <ul>
+      <li><strong>Auto-sauvegarde</strong> : chaque changement est automatiquement sauvegardé dans le stockage local du navigateur (<code class="inline">localStorage</code>) ; à la réouverture, le Studio restaure la session précédente.</li>
+      <li><strong>Enregistrer</strong> : télécharge <code class="inline">flow.json</code> (format final, prêt pour le backend/Flutter).</li>
+      <li><strong>Importer</strong> : charge un fichier JSON existant et reconstruit entièrement le graphe.</li>
+      <li><strong>Nouveau</strong> : efface la session et repart d'un projet vide, avec toutes les valeurs par défaut (y compris les langues).</li>
+    </ul>
+
+    <h2 id="guide-validation">Guide d'utilisation — Validation du flow</h2>
+    <p>Le bouton <span class="btn-label">✔ Valider</span> ouvre un rapport structuré en plusieurs sections.</p>
+
+    <h3>Erreurs bloquantes</h3>
+    <ul>
+      <li><code class="inline">audio_mappings</code> manquant à la racine du JSON.</li>
+      <li>Objet <code class="inline">audio</code> manquant sur un nœud, ou <code class="inline">audio.key</code> manquant/dupliqué.</li>
+      <li><code class="inline">json_response_contrat</code> ou un exemple de réponse qui n'est pas un JSON valide.</li>
+      <li><code class="inline">data_source.params</code> contenant un nom vide, invalide ou dupliqué.</li>
+      <li>Une option ou un <code class="inline">next</code> qui pointe vers un identifiant de nœud inexistant.</li>
+    </ul>
+
+    <h3>Avertissements</h3>
+    <ul>
+      <li>Séquence audio vide ; nœud <code class="inline">root</code> sans option ; nœud de navigation sans <code class="inline">next</code> (cul-de-sac).</li>
+      <li>Nœud orphelin — jamais référencé par aucun autre nœud (sauf le point d'entrée).</li>
+      <li>Mapping ressource manquant pour une variable/HashMap ; deux mappings partageant le même dossier.</li>
+      <li><code class="inline">data_source.params</code> vide (probable oubli) ; <code class="inline">data_source.method</code> non reconnue.</li>
+      <li>Un même endpoint utilisé avec plusieurs méthodes HTTP différentes selon les nœuds.</li>
+      <li><strong>Boucle sans issue</strong> : un cycle du graphe dont aucun nœud n'atteint jamais un nœud <code class="inline">result</code> (une boucle qui possède une porte de sortie n'est jamais signalée).</li>
+    </ul>
+
+    <h3>Rapport d'inventaire automatique</h3>
+    <p>
+      Liste tous les audios/images référencés directement dans les nœuds, les variables utilisées,
+      et le détail des ressources générées automatiquement (par variable, par HashMap) — exportable
+      en <strong>JSON</strong>, <strong>Markdown</strong> ou <strong>HTML</strong>.
+    </p>
+
+    <h3>Contrat Backend</h3>
+    <p>
+      Tableau des routes dérivées des nœuds <code class="inline">result</code>, regroupées par
+      (endpoint, méthode) : <strong>Méthode</strong>, <strong>Endpoint</strong>,
+      <strong>Params</strong> (union de tous les nœuds qui partagent la route),
+      <strong>Nœuds</strong> concernés — exportable en <strong>JSON</strong> ou <strong>Markdown</strong>.
+      Se régénère entièrement à chaque clic sur Valider : aucune étape manuelle à refaire après
+      avoir ajouté ou modifié une branche du flow.
+    </p>
+
+    <h2 id="guide-studio">Guide d'utilisation — Le Studio</h2>
+    <p>
+      Ouvert via le bouton <span class="btn-label">⬜ Studio</span>, ce panneau regroupe trois
+      onglets qui donnent au Studio un accès réel au disque (File System Access API).
+    </p>
+    <div class="callout warn">
+      <strong class="label">Navigateur requis</strong>
+      Ces trois onglets nécessitent Chrome, Edge ou Opera. Sur un navigateur non supporté (Firefox,
+      Safari), un message bloquant s'affiche à la place — voir <a href="#compatibilite">Compatibilité navigateur</a>.
+    </div>
+    <p>
+      Une fois un dossier connecté dans un onglet, il reste mémorisé (avec redemande de permission
+      au navigateur) pour les prochaines sessions et pour les autres onglets qui utilisent le même
+      rôle de dossier (le dossier de ressources est partagé entre les trois onglets).
+    </p>
+
+    <h3 id="guide-studio-resources">Onglet Ressources (Asset Repository)</h3>
+    <ol class="steps">
+      <li><strong>Connecter le dossier de ressources</strong> — choisissez le dossier racine contenant vos sous-dossiers <code class="inline">audio/</code> et <code class="inline">images/</code>.</li>
+      <li><strong>Scanner</strong> — parcourt réellement le dossier, calcule un hash SHA-256 et la taille de chaque fichier trouvé sous <code class="inline">audio/</code> ou <code class="inline">images/</code> (tout le reste est ignoré).</li>
+      <li>Le résultat affiche : le hash global du dépôt, le nombre de fichiers, la date de scan, le détail du <strong>manifest</strong> (chemin / taille / hash), puis la réconciliation :
+        <ul>
+          <li><strong>Manquants</strong> — ressources attendues par le flow mais absentes du disque.</li>
+          <li><strong>Orphelins</strong> — fichiers présents sur le disque mais non attendus par le flow.</li>
+        </ul>
+      </li>
+    </ol>
+
+    <h3 id="guide-studio-build">Onglet Build</h3>
+    <ol class="steps">
+      <li>Connectez le <strong>dossier de ressources</strong> (identique à l'onglet Ressources) et un <strong>dossier de sortie</strong> distinct (en écriture).</li>
+      <li>Cliquez sur <strong>Lancer le Build</strong>.</li>
+      <li>Le Build valide le flow, scanne les ressources, réconcilie les deux, dérive le contrat backend, puis écrit <strong>8 fichiers</strong> dans le dossier de sortie (voir <a href="#concept-fichiers">Fichiers générés</a>).</li>
+    </ol>
+    <div class="callout warn">
+      <strong class="label">Garde-fou</strong>
+      Si le flow a des erreurs bloquantes, le diagnostic complet est quand même affiché (pour
+      comprendre le problème), mais <strong>aucun fichier n'est écrit</strong> — jamais de sortie
+      partielle ou incohérente sur disque.
+    </div>
+
+    <h3 id="guide-studio-publish">Onglet Publication</h3>
+    <p>
+      Même moteur que le Build, avec une étape supplémentaire : la Publication copie en plus, dans
+      <code class="inline">{'{dossier de publication}'}/assets/</code>, les seules ressources
+      <strong>réellement référencées</strong> par le flow — jamais les fichiers orphelins, jamais un
+      copier-coller aveugle de tout le dossier de ressources.
+    </p>
+    <ol class="steps">
+      <li>Connectez le <strong>dossier de ressources</strong> et un <strong>dossier de publication</strong> distinct.</li>
+      <li>Cliquez sur <strong>Publier</strong>.</li>
+      <li>Le résultat indique le nombre de ressources copiées, en plus des mêmes diagnostics que le Build.</li>
+    </ol>
+    <p class="muted">
+      Le Build sert à vérifier/itérer en local ; la Publication produit le répertoire final,
+      "propre", prêt à être livré au backend et à l'application Flutter.
+    </p>
+
+    <!-- ======================= REFERENCE ======================= -->
+
+    <h2 id="compatibilite">Compatibilité navigateur</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fonctionnalité</th><th>Navigateurs supportés</th></tr></thead>
+        <tbody>
+          <tr><td>Éditeur de graphe, Variables, HashMaps, Mapping, Paramètres, Validation, Import/Export</td><td>Tout navigateur moderne (Chrome, Edge, Firefox, Safari...)</td></tr>
+          <tr><td>Studio — Ressources / Build / Publication</td><td><strong>Chrome, Edge ou Opera uniquement</strong> (File System Access API). Aucun mode dégradé n'est proposé sur les autres navigateurs.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="faq">FAQ &amp; Dépannage</h2>
+
+    <h4>Le bouton Studio affiche "Navigateur non supporté"</h4>
+    <p>Ouvrez le Studio depuis Chrome, Edge ou Opera. Firefox et Safari ne supportent pas encore l'accès réel au système de fichiers requis par ces fonctionnalités.</p>
+
+    <h4>"Permission refusée pour ce dossier — reconnectez-le"</h4>
+    <p>Le navigateur redemande une confirmation d'accès après chaque redémarrage, ou si la permission a expiré. Cliquez à nouveau sur le bouton de connexion du dossier concerné.</p>
+
+    <h4>Le Build/la Publication n'écrit rien</h4>
+    <p>Vérifiez la section "Erreurs Bloquantes" du résultat affiché : au moins une erreur de validation empêche toute écriture, par construction.</p>
+
+    <h4>Le rapport de validation montre plus de ressources audio que prévu</h4>
+    <p>C'est normal si plusieurs langues sont actives : chaque valeur de variable génère un fichier audio <em>par langue</em>, mais une seule image (jamais dupliquée par langue).</p>
+
+    <h4>Une variable ne se supprime pas</h4>
+    <p>Elle est encore utilisée dans un nœud (comme <code class="inline">options_source</code> ou <code class="inline">set</code>). Retirez d'abord ces références dans les nœuds concernés.</p>
+
+    <h4>Je ne retrouve plus mon travail après un rechargement</h4>
+    <p>Le Studio auto-sauvegarde dans le stockage local du navigateur (<code class="inline">localStorage</code>), propre à ce navigateur et cet appareil. Utilisez régulièrement <strong>Enregistrer</strong> pour exporter une copie <code class="inline">flow.json</code> durable.</p>
+
+    <h2 id="glossaire">Glossaire</h2>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><td><strong>Flow</strong></td><td>Le graphe complet de navigation, décrit par <code class="inline">flow.json</code>.</td></tr>
+          <tr><td><strong>Nœud</strong></td><td>Une étape du parcours (root, grid, pre_filter, result, calendrier).</td></tr>
+          <tr><td><strong>Séquence audio</strong></td><td>Liste ordonnée d'éléments audio joués à l'arrivée sur un nœud.</td></tr>
+          <tr><td><strong>Manifest</strong></td><td>Liste des fichiers réellement présents sur le disque, avec leur hash.</td></tr>
+          <tr><td><strong>Repository (dépôt)</strong></td><td>Le hash global calculé à partir du manifest — sert à détecter tout changement.</td></tr>
+          <tr><td><strong>Réconciliation</strong></td><td>Comparaison entre ressources attendues (flow) et présentes (disque) : manquants / orphelins.</td></tr>
+          <tr><td><strong>Contrat Backend</strong></td><td>Liste des routes API à implémenter, dérivée automatiquement des nœuds result.</td></tr>
+          <tr><td><strong>active_overrides</strong></td><td>Liste des exceptions inactives (valeurs de variable, clés/valeurs de HashMap) — tout le reste est actif par défaut. Voir <a href="#concept-active-state">États actif / inactif</a>.</td></tr>
+          <tr><td><strong>hashmaps_no_resources</strong></td><td>Liste des HashMaps exclus de la génération de ressources audio/image (clé et valeurs déjà couvertes par une variable existante) — tout le reste génère ses ressources par défaut. Voir <a href="#guide-mapping">Mapping Audio &amp; Image</a>.</td></tr>
+          <tr><td><strong>Build</strong></td><td>Validation + scan + écriture de diagnostics dans un dossier de sortie, pour vérifier en local.</td></tr>
+          <tr><td><strong>Publication</strong></td><td>Un Build, plus la copie des ressources réellement référencées dans <code class="inline">assets/</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="page-footer">
+      AgroFlux Studio — Documentation du projet. Généré pour accompagner l'utilisation de l'éditeur
+      de flow AgroFlux Bénin.
+    </footer>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  // Menu mobile
+  var toggle = document.getElementById('navToggle');
+  var sidebar = document.getElementById('sidebar');
+  if (toggle && sidebar) {
+    toggle.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    sidebar.querySelectorAll('a.nav-link').forEach(function (a) {
+      a.addEventListener('click', function () { sidebar.classList.remove('open'); });
+    });
+  }
+
+  // Thème clair/sombre/auto
+  var root = document.documentElement;
+  var buttons = document.querySelectorAll('[data-theme-choice]');
+  function applyTheme(choice) {
+    if (choice === 'auto') {
+      root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', choice);
+    }
+    buttons.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-theme-choice') === choice);
+    });
+    try { localStorage.setItem('agroflux-doc-theme', choice); } catch (e) {}
+  }
+  var saved = 'auto';
+  try { saved = localStorage.getItem('agroflux-doc-theme') || 'auto'; } catch (e) {}
+  applyTheme(saved);
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { applyTheme(b.getAttribute('data-theme-choice')); });
+  });
+
+  // Scrollspy : surligne le lien de la section visible
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav-link'));
+  var sections = links
+    .map(function (l) { return document.getElementById(l.getAttribute('href').slice(1)); })
+    .filter(Boolean);
+
+  var byId = {};
+  links.forEach(function (l) { byId[l.getAttribute('href').slice(1)] = l; });
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = byId[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '0px 0px -75% 0px', threshold: 0 });
+    sections.forEach(function (s) { observer.observe(s); });
+  }
+})();
+</script>
+
+</body>
+</html>

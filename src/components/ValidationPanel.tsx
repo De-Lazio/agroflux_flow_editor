@@ -1,25 +1,34 @@
-import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download, Layers, Library } from 'lucide-react';
-import ResourceCheckPanel from './ResourceCheckPanel';
+import { AlertCircle, X, FileText, Music, Image as ImageIcon, Database, Download, Layers, Library, Server } from 'lucide-react';
+import ErrorsWarningsSummary from './ErrorsWarningsSummary';
+import { exportReportAsJson, exportReportAsMarkdown, exportReportAsHtml } from '../utils/reportExport';
+import { exportBackendContractAsJson, exportBackendContractAsMarkdown } from '../utils/backendContract';
+import type { BackendContract } from '../utils/backendContract';
+import { downloadTextFile } from '../utils/download';
 import type { ValidationReport } from '../types/flow';
 
 interface ValidationPanelProps {
   errors: string[];
   warnings: string[];
   report?: ValidationReport;
+  backendContract?: BackendContract;
   onClose: () => void;
 }
 
-const ValidationPanel = ({ errors, warnings, report, onClose }: ValidationPanelProps) => {
+const ValidationPanel = ({ errors, warnings, report, backendContract, onClose }: ValidationPanelProps) => {
   if (errors.length === 0 && warnings.length === 0 && !report) return null;
 
-  const handleExportReport = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(report, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "rapport_inventaire.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+  const handleExportReport = (format: 'json' | 'md' | 'html') => {
+    if (!report) return;
+    const result = { errors, warnings, report };
+    if (format === 'json') downloadTextFile(exportReportAsJson(result), 'rapport_validation.json', 'application/json');
+    if (format === 'md') downloadTextFile(exportReportAsMarkdown(result), 'rapport_validation.md', 'text/markdown');
+    if (format === 'html') downloadTextFile(exportReportAsHtml(result), 'rapport_validation.html', 'text/html');
+  };
+
+  const handleExportBackendContract = (format: 'json' | 'md') => {
+    if (!backendContract) return;
+    if (format === 'json') downloadTextFile(exportBackendContractAsJson(backendContract), 'backend_contract.json', 'application/json');
+    if (format === 'md') downloadTextFile(exportBackendContractAsMarkdown(backendContract), 'backend_contract.md', 'text/markdown');
   };
 
   return (
@@ -35,37 +44,7 @@ const ValidationPanel = ({ errors, warnings, report, onClose }: ValidationPanelP
       </div>
 
       <div className="p-4 space-y-6">
-        {errors.length > 0 && (
-          <div>
-            <div className="text-xs font-bold text-red-600 mb-2 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-              Erreurs Bloquantes ({errors.length})
-            </div>
-            <div className="space-y-1">
-              {errors.map((err: string, i: number) => (
-                <div key={i} className="p-3 bg-red-50 border-l-4 border-red-500 text-sm text-red-800 rounded-r-md">
-                  {err}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {warnings.length > 0 && (
-          <div>
-            <div className="text-xs font-bold text-amber-600 mb-2 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-              Avertissements ({warnings.length})
-            </div>
-            <div className="space-y-1">
-              {warnings.map((warn: string, i: number) => (
-                <div key={i} className="p-3 bg-amber-50 border-l-4 border-amber-500 text-sm text-amber-800 rounded-r-md">
-                  {warn}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <ErrorsWarningsSummary errors={errors} warnings={warnings} />
 
         {report && (
           <div className="pt-4 border-t border-slate-100">
@@ -74,13 +53,29 @@ const ValidationPanel = ({ errors, warnings, report, onClose }: ValidationPanelP
                 <FileText size={18} className="text-indigo-500" />
                 Rapport d'inventaire automatique
               </h4>
-              <button
-                onClick={handleExportReport}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100"
-                title="Exporter le rapport en JSON"
-              >
-                <Download size={14} /> Exporter en JSON
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleExportReport('json')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100"
+                  title="Exporter le rapport en JSON"
+                >
+                  <Download size={14} /> JSON
+                </button>
+                <button
+                  onClick={() => handleExportReport('md')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100"
+                  title="Exporter le rapport en Markdown"
+                >
+                  <Download size={14} /> Markdown
+                </button>
+                <button
+                  onClick={() => handleExportReport('html')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100"
+                  title="Exporter le rapport en HTML"
+                >
+                  <Download size={14} /> HTML
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -162,7 +157,61 @@ const ValidationPanel = ({ errors, warnings, report, onClose }: ValidationPanelP
               </div>
             </div>
 
-            <ResourceCheckPanel report={report} />
+            {backendContract && (
+              <div className="mt-6 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                    <Server size={14} className="text-slate-700" />
+                    Contrat Backend — routes à implémenter ({backendContract.endpoints.length})
+                  </h5>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleExportBackendContract('json')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-md text-xs font-bold hover:bg-slate-200 transition-colors border border-slate-200"
+                      title="Exporter le contrat backend en JSON"
+                    >
+                      <Download size={14} /> JSON
+                    </button>
+                    <button
+                      onClick={() => handleExportBackendContract('md')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-md text-xs font-bold hover:bg-slate-200 transition-colors border border-slate-200"
+                      title="Exporter le contrat backend en Markdown"
+                    >
+                      <Download size={14} /> Markdown
+                    </button>
+                  </div>
+                </div>
+
+                {backendContract.endpoints.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">Aucune route détectée (aucun nœud "result" n'a d'endpoint déclaré).</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="text-left text-slate-400 uppercase text-[10px]">
+                          <th className="py-1.5 pr-3">Méthode</th>
+                          <th className="py-1.5 pr-3">Endpoint</th>
+                          <th className="py-1.5 pr-3">Params</th>
+                          <th className="py-1.5">Nœuds</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {backendContract.endpoints.map((ep) => (
+                          <tr key={`${ep.method} ${ep.endpoint}`} className="border-t border-slate-100">
+                            <td className="py-1.5 pr-3">
+                              <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">{ep.method}</span>
+                            </td>
+                            <td className="py-1.5 pr-3 font-mono text-slate-700 break-all">{ep.endpoint}</td>
+                            <td className="py-1.5 pr-3 font-mono text-slate-500">{ep.params.join(', ') || '—'}</td>
+                            <td className="py-1.5 text-slate-400">{ep.used_by_nodes.join(', ')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

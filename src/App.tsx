@@ -20,9 +20,16 @@ import VariableManager from './components/VariableManager';
 import HashMapManager from './components/HashMapManager';
 import ResourceMappingManager from './components/ResourceMappingManager';
 import FlowSettingsManager from './components/FlowSettingsManager';
+import ApiImportPanel from './components/ApiImportPanel';
+import StudioPanel from './components/StudioPanel';
 import { jsonToFlow, flowToJson, getLayoutedElements } from './utils/flowManager';
 import { validateFlow } from './utils/validator';
+import { buildBackendContract } from './utils/backendContract';
+import type { BackendContract } from './utils/backendContract';
+import { downloadTextFile } from './utils/download';
 import { DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './utils/resourceInventory';
+import { DEFAULT_LANGUAGES } from './utils/languages';
+import { createEmptyActiveOverrides } from './utils/activeState';
 import {
   createDefaultRootNode,
   createDefaultGridNode,
@@ -32,6 +39,7 @@ import {
 } from './utils/nodeFactory';
 import initialFlowJson from '../flow.json';
 import type {
+  ActiveOverrides,
   FlowData,
   FlowGraphNodeData,
   FlowVariables,
@@ -56,6 +64,7 @@ interface ValidationState {
   errors: string[];
   warnings: string[];
   report?: ValidationReport;
+  backendContract?: BackendContract;
 }
 
 const defaultAudioMappings: FlowMappings = {};
@@ -70,16 +79,21 @@ const App = () => {
 
   const [variables, setVariables] = useState<FlowVariables>({});
   const [hashmaps, setHashmaps] = useState<FlowHashmaps>({});
+  // Persistance (session, JSON, flowToJson) branchée en Phase 5 — voir PLAN_ACTIVE_STATE.md.
+  const [activeOverrides, setActiveOverrides] = useState<ActiveOverrides>(createEmptyActiveOverrides());
+  const [hashmapsNoResources, setHashmapsNoResources] = useState<string[]>([]);
   const [audioMappings, setAudioMappings] = useState<FlowMappings>(defaultAudioMappings);
   const [audioFormat, setAudioFormat] = useState<string>(DEFAULT_AUDIO_FORMAT);
   const [imageFormat, setImageFormat] = useState<string>(DEFAULT_IMAGE_FORMAT);
   const [config, setConfig] = useState<FlowConfig | null>(null);
-  const [dynamicAudio, setDynamicAudio] = useState<Record<string, unknown> | null>(null);
+  const [languages, setLanguages] = useState<string[]>(DEFAULT_LANGUAGES);
   const [entryNode, setEntryNode] = useState<string>("");
   const [isVariableManagerOpen, setIsVariableManagerOpen] = useState(false);
   const [isHashMapManagerOpen, setIsHashMapManagerOpen] = useState(false);
   const [isMappingManagerOpen, setIsMappingManagerOpen] = useState(false);
   const [isFlowSettingsOpen, setIsFlowSettingsOpen] = useState(false);
+  const [isApiImportOpen, setIsApiImportOpen] = useState(false);
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
 
   // État de verrouillage pour le chargement
   const [isAppReady, setIsAppReady] = useState(false);
@@ -121,8 +135,10 @@ const App = () => {
             setAudioFormat(session.audioFormat || DEFAULT_AUDIO_FORMAT);
             setImageFormat(session.imageFormat || DEFAULT_IMAGE_FORMAT);
             setConfig(session.config || null);
-            setDynamicAudio(session.dynamicAudio || null);
+            setLanguages(session.languages || DEFAULT_LANGUAGES);
             setEntryNode(session.entryNode || "");
+            setActiveOverrides(session.activeOverrides || createEmptyActiveOverrides());
+            setHashmapsNoResources(session.hashmapsNoResources || []);
             seedHistory(session.nodes, session.edges || [], session.variables || {}, session.hashmaps || {});
             setIsAppReady(true);
             return;
@@ -142,8 +158,10 @@ const App = () => {
       setAudioFormat(initialFlow.resource_formats?.audio || DEFAULT_AUDIO_FORMAT);
       setImageFormat(initialFlow.resource_formats?.image || DEFAULT_IMAGE_FORMAT);
       setConfig(initialFlow.config || null);
-      setDynamicAudio(initialFlow.dynamic_audio || null);
+      setLanguages(initialFlow.languages || DEFAULT_LANGUAGES);
       setEntryNode(initialFlow.entry || "");
+      setActiveOverrides(initialFlow.active_overrides || createEmptyActiveOverrides());
+      setHashmapsNoResources(initialFlow.hashmaps_no_resources || []);
       seedHistory(initialNodes, initialEdges, initialFlow.variables || {}, initialFlow.hashmaps || {});
       setIsAppReady(true);
     };
@@ -164,13 +182,15 @@ const App = () => {
       audioFormat,
       imageFormat,
       config,
-      dynamicAudio,
+      languages,
       entryNode,
+      activeOverrides,
+      hashmapsNoResources,
       updatedAt: new Date().toISOString()
     };
 
     localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
-  }, [nodes, edges, variables, hashmaps, audioMappings, audioFormat, imageFormat, config, dynamicAudio, entryNode, isAppReady]);
+  }, [nodes, edges, variables, hashmaps, audioMappings, audioFormat, imageFormat, config, languages, entryNode, activeOverrides, hashmapsNoResources, isAppReady]);
 
   const addToHistory = (newNodes: FlowGraphNode[], newEdges: Edge[]) => {
     const newEntry: HistoryEntry = {
@@ -262,8 +282,10 @@ const App = () => {
     setAudioFormat(DEFAULT_AUDIO_FORMAT);
     setImageFormat(DEFAULT_IMAGE_FORMAT);
     setConfig(null);
-    setDynamicAudio(null);
+    setLanguages(DEFAULT_LANGUAGES);
     setEntryNode("");
+    setActiveOverrides(createEmptyActiveOverrides());
+    setHashmapsNoResources([]);
     setSelectedNode(null);
     setHistory([]);
     setHistoryIndex(-1);
@@ -313,25 +335,25 @@ const App = () => {
     audioMappings,
     resource_formats: { audio: audioFormat, image: imageFormat },
     config,
-    dynamic_audio: dynamicAudio,
-    entry: entryNode
+    languages,
+    entry: entryNode,
+    activeOverrides,
+    hashmapsNoResources
   });
 
+  // Reconstruit le FlowData courant à la demande (jamais mis en cache) : utilisé par
+  // tout ce qui a besoin d'une lecture ponctuelle de l'état actuel du flow (Valider,
+  // Enregistrer, Asset Repository) sans dupliquer cet état ailleurs.
+  const getCurrentFlow = () => flowToJson(nodes, buildExtraData());
+
   const handleValidate = () => {
-    const currentJson = flowToJson(nodes, buildExtraData());
+    const currentJson = getCurrentFlow();
     const results = validateFlow(currentJson);
-    setValidation(results);
+    setValidation({ ...results, backendContract: buildBackendContract(currentJson) });
   };
 
   const handleSave = () => {
-    const currentJson = flowToJson(nodes, buildExtraData());
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentJson, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "flow.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    downloadTextFile(JSON.stringify(getCurrentFlow(), null, 2), 'flow.json', 'text/json');
   };
 
   const handleLoad = () => {
@@ -351,8 +373,10 @@ const App = () => {
           setAudioFormat(json.resource_formats?.audio || DEFAULT_AUDIO_FORMAT);
           setImageFormat(json.resource_formats?.image || DEFAULT_IMAGE_FORMAT);
           setConfig(json.config || null);
-          setDynamicAudio(json.dynamic_audio || null);
+          setLanguages(json.languages || DEFAULT_LANGUAGES);
           setEntryNode(json.entry || "");
+          setActiveOverrides(json.active_overrides || createEmptyActiveOverrides());
+          setHashmapsNoResources(json.hashmaps_no_resources || []);
 
           const { nodes: newNodes, edges: newEdges } = jsonToFlow(json);
           setNodes(newNodes);
@@ -412,6 +436,8 @@ const App = () => {
         onOpenHashMaps={() => setIsHashMapManagerOpen(true)}
         onOpenMappings={() => setIsMappingManagerOpen(true)}
         onOpenSettings={() => setIsFlowSettingsOpen(true)}
+        onOpenApiImport={() => setIsApiImportOpen(true)}
+        onOpenStudio={() => setIsStudioOpen(true)}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
         onValidate={handleValidate}
@@ -426,6 +452,8 @@ const App = () => {
         <VariableManager
           variables={variables}
           onUpdate={setVariables}
+          activeOverrides={activeOverrides}
+          onActiveOverridesChange={setActiveOverrides}
           onClose={() => setIsVariableManagerOpen(false)}
           nodes={nodes}
         />
@@ -435,6 +463,8 @@ const App = () => {
         <HashMapManager
           hashmaps={hashmaps}
           onUpdate={setHashmaps}
+          activeOverrides={activeOverrides}
+          onActiveOverridesChange={setActiveOverrides}
           onClose={() => setIsHashMapManagerOpen(false)}
           variables={variables}
         />
@@ -450,6 +480,8 @@ const App = () => {
           imageFormat={imageFormat}
           onAudioFormatChange={setAudioFormat}
           onImageFormatChange={setImageFormat}
+          hashmapsNoResources={hashmapsNoResources}
+          onHashmapsNoResourcesChange={setHashmapsNoResources}
           onClose={() => setIsMappingManagerOpen(false)}
         />
       )}
@@ -460,8 +492,31 @@ const App = () => {
           onEntryChange={setEntryNode}
           config={config}
           onConfigChange={setConfig}
+          languages={languages}
+          onLanguagesChange={setLanguages}
           nodes={nodes}
           onClose={() => setIsFlowSettingsOpen(false)}
+        />
+      )}
+
+      {isApiImportOpen && (
+        <ApiImportPanel
+          variables={variables}
+          hashmaps={hashmaps}
+          activeOverrides={activeOverrides}
+          onImport={(newVariables, newHashmaps, newActiveOverrides) => {
+            setVariables(newVariables);
+            setHashmaps(newHashmaps);
+            setActiveOverrides(newActiveOverrides);
+          }}
+          onClose={() => setIsApiImportOpen(false)}
+        />
+      )}
+
+      {isStudioOpen && (
+        <StudioPanel
+          getCurrentFlow={getCurrentFlow}
+          onClose={() => setIsStudioOpen(false)}
         />
       )}
 
@@ -495,6 +550,7 @@ const App = () => {
           errors={validation.errors}
           warnings={validation.warnings}
           report={validation.report}
+          backendContract={validation.backendContract}
           onClose={() => setValidation({ errors: [], warnings: [] })}
         />
       </div>

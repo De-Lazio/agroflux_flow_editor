@@ -20,7 +20,7 @@ Beyond the graph itself, the editor manages the audio/image assets the flow depe
 
 - **Variables**: reusable named lists of values (e.g. `produits: ["mais", "soja"]`).
 - **HashMaps**: nested key → values structures (e.g. `marche_par_departement`), used by `pre_filter` nodes.
-- **Mapping Audio & Image**: for each variable/hashmap, a resource folder (auto-generated, read-only, regenerate on demand) plus a global audio/image output format. From this, the editor generates the full expected resource inventory (e.g. `audios/produits/riz.mp3`, `images/marche_par_departement/oueme/ouando.jpeg`).
+- **Mapping Audio & Image**: for each variable/hashmap, a resource folder (auto-generated, read-only, regenerate on demand) plus a global audio/image output format. From this, the editor generates the full expected resource inventory — one audio entry per active language declared on the flow (e.g. `audio/fon/produits/riz.mp3`), and a single, language-independent image entry (e.g. `images/marche_par_departement/oueme/ouando.jpeg`).
 - **Validation report**: lists every resource referenced by nodes plus every resource generated from variables/hashmaps (broken down by origin), flags broken links, orphan nodes, and mapping issues.
 - **Vérification des ressources sur disque**: generates a `tree` command for the user to run locally, imports the resulting `.txt`, and compares it against the inventory to flag missing assets.
 

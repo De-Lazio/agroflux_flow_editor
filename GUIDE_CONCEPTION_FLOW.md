@@ -55,3 +55,23 @@ Ce guide explique comment structurer efficacement votre arbre de navigation dans
     *   `f_` pour les filtres (ex: `f_communes_borgou`)
     *   `r_` pour les résultats (ex: `r_price_maize`)
 3.  **Audit Visuel :** Utilisez le bouton **"Réorganiser"** régulièrement. Si les traits se croisent trop, c'est peut-être que votre logique de `next` est trop complexe et qu'un **FILTER** serait plus approprié qu'un **MENU** géant.
+
+---
+
+## 4. Contrôler l'affichage des options (actif / « Tout »)
+
+Chaque valeur de variable et chaque clé/valeur de HashMap peut être marquée **inactive** sans être supprimée (icône œil dans les Gestionnaires de Variables/HashMaps). C'est utile pour préparer un contenu à l'avance sans encore l'exposer aux utilisateurs finaux — par exemple déclarer un nouveau produit ou un nouveau marché dans le Studio bien avant sa sortie officielle.
+
+**Important :** marquer une valeur inactive ne change rien tout seul. C'est le nœud `grid`/`pre_filter` qui décide, via la case **"N'afficher que les options actives"** (`controle_active`), s'il respecte cet état ou non :
+
+*   **Case décochée (par défaut) :** le nœud affiche toutes les valeurs, actives ou non — comportement identique à avant l'existence de cette fonctionnalité. Rien ne casse sur les flows existants.
+*   **Case cochée :** le nœud ne proposera à l'utilisateur que les valeurs actives de sa variable/HashMap source. Pratique pour un menu grand public pendant qu'un catalogue complet reste géré en coulisses dans le Studio.
+
+L'autre case, **"Autoriser le choix « Tout »"** (`can_choix_all`), est indépendante : elle indique que l'utilisateur doit pouvoir sélectionner « Tout » en plus de la liste (par exemple "tous les départements"), sans avoir besoin d'ajouter une valeur artificielle du type `tout_les_departements` directement dans la variable.
+
+**Quand cocher `controle_active` ?**
+*   Menu grand public où vous voulez limiter l'affichage à un sous-ensemble validé (ex. phase pilote sur certains départements seulement), pendant que le catalogue complet reste développé dans le Studio pour la suite.
+*   Filtre interne (`pre_filter`) qui ne doit exposer que des clés déjà "prêtes" (ressources audio/image disponibles et validées), sans bloquer la préparation des autres en amont.
+
+**Quand ne pas la cocher :**
+*   Tant que le contenu n'a pas besoin d'être restreint — la case décochée reproduit exactement le comportement historique du flow.

@@ -10,22 +10,48 @@
   },
   "variables": {
     "produits": [
+      "agrumes",
+      "anacarde",
+      "ananas",
+      "arachide",
+      "betail_bovins",
+      "betail_caprins",
+      "betail_ovins",
+      "betail_porcins",
+      "coco",
+      "coton",
+      "fonio",
+      "fruits",
+      "haricot",
+      "igname",
+      "karite",
+      "legumes",
       "mais",
-      "soja"
+      "manioc",
+      "mil",
+      "niebe",
+      "oignon",
+      "palmiste",
+      "piment",
+      "poisson",
+      "riz",
+      "soja",
+      "sorgho",
+      "tomate"
     ],
     "departements": [
-      "oueme",
-      "plateau",
-      "zou",
-      "collines",
-      "mono",
-      "couffo",
-      "atlantique",
-      "litoral",
-      "borgou",
       "alibori",
       "atacora",
-      "donga"
+      "atlantique",
+      "borgou",
+      "collines",
+      "couffo",
+      "donga",
+      "littoral",
+      "mono",
+      "oueme",
+      "plateau",
+      "zou"
     ],
     "x_anime_x": [
       "aujourdhui",
@@ -35,9 +61,9 @@
       "dans_quatre_jours",
       "hier",
       "avant_hier",
-      "trois_jours_passe",
-      "quatre_jours_passe",
-      "cinq_jours_passe"
+      "trois_jours passe",
+      "quatre_jours passe",
+      "cinq_jours passe"
     ],
     "periode": [
       "aujourdhui",
@@ -68,317 +94,1809 @@
       "oueme",
       "plateau",
       "zou",
-      "collines"
+      "colline"
+    ],
+    "regions": [
+      "centre",
+      "nord",
+      "sud"
+    ],
+    "communes": [
+      "abomey",
+      "abomey_calavi",
+      "adjarra",
+      "agbangnizoun",
+      "akpro_misserete",
+      "allada",
+      "aplahoue",
+      "athieme",
+      "avrankou",
+      "banikoara",
+      "bante",
+      "bassila",
+      "bembereke",
+      "bohicon",
+      "bopa",
+      "boukoumbe",
+      "cobly",
+      "come",
+      "copargo",
+      "cotonou",
+      "cove",
+      "dangbo",
+      "dassa_zoume",
+      "djakotomey",
+      "djidja",
+      "djougou",
+      "dogbo",
+      "glazoue",
+      "gogounou",
+      "grand_popo",
+      "houeyogbe",
+      "ifangni",
+      "kalale",
+      "kandi",
+      "karimama",
+      "kerou",
+      "ketou",
+      "klouekanme",
+      "kouande",
+      "kpomasse",
+      "lokossa",
+      "malanville",
+      "materi",
+      "ndali",
+      "natitingou",
+      "nikki",
+      "ouake",
+      "ouesse",
+      "ouidah",
+      "ouinhi",
+      "parakou",
+      "pehunco",
+      "pobe",
+      "porto_novo",
+      "sakete",
+      "savalou",
+      "save",
+      "segbana",
+      "seme_kpodji",
+      "sinende",
+      "so_ava",
+      "tanguieta",
+      "tchaourou",
+      "toffo",
+      "tori_bossito",
+      "tori_cada",
+      "toucountouna",
+      "za_kpota",
+      "zagnanado",
+      "ze",
+      "zogbodomey"
+    ],
+    "marches": [
+      "aba",
+      "adigun",
+      "adjaha",
+      "adjarra",
+      "adjarra_betail",
+      "affame",
+      "agbangninzoun",
+      "agbata",
+      "agoue",
+      "agouna",
+      "ahidahome",
+      "ahihohomey",
+      "aifa",
+      "akassato",
+      "akitigbo",
+      "aklankpa",
+      "akodeha",
+      "akpadanou",
+      "akpro_misserete",
+      "aledjo",
+      "arzeke",
+      "assena",
+      "atchoukpa_houdoto",
+      "avakpa",
+      "avrankou",
+      "azogotchebou",
+      "azove",
+      "azowlisse",
+      "bantete",
+      "banigbe",
+      "banikoara",
+      "banikoara_betail",
+      "bante",
+      "barei",
+      "bariyenou",
+      "bassila_aoro_betail",
+      "bembereke",
+      "benin_commune_ouake",
+      "berebouaye",
+      "birni_maro",
+      "biro_betail",
+      "bohicon",
+      "bopa_lobogo_betail",
+      "bouanri",
+      "bougou",
+      "boukoumbe",
+      "cobly",
+      "cococodji",
+      "come",
+      "copargo",
+      "dan",
+      "dangbo",
+      "danhoue",
+      "dantokpa",
+      "dasso",
+      "derassi",
+      "dessa",
+      "deve",
+      "djalloukou",
+      "djekpetimey",
+      "djidja",
+      "djidja_avokanzoun_betail",
+      "djougou_kolokonde_betail",
+      "dogbo",
+      "dogbo_tota_betail",
+      "dome",
+      "doume",
+      "doutou",
+      "dovi_dove",
+      "dunkassa",
+      "efeoute",
+      "fo_boure",
+      "founougo",
+      "gamia",
+      "ganvie_agblonme",
+      "gaounga",
+      "garo",
+      "gbagla_ganfan",
+      "gbangnito",
+      "gbomina",
+      "glodjigbe",
+      "gobada",
+      "godonoutin",
+      "gogounou",
+      "gogounou_betail",
+      "gouka",
+      "goumori",
+      "goussedea",
+      "grand_popo",
+      "guessou_bani",
+      "hadjanaho",
+      "hekanme",
+      "hevie_djeganto",
+      "hlanxi",
+      "hlassame",
+      "honhoue",
+      "houandougon",
+      "houndjro",
+      "houndo",
+      "hozin",
+      "ifangni",
+      "ikinmon",
+      "ikpinle",
+      "illara",
+      "ita_djebou",
+      "kalale",
+      "kandi",
+      "karimama",
+      "kassoua_allah",
+      "kerou",
+      "ketou_iwoye_betail",
+      "kikele",
+      "kissame",
+      "klouekanme",
+      "kolokonde",
+      "kotokpa",
+      "kouaba",
+      "kouande",
+      "kouti",
+      "kpaou",
+      "kpasse",
+      "kpedekpo",
+      "kpinnou",
+      "kpokissa",
+      "lahotan",
+      "lobogo",
+      "logozohe",
+      "lokossa",
+      "lotin_gbedjewin",
+      "malanville",
+      "malanville_guene_betail",
+      "mangou",
+      "manigri",
+      "manta",
+      "massi",
+      "matchatom",
+      "materi",
+      "materi_betail",
+      "misserete",
+      "missessin",
+      "mondogan",
+      "monkpa",
+      "mouodani",
+      "ndali",
+      "ndali_bori_betail",
+      "natitingou",
+      "niaro",
+      "nikki_ouenra_betail",
+      "obada",
+      "ottola",
+      "ouando",
+      "ouedeme",
+      "ouedeme_dja",
+      "ouedo_dessato",
+      "ouegbo",
+      "ouesse",
+      "ouesse_laminou_betail",
+      "ouinhi",
+      "oulounda_agadjaligbo",
+      "oumbega",
+      "pahou",
+      "paouingnan",
+      "paparapanga",
+      "parakou_aselcop_betail",
+      "patargo",
+      "pehunco_betail",
+      "perma",
+      "pira",
+      "podji_ague",
+      "saint_michel_dallada",
+      "sakete",
+      "savalou_lema_betail",
+      "save",
+      "savi",
+      "se",
+      "sedje_denou",
+      "segbana",
+      "sehoue",
+      "sekere",
+      "sekou",
+      "seme_podji_betail",
+      "setto",
+      "sey",
+      "sikki",
+      "sinaicire",
+      "sinende_centre",
+      "soka",
+      "somperekou",
+      "sori",
+      "sowigandji",
+      "taki_sari",
+      "taki_sari_nikki",
+      "takon",
+      "taneka_koko",
+      "tangbo_djevie",
+      "tatonnoukon",
+      "tchabikouma",
+      "tchaourou",
+      "tchaouxi",
+      "tchatchou",
+      "tchetti",
+      "tchikandou",
+      "tchito",
+      "tekonte",
+      "tindji_akodedjro",
+      "tobre",
+      "toffo",
+      "tokotoko",
+      "tokpadome",
+      "tori_bossito",
+      "tori_gare",
+      "toube",
+      "toucountouna",
+      "toura",
+      "ungbadjo",
+      "vakon_attinsa",
+      "yenawa_sodokui",
+      "yoko",
+      "yovo_hi",
+      "za_hla",
+      "zakpota_tindji_betail",
+      "ze",
+      "ze_betail",
+      "zinvie",
+      "zougou_yobou"
+    ],
+    "varietes": [
+      "agrumes",
+      "anacarde",
+      "ananas",
+      "arachide",
+      "betail_bovins",
+      "betail_caprins",
+      "betail_ovins",
+      "betail_porcins",
+      "coco",
+      "coton",
+      "fonio",
+      "fruits",
+      "haricot",
+      "igname",
+      "karite",
+      "legumes",
+      "mais",
+      "manioc",
+      "mil",
+      "niebe",
+      "oignon",
+      "palmiste",
+      "piment",
+      "poisson",
+      "riz",
+      "soja",
+      "sorgho",
+      "tomate"
     ]
   },
   "hashmaps": {
     "marche_par_departement": {
-      "oueme": ["ouando", "adjohoun", "gbada", "bonou"],
-      "plateau": ["takon", "sakete", "ketou"]
+      "oueme": [
+        "ouando",
+        "adjohoun",
+        "gbada",
+        "bonou"
+      ],
+      "plateau": [
+        "takon",
+        "sakete",
+        "ketou"
+      ]
+    },
+    "departements_par_region": {
+      "centre": [
+        "collines",
+        "zou"
+      ],
+      "nord": [
+        "alibori",
+        "atacora",
+        "borgou",
+        "donga"
+      ],
+      "sud": [
+        "atlantique",
+        "couffo",
+        "littoral",
+        "mono",
+        "oueme",
+        "plateau"
+      ]
+    },
+    "communes_par_departement": {
+      "alibori": [
+        "banikoara",
+        "gogounou",
+        "kandi",
+        "karimama",
+        "malanville",
+        "segbana"
+      ],
+      "atacora": [
+        "boukoumbe",
+        "cobly",
+        "kerou",
+        "kouande",
+        "materi",
+        "natitingou",
+        "pehunco",
+        "tanguieta",
+        "toucountouna"
+      ],
+      "atlantique": [
+        "abomey_calavi",
+        "allada",
+        "kpomasse",
+        "ouidah",
+        "so_ava",
+        "toffo",
+        "tori_bossito",
+        "tori_cada",
+        "ze"
+      ],
+      "borgou": [
+        "bembereke",
+        "kalale",
+        "ndali",
+        "nikki",
+        "parakou",
+        "sinende",
+        "tchaourou"
+      ],
+      "collines": [
+        "bante",
+        "dassa_zoume",
+        "glazoue",
+        "ouesse",
+        "savalou",
+        "save"
+      ],
+      "couffo": [
+        "aplahoue",
+        "djakotomey",
+        "dogbo",
+        "klouekanme"
+      ],
+      "donga": [
+        "bassila",
+        "copargo",
+        "djougou",
+        "ouake"
+      ],
+      "littoral": [
+        "cotonou"
+      ],
+      "mono": [
+        "athieme",
+        "bopa",
+        "come",
+        "grand_popo",
+        "houeyogbe",
+        "lokossa"
+      ],
+      "oueme": [
+        "adjarra",
+        "akpro_misserete",
+        "avrankou",
+        "dangbo",
+        "porto_novo",
+        "seme_kpodji"
+      ],
+      "plateau": [
+        "ifangni",
+        "ketou",
+        "pobe",
+        "sakete"
+      ],
+      "zou": [
+        "abomey",
+        "agbangnizoun",
+        "bohicon",
+        "cove",
+        "djidja",
+        "ouinhi",
+        "za_kpota",
+        "zagnanado",
+        "zogbodomey"
+      ]
+    },
+    "marches_par_commune": {
+      "abomey": [
+        "houndjro"
+      ],
+      "abomey_calavi": [
+        "ahihohomey",
+        "aifa",
+        "akassato",
+        "glodjigbe",
+        "godonoutin",
+        "kpasse",
+        "ouedo_dessato"
+      ],
+      "adjarra": [
+        "adjarra",
+        "adjarra_betail"
+      ],
+      "agbangnizoun": [
+        "agbangninzoun",
+        "houandougon",
+        "oumbega"
+      ],
+      "akpro_misserete": [
+        "akpro_misserete",
+        "atchoukpa_houdoto",
+        "misserete"
+      ],
+      "allada": [
+        "agbata",
+        "saint_michel_dallada",
+        "tokpadome"
+      ],
+      "aplahoue": [
+        "azove",
+        "kissame",
+        "yenawa_sodokui"
+      ],
+      "athieme": [
+        "danhoue",
+        "ouedeme_dja"
+      ],
+      "avrankou": [
+        "avrankou",
+        "gbagla_ganfan",
+        "ouando"
+      ],
+      "banikoara": [
+        "banikoara",
+        "banikoara_betail",
+        "goumori"
+      ],
+      "bante": [
+        "aklankpa",
+        "bante",
+        "lahotan",
+        "sowigandji"
+      ],
+      "bassila": [
+        "bassila_aoro_betail",
+        "goussedea"
+      ],
+      "bembereke": [
+        "bembereke"
+      ],
+      "bohicon": [
+        "bohicon"
+      ],
+      "bopa": [
+        "adjaha",
+        "bopa_lobogo_betail",
+        "lobogo",
+        "se"
+      ],
+      "boukoumbe": [
+        "boukoumbe"
+      ],
+      "cobly": [
+        "cobly"
+      ],
+      "come": [
+        "come",
+        "doutou"
+      ],
+      "copargo": [
+        "copargo",
+        "patargo"
+      ],
+      "cotonou": [
+        "dantokpa"
+      ],
+      "cove": [
+        "azogotchebou",
+        "dome"
+      ],
+      "dangbo": [
+        "akpadanou",
+        "dangbo"
+      ],
+      "dassa_zoume": [
+        "doume",
+        "ungbadjo"
+      ],
+      "djakotomey": [
+        "deve",
+        "hlassame"
+      ],
+      "djidja": [
+        "dan",
+        "djidja",
+        "djidja_avokanzoun_betail",
+        "dovi_dove",
+        "setto"
+      ],
+      "djougou": [
+        "bariyenou",
+        "bougou",
+        "djougou_kolokonde_betail",
+        "gaounga",
+        "kassoua_allah",
+        "kikele",
+        "kolokonde",
+        "kpaou",
+        "zougou_yobou"
+      ],
+      "dogbo": [
+        "djekpetimey",
+        "dogbo",
+        "dogbo_tota_betail"
+      ],
+      "glazoue": [
+        "djalloukou",
+        "gbomina",
+        "gobada",
+        "gouka",
+        "ikinmon",
+        "monkpa",
+        "ouedeme"
+      ],
+      "gogounou": [
+        "dunkassa",
+        "garo",
+        "gogounou",
+        "gogounou_betail"
+      ],
+      "grand_popo": [
+        "grand_popo"
+      ],
+      "houeyogbe": [
+        "agoue",
+        "akodeha",
+        "honhoue"
+      ],
+      "ifangni": [
+        "banigbe",
+        "ifangni",
+        "ita_djebou",
+        "tatonnoukon"
+      ],
+      "kalale": [
+        "kalale"
+      ],
+      "kandi": [
+        "kandi",
+        "somperekou",
+        "sori"
+      ],
+      "karimama": [
+        "karimama"
+      ],
+      "kerou": [
+        "kerou",
+        "mangou",
+        "sinaicire",
+        "tekonte",
+        "tobre"
+      ],
+      "ketou": [
+        "aba",
+        "adigun",
+        "akitigbo",
+        "assena",
+        "efeoute",
+        "ketou_iwoye_betail",
+        "toube",
+        "yoko"
+      ],
+      "klouekanme": [
+        "klouekanme",
+        "tchito"
+      ],
+      "kouande": [
+        "kouande"
+      ],
+      "kpomasse": [
+        "hekanme",
+        "lotin_gbedjewin",
+        "missessin"
+      ],
+      "lokossa": [
+        "kpinnou",
+        "lokossa"
+      ],
+      "malanville": [
+        "founougo",
+        "malanville",
+        "malanville_guene_betail"
+      ],
+      "materi": [
+        "materi",
+        "materi_betail"
+      ],
+      "ndali": [
+        "berebouaye",
+        "ndali",
+        "ndali_bori_betail"
+      ],
+      "natitingou": [
+        "natitingou"
+      ],
+      "nikki": [
+        "bouanri",
+        "nikki_ouenra_betail",
+        "sikki",
+        "taki_sari_nikki",
+        "tchatchou"
+      ],
+      "ouake": [
+        "aledjo",
+        "barei",
+        "benin_commune_ouake",
+        "manigri",
+        "matchatom",
+        "paparapanga"
+      ],
+      "ouesse": [
+        "logozohe",
+        "ouesse",
+        "ouesse_laminou_betail",
+        "paouingnan",
+        "pira"
+      ],
+      "ouidah": [
+        "hevie_djeganto",
+        "pahou",
+        "savi",
+        "sehoue",
+        "zinvie"
+      ],
+      "ouinhi": [
+        "agouna",
+        "kotokpa",
+        "kpokissa",
+        "ouinhi",
+        "oulounda_agadjaligbo"
+      ],
+      "parakou": [
+        "arzeke",
+        "fo_boure",
+        "parakou_aselcop_betail",
+        "tchikandou"
+      ],
+      "pehunco": [
+        "niaro",
+        "pehunco_betail",
+        "perma",
+        "taki_sari"
+      ],
+      "pobe": [
+        "ikpinle",
+        "obada"
+      ],
+      "porto_novo": [
+        "ahidahome",
+        "vakon_attinsa"
+      ],
+      "sakete": [
+        "illara",
+        "mondogan",
+        "mouodani",
+        "sakete",
+        "takon"
+      ],
+      "savalou": [
+        "ottola",
+        "savalou_lema_betail",
+        "tchaouxi",
+        "tchetti"
+      ],
+      "save": [
+        "save"
+      ],
+      "segbana": [
+        "birni_maro",
+        "segbana",
+        "toura"
+      ],
+      "seme_kpodji": [
+        "affame",
+        "azowlisse",
+        "gbangnito",
+        "hozin",
+        "kouti",
+        "podji_ague",
+        "seme_podji_betail"
+      ],
+      "sinende": [
+        "derassi",
+        "sekere",
+        "sinende_centre"
+      ],
+      "so_ava": [
+        "ganvie_agblonme"
+      ],
+      "tanguieta": [
+        "bantete",
+        "kouaba",
+        "manta",
+        "taneka_koko",
+        "tchabikouma",
+        "tokotoko"
+      ],
+      "tchaourou": [
+        "biro_betail",
+        "gamia",
+        "guessou_bani",
+        "tchaourou"
+      ],
+      "toffo": [
+        "hadjanaho",
+        "sekou",
+        "sey",
+        "toffo"
+      ],
+      "tori_bossito": [
+        "dessa",
+        "tori_bossito",
+        "tori_gare"
+      ],
+      "tori_cada": [
+        "ouegbo",
+        "sedje_denou",
+        "soka",
+        "tangbo_djevie",
+        "yovo_hi"
+      ],
+      "toucountouna": [
+        "toucountouna"
+      ],
+      "za_kpota": [
+        "tindji_akodedjro",
+        "za_hla",
+        "zakpota_tindji_betail"
+      ],
+      "zagnanado": [
+        "kpedekpo"
+      ],
+      "ze": [
+        "avakpa",
+        "cococodji",
+        "ze",
+        "ze_betail"
+      ],
+      "zogbodomey": [
+        "dasso",
+        "hlanxi",
+        "houndo",
+        "massi"
+      ]
+    },
+    "varietes_par_produit": {
+      "agrumes": [
+        "agrumes"
+      ],
+      "anacarde": [
+        "anacarde"
+      ],
+      "ananas": [
+        "ananas"
+      ],
+      "arachide": [
+        "arachide"
+      ],
+      "betail_bovins": [
+        "betail_bovins"
+      ],
+      "betail_caprins": [
+        "betail_caprins"
+      ],
+      "betail_ovins": [
+        "betail_ovins"
+      ],
+      "betail_porcins": [
+        "betail_porcins"
+      ],
+      "coco": [
+        "coco"
+      ],
+      "coton": [
+        "coton"
+      ],
+      "fonio": [
+        "fonio"
+      ],
+      "fruits": [
+        "fruits"
+      ],
+      "haricot": [
+        "haricot"
+      ],
+      "igname": [
+        "igname"
+      ],
+      "karite": [
+        "karite"
+      ],
+      "legumes": [
+        "legumes"
+      ],
+      "mais": [
+        "mais"
+      ],
+      "manioc": [
+        "manioc"
+      ],
+      "mil": [
+        "mil"
+      ],
+      "niebe": [
+        "niebe"
+      ],
+      "oignon": [
+        "oignon"
+      ],
+      "palmiste": [
+        "palmiste"
+      ],
+      "piment": [
+        "piment"
+      ],
+      "poisson": [
+        "poisson"
+      ],
+      "riz": [
+        "riz"
+      ],
+      "soja": [
+        "soja"
+      ],
+      "sorgho": [
+        "sorgho"
+      ],
+      "tomate": [
+        "tomate"
+      ]
+    },
+    "marches_par_departement": {
+      "alibori": [
+        "banikoara",
+        "banikoara_betail",
+        "birni_maro",
+        "dunkassa",
+        "founougo",
+        "garo",
+        "gogounou",
+        "gogounou_betail",
+        "goumori",
+        "kandi",
+        "karimama",
+        "malanville",
+        "malanville_guene_betail",
+        "segbana",
+        "somperekou",
+        "sori",
+        "toura"
+      ],
+      "atacora": [
+        "bantete",
+        "boukoumbe",
+        "cobly",
+        "kerou",
+        "kouaba",
+        "kouande",
+        "mangou",
+        "manta",
+        "materi",
+        "materi_betail",
+        "natitingou",
+        "niaro",
+        "pehunco_betail",
+        "perma",
+        "sinaicire",
+        "taki_sari",
+        "taneka_koko",
+        "tchabikouma",
+        "tekonte",
+        "tobre",
+        "tokotoko",
+        "toucountouna"
+      ],
+      "atlantique": [
+        "agbata",
+        "ahihohomey",
+        "aifa",
+        "akassato",
+        "avakpa",
+        "cococodji",
+        "dessa",
+        "ganvie_agblonme",
+        "glodjigbe",
+        "godonoutin",
+        "hadjanaho",
+        "hekanme",
+        "hevie_djeganto",
+        "kpasse",
+        "lotin_gbedjewin",
+        "missessin",
+        "ouedo_dessato",
+        "ouegbo",
+        "pahou",
+        "saint_michel_dallada",
+        "savi",
+        "sedje_denou",
+        "sehoue",
+        "sekou",
+        "sey",
+        "soka",
+        "tangbo_djevie",
+        "toffo",
+        "tokpadome",
+        "tori_bossito",
+        "tori_gare",
+        "yovo_hi",
+        "ze",
+        "ze_betail",
+        "zinvie"
+      ],
+      "borgou": [
+        "arzeke",
+        "bembereke",
+        "berebouaye",
+        "biro_betail",
+        "bouanri",
+        "derassi",
+        "fo_boure",
+        "gamia",
+        "guessou_bani",
+        "kalale",
+        "ndali",
+        "ndali_bori_betail",
+        "nikki_ouenra_betail",
+        "parakou_aselcop_betail",
+        "sekere",
+        "sikki",
+        "sinende_centre",
+        "taki_sari_nikki",
+        "tchaourou",
+        "tchatchou",
+        "tchikandou"
+      ],
+      "collines": [
+        "aklankpa",
+        "bante",
+        "djalloukou",
+        "doume",
+        "gbomina",
+        "gobada",
+        "gouka",
+        "ikinmon",
+        "lahotan",
+        "logozohe",
+        "monkpa",
+        "ottola",
+        "ouedeme",
+        "ouesse",
+        "ouesse_laminou_betail",
+        "paouingnan",
+        "pira",
+        "savalou_lema_betail",
+        "save",
+        "sowigandji",
+        "tchaouxi",
+        "tchetti",
+        "ungbadjo"
+      ],
+      "couffo": [
+        "azove",
+        "deve",
+        "djekpetimey",
+        "dogbo",
+        "dogbo_tota_betail",
+        "hlassame",
+        "kissame",
+        "klouekanme",
+        "tchito",
+        "yenawa_sodokui"
+      ],
+      "donga": [
+        "aledjo",
+        "barei",
+        "bariyenou",
+        "bassila_aoro_betail",
+        "benin_commune_ouake",
+        "bougou",
+        "copargo",
+        "djougou_kolokonde_betail",
+        "gaounga",
+        "goussedea",
+        "kassoua_allah",
+        "kikele",
+        "kolokonde",
+        "kpaou",
+        "manigri",
+        "matchatom",
+        "paparapanga",
+        "patargo",
+        "zougou_yobou"
+      ],
+      "littoral": [
+        "dantokpa"
+      ],
+      "mono": [
+        "adjaha",
+        "agoue",
+        "akodeha",
+        "bopa_lobogo_betail",
+        "come",
+        "danhoue",
+        "doutou",
+        "grand_popo",
+        "honhoue",
+        "kpinnou",
+        "lobogo",
+        "lokossa",
+        "ouedeme_dja",
+        "se"
+      ],
+      "oueme": [
+        "adjarra",
+        "adjarra_betail",
+        "affame",
+        "ahidahome",
+        "akpadanou",
+        "akpro_misserete",
+        "atchoukpa_houdoto",
+        "avrankou",
+        "azowlisse",
+        "dangbo",
+        "gbagla_ganfan",
+        "gbangnito",
+        "hozin",
+        "kouti",
+        "misserete",
+        "ouando",
+        "podji_ague",
+        "seme_podji_betail",
+        "vakon_attinsa"
+      ],
+      "plateau": [
+        "aba",
+        "adigun",
+        "akitigbo",
+        "assena",
+        "banigbe",
+        "efeoute",
+        "ifangni",
+        "ikpinle",
+        "illara",
+        "ita_djebou",
+        "ketou_iwoye_betail",
+        "mondogan",
+        "mouodani",
+        "obada",
+        "sakete",
+        "takon",
+        "tatonnoukon",
+        "toube",
+        "yoko"
+      ],
+      "zou": [
+        "agbangninzoun",
+        "agouna",
+        "azogotchebou",
+        "bohicon",
+        "dan",
+        "dasso",
+        "djidja",
+        "djidja_avokanzoun_betail",
+        "dome",
+        "dovi_dove",
+        "hlanxi",
+        "houandougon",
+        "houndjro",
+        "houndo",
+        "kotokpa",
+        "kpedekpo",
+        "kpokissa",
+        "massi",
+        "ouinhi",
+        "oulounda_agadjaligbo",
+        "oumbega",
+        "setto",
+        "tindji_akodedjro",
+        "za_hla",
+        "zakpota_tindji_betail"
+      ]
+    },
+    "marches_par_region": {
+      "centre": [
+        "agbangninzoun",
+        "agouna",
+        "aklankpa",
+        "azogotchebou",
+        "bante",
+        "bohicon",
+        "dan",
+        "dasso",
+        "djalloukou",
+        "djidja",
+        "djidja_avokanzoun_betail",
+        "dome",
+        "doume",
+        "dovi_dove",
+        "gbomina",
+        "gobada",
+        "gouka",
+        "hlanxi",
+        "houandougon",
+        "houndjro",
+        "houndo",
+        "ikinmon",
+        "kotokpa",
+        "kpedekpo",
+        "kpokissa",
+        "lahotan",
+        "logozohe",
+        "massi",
+        "monkpa",
+        "ottola",
+        "ouedeme",
+        "ouesse",
+        "ouesse_laminou_betail",
+        "ouinhi",
+        "oulounda_agadjaligbo",
+        "oumbega",
+        "paouingnan",
+        "pira",
+        "savalou_lema_betail",
+        "save",
+        "setto",
+        "sowigandji",
+        "tchaouxi",
+        "tchetti",
+        "tindji_akodedjro",
+        "ungbadjo",
+        "za_hla",
+        "zakpota_tindji_betail"
+      ],
+      "nord": [
+        "aledjo",
+        "arzeke",
+        "bantete",
+        "banikoara",
+        "banikoara_betail",
+        "barei",
+        "bariyenou",
+        "bassila_aoro_betail",
+        "bembereke",
+        "benin_commune_ouake",
+        "berebouaye",
+        "birni_maro",
+        "biro_betail",
+        "bouanri",
+        "bougou",
+        "boukoumbe",
+        "cobly",
+        "copargo",
+        "derassi",
+        "djougou_kolokonde_betail",
+        "dunkassa",
+        "fo_boure",
+        "founougo",
+        "gamia",
+        "gaounga",
+        "garo",
+        "gogounou",
+        "gogounou_betail",
+        "goumori",
+        "goussedea",
+        "guessou_bani",
+        "kalale",
+        "kandi",
+        "karimama",
+        "kassoua_allah",
+        "kerou",
+        "kikele",
+        "kolokonde",
+        "kouaba",
+        "kouande",
+        "kpaou",
+        "malanville",
+        "malanville_guene_betail",
+        "mangou",
+        "manigri",
+        "manta",
+        "matchatom",
+        "materi",
+        "materi_betail",
+        "ndali",
+        "ndali_bori_betail",
+        "natitingou",
+        "niaro",
+        "nikki_ouenra_betail",
+        "paparapanga",
+        "parakou_aselcop_betail",
+        "patargo",
+        "pehunco_betail",
+        "perma",
+        "segbana",
+        "sekere",
+        "sikki",
+        "sinaicire",
+        "sinende_centre",
+        "somperekou",
+        "sori",
+        "taki_sari",
+        "taki_sari_nikki",
+        "taneka_koko",
+        "tchabikouma",
+        "tchaourou",
+        "tchatchou",
+        "tchikandou",
+        "tekonte",
+        "tobre",
+        "tokotoko",
+        "toucountouna",
+        "toura",
+        "zougou_yobou"
+      ],
+      "sud": [
+        "aba",
+        "adigun",
+        "adjaha",
+        "adjarra",
+        "adjarra_betail",
+        "affame",
+        "agbata",
+        "agoue",
+        "ahidahome",
+        "ahihohomey",
+        "aifa",
+        "akassato",
+        "akitigbo",
+        "akodeha",
+        "akpadanou",
+        "akpro_misserete",
+        "assena",
+        "atchoukpa_houdoto",
+        "avakpa",
+        "avrankou",
+        "azove",
+        "azowlisse",
+        "banigbe",
+        "bopa_lobogo_betail",
+        "cococodji",
+        "come",
+        "dangbo",
+        "danhoue",
+        "dantokpa",
+        "dessa",
+        "deve",
+        "djekpetimey",
+        "dogbo",
+        "dogbo_tota_betail",
+        "doutou",
+        "efeoute",
+        "ganvie_agblonme",
+        "gbagla_ganfan",
+        "gbangnito",
+        "glodjigbe",
+        "godonoutin",
+        "grand_popo",
+        "hadjanaho",
+        "hekanme",
+        "hevie_djeganto",
+        "hlassame",
+        "honhoue",
+        "hozin",
+        "ifangni",
+        "ikpinle",
+        "illara",
+        "ita_djebou",
+        "ketou_iwoye_betail",
+        "kissame",
+        "klouekanme",
+        "kouti",
+        "kpasse",
+        "kpinnou",
+        "lobogo",
+        "lokossa",
+        "lotin_gbedjewin",
+        "misserete",
+        "missessin",
+        "mondogan",
+        "mouodani",
+        "obada",
+        "ouando",
+        "ouedeme_dja",
+        "ouedo_dessato",
+        "ouegbo",
+        "pahou",
+        "podji_ague",
+        "saint_michel_dallada",
+        "sakete",
+        "savi",
+        "se",
+        "sedje_denou",
+        "sehoue",
+        "sekou",
+        "seme_podji_betail",
+        "sey",
+        "soka",
+        "takon",
+        "tangbo_djevie",
+        "tatonnoukon",
+        "tchito",
+        "toffo",
+        "tokpadome",
+        "tori_bossito",
+        "tori_gare",
+        "toube",
+        "vakon_attinsa",
+        "yenawa_sodokui",
+        "yoko",
+        "yovo_hi",
+        "ze",
+        "ze_betail",
+        "zinvie"
+      ]
     }
   },
   "audio_mappings": {
     "produits": "produits",
     "departements": "departements",
     "x_anime_x": "x_anime_x",
-    "periode": "periode",
+    "periode": "periode/",
     "marches_suivis": "marches_suivis",
     "type_info_marche": "type_info_marche",
     "departements_et_tout": "departements_et_tout",
-    "marche_par_departement": "marche_par_departement"
+    "regions": "regions",
+    "communes": "communes",
+    "marches": "marches",
+    "varietes": "varietes",
+    "marche_par_departement": "marche_par_departement",
+    "departements_par_region": "departements_par_region",
+    "communes_par_departement": "communes_par_departement",
+    "marches_par_commune": "marches_par_commune",
+    "varietes_par_produit": "varietes_par_produit",
+    "marches_par_departement": "marches_par_departement",
+    "marches_par_region": "marches_par_region"
   },
   "resource_formats": {
     "audio": "mp3",
     "image": "jpeg"
   },
-  "dynamic_audio": {},
+  "languages": [
+    "fon",
+    "yoruba",
+    "dendi",
+    "adja"
+  ],
+  "active_overrides": {
+    "variables": {},
+    "hashmaps": {}
+  },
+  "hashmaps_no_resources": [
+    "departements_par_region",
+    "communes_par_departement",
+    "marches_par_commune",
+    "varietes_par_produit",
+    "marches_par_departement",
+    "marches_par_region",
+    "marche_par_departement"
+  ],
   "nodes": {
     "root": {
       "type": "root",
+      "audio_prompt": "intro/root.mp3",
+      "options": [
+        {
+          "id": "achete_produit",
+          "next": "achete_produit"
+        },
+        {
+          "id": "vendre_produit",
+          "next": "vendre_produit"
+        },
+        {
+          "id": "marche_anime_x",
+          "next": "marche_anime_x"
+        },
+        {
+          "id": "marche_anime_calendrier",
+          "next": "anime_calendrier_calendrier"
+        },
+        {
+          "id": "infos_march",
+          "next": "infos_marche_departement"
+        },
+        {
+          "id": "explorer_produit",
+          "next": "explorer_produit_produit"
+        }
+      ],
       "audio": {
         "type": "sequence",
         "key": "root_intro",
-        "sequence": ["intro/root.mp3"],
+        "sequence": [
+          "intro/root_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
       },
-      "options": [
-        { "id": "achete_produit", "next": "achete_produit" },
-        { "id": "vendre_produit", "next": "vendre_produit" },
-        { "id": "marche_anime_x", "next": "marche_anime_x" },
-        { "id": "marche_anime_calendrier", "next": "anime_calendrier_calendrier" },
-        { "id": "infos_march", "next": "infos_marche_departement" },
-        { "id": "explorer_produit", "next": "explorer_produit_produit" }
-      ],
-      "json_response_contrat": "{}",
-      "comment": "Menu principal du flow AgroFlux : point d'entrée de tous les parcours."
+      "comment": ""
     },
     "achete_produit": {
       "type": "grid",
-      "audio": {
-        "type": "sequence",
-        "key": "achete_produit_intro",
-        "sequence": ["intro/achete_produit_intro.mp3"],
-        "fallback": "intro/default.mp3"
-      },
+      "audio_prompt": "questions/achete_produit.mp3",
       "options_source": "produits",
       "set": "produits",
       "next": "acheter_result",
-      "json_response_contrat": "{}",
-      "comment": "Nœud de démarrage du flow \"acheter un produit\". Permet de choisir le produit à acheter."
+      "audio": {
+        "type": "sequence",
+        "key": "achete_produit_intro",
+        "sequence": [
+          "intro/achete_produit_intro.pm3"
+        ],
+        "fallback": "intro/default.mp3"
+      },
+      "comment": "Noeud de démarage du flow acheter un produit.\n\nCe noeud permet de choisir le produit à acheter."
     },
     "vendre_produit": {
       "type": "grid",
-      "audio": {
-        "type": "sequence",
-        "key": "vendre_produit_intro",
-        "sequence": ["intro/vendre_produit_intro.mp3"],
-        "fallback": "intro/default.mp3"
-      },
+      "audio_prompt": "questions/vendre_produit.mp3",
       "options_source": "produits",
       "set": "produits",
       "next": "vendre_result",
-      "json_response_contrat": "{}",
-      "comment": "Nœud de démarrage du flow \"vendre un produit\". Permet de choisir le produit à vendre."
+      "audio": {
+        "type": "sequence",
+        "key": "vendre_produit_intro",
+        "sequence": [
+          "intro/vendre_produit_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      },
+      "comment": "Noeud de démarage du flow vendre un produit.\n\nCe noeud permet de choisir le produit à vendre."
     },
     "marche_anime_x": {
       "type": "grid",
+      "audio_prompt": "questions/marche_anime_x.mp3",
+      "options_source": "x_anime_x",
+      "set": "",
+      "next": "anime_x_departement",
       "audio": {
         "type": "sequence",
         "key": "marche_anime_x_intro",
-        "sequence": ["questions/marche_anime_x.mp3"],
+        "sequence": [
+          "intro/marche_anime_x_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "options_source": "x_anime_x",
-      "set": "x_anime_x",
-      "next": "anime_x_departement",
-      "json_response_contrat": "{}",
-      "comment": "Choix du jour (aujourd'hui, demain, etc.) pour connaître les marchés animés."
+      }
     },
     "acheter_result": {
       "type": "result",
       "data_source": {
         "endpoint": "api/app/acheter_produit",
-        "params": ["produit", "departement"]
+        "params": [
+          "produit",
+          "departement"
+        ]
       },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_acheter.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_sont.mp3\"\n      ],\n      \"image\": \"images/intro/acheter.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_bas_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/comparer_qualite.mp3\"\n      ],\n      \"image\": \"images/icons/attention_transport.png\"\n    }\n  ]\n}",
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_acheter.mp3\",\n        \"{produit}\",\n        \"intro/dans_departement.mp3\",\n        \"{departement}\"\n      ],\n      \"image\": \"images/intro/acheter.png\"\n    },\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"{date:2026-03-10}\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"{prix:1000}\",\n        \"unites/kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    }\n  ],\n  \"meta\": {\n     \"auto_play\": true,\n    \"pause_ms\": 600\n  }\n}",
       "audio": {
         "type": "sequence",
         "key": "acheter_result_intro",
-        "sequence": ["intro/acheter_result.mp3"],
+        "sequence": [
+          "intro/result_achete_produit_intro.pm3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    { \"audios\": [\"intro/vous_cherchez_acheter.mp3\", \"{produit}\", \"intro/dans_departement.mp3\", \"{departement}\"], \"image\": \"images/intro/acheter.png\" },\n    { \"audios\": [\"ordre/premier_marche.mp3\", \"marches/bohicon.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/marches/bohicon.png\" },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_a.mp3\", \"{prix:1000}\", \"unites/kg.mp3\"], \"image\": \"images/produits/mais_local.png\" }\n  ],\n  \"meta\": { \"auto_play\": true, \"pause_ms\": 600 }\n}",
-      "response_examples": [],
-      "comment": "Résultats du parcours \"acheter un produit\" : liste des marchés avec les meilleurs prix pour le produit choisi."
+      }
     },
     "vendre_result": {
       "type": "result",
       "data_source": {
         "endpoint": "api/app/vendre_produit",
-        "params": ["produit", "departement"]
+        "params": [
+          "produit",
+          "departement"
+        ]
       },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_vendre.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_vente.mp3\"\n      ],\n      \"image\": \"images/intro/vendre.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_eleve_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/vendre_maintenant_si_possible.mp3\"\n      ],\n      \"image\": \"images/icons/opportunity_transport.png\"\n    }\n  ]\n}",
       "audio": {
         "type": "sequence",
         "key": "vendre_result_intro",
-        "sequence": ["intro/vendre_result.mp3"],
+        "sequence": [
+          "intro/result_vendre_produit_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    { \"audios\": [\"intro/vous_cherchez_vendre.mp3\", \"{produit}\", \"intro/dans_departement.mp3\", \"{departement}\"], \"image\": \"images/intro/vendre.png\" },\n    { \"audios\": [\"ordre/premier_marche.mp3\", \"marches/bohicon.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/marches/bohicon.png\" },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_vendu_a.mp3\", \"{prix:1000}\", \"unites/kg.mp3\"], \"image\": \"images/produits/mais_local.png\" }\n  ],\n  \"meta\": { \"auto_play\": true, \"pause_ms\": 600 }\n}",
-      "response_examples": [],
-      "comment": "Résultats du parcours \"vendre un produit\" : liste des marchés avec les meilleurs prix de vente pour le produit choisi."
+      }
     },
     "anime_x_departement": {
       "type": "grid",
-      "audio": {
-        "type": "sequence",
-        "key": "anime_x_departement_intro",
-        "sequence": ["questions/anime_x_departement.mp3"],
-        "fallback": "intro/default.mp3"
-      },
+      "audio_prompt": "questions/anime_x_departement.mp3",
       "options_source": "departements_et_tout",
       "set": "departements_et_tout",
       "next": "anime_x_result",
-      "json_response_contrat": "{}",
-      "comment": "Choix du département (ou tous les départements) pour la liste des marchés animés à la date choisie."
+      "audio": {
+        "type": "sequence",
+        "key": "anime_x_departement_intro",
+        "sequence": [
+          "intro/anime_x_departement_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      }
     },
     "anime_x_result": {
       "type": "result",
       "data_source": {
         "endpoint": "api/app/anime_x",
-        "params": ["date", "departement"]
+        "params": [
+          "date",
+          "departement"
+        ]
       },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}",
       "audio": {
         "type": "sequence",
         "key": "anime_x_result_intro",
-        "sequence": ["intro/anime_x_result.mp3"],
+        "sequence": [
+          "intro/result_marche_anime_x_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "json_response_contrat": "{}",
-      "response_examples": [
-        "{\n  \"type\": \"audio_sequence\",\n  \"sequence\": [\n    { \"audios\": [\"intro/les_marches_actifs_sont.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/calendar/date.png\" },\n    { \"audios\": [\"location/dans_le_departement.mp3\", \"{departement}\"], \"image\": \"images/localites/atlantique.png\" },\n    { \"audios\": [\"marches/bohicon.mp3\"], \"image\": \"images/marches/bohicon.png\" }\n  ]\n}"
-      ],
-      "comment": "Liste des marchés animés à la date et dans le département choisis."
+      }
     },
     "anime_calendrier_calendrier": {
       "type": "calendrier",
-      "audio": {
-        "type": "sequence",
-        "key": "anime_calendrier_calendrier_intro",
-        "sequence": ["questions/date_anime_calendrier_calendrier.mp3"],
-        "fallback": "intro/default.mp3"
-      },
+      "audio_prompt": "questions/date_anime_calendrier_calendrier.mp3",
       "periode": 7,
       "cadran": "centrer",
       "next": "anime_calendrier_departement",
-      "json_response_contrat": "{}",
-      "comment": "Sélection de la date (widget calendrier) pour connaître les marchés animés."
-    },
-    "anime_calendrier_departement": {
-      "type": "grid",
       "audio": {
         "type": "sequence",
-        "key": "anime_calendrier_departement_intro",
-        "sequence": ["questions/anime_calendrier_departement.mp3"],
+        "key": "anime_calendrier_calendrier_intro",
+        "sequence": [
+          "intro/anime_calendrier_calendrier_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "options_source": "departements_et_tout",
-      "set": "departements_et_tout",
-      "next": "anime_calendrier_result",
-      "json_response_contrat": "{}",
-      "comment": "Choix du département après sélection de la date via le calendrier."
+      }
     },
     "anime_calendrier_result": {
       "type": "result",
       "data_source": {
         "endpoint": "api/app/anime_calendrier",
-        "params": ["date", "departement"]
+        "params": [
+          "anime_date",
+          "departement"
+        ]
       },
+      "audio_sequence": [],
+      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}",
       "audio": {
         "type": "sequence",
         "key": "anime_calendrier_result_intro",
-        "sequence": ["intro/anime_calendrier_result.mp3"],
+        "sequence": [
+          "intro/anime_calendrier_result_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "json_response_contrat": "{}",
-      "response_examples": [],
-      "comment": "Liste des marchés animés pour la date sélectionnée via le calendrier."
+      }
     },
     "infos_marche_departement": {
       "type": "grid",
-      "audio": {
-        "type": "sequence",
-        "key": "infos_marche_departement_intro",
-        "sequence": ["questions/infos_marche_departement.mp3"],
-        "fallback": "intro/default.mp3"
-      },
+      "audio_prompt": "questions/infos_marche_departement.mp3",
       "options_source": "departements",
       "set": "departements",
       "next": "explorer_produit_marche_filter",
-      "json_response_contrat": "{}",
-      "comment": "Choix du département pour explorer les informations d'un marché."
-    },
-    "explorer_produit_marche_filter": {
-      "type": "pre_filter",
       "audio": {
         "type": "sequence",
-        "key": "explorer_produit_marche_filter_intro",
-        "sequence": ["questions/filtre.mp3"],
+        "key": "infos_marche_departement_intro",
+        "sequence": [
+          "intro/infos_marche_departement_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "cle": "departements",
-      "filtre_source": "marche_par_departement",
-      "next": "infos_marche_infos_type",
-      "json_response_contrat": "{}",
-      "comment": "Filtre interne : réduit la liste des marchés proposés au département choisi, via le hashmap marche_par_departement."
+      }
     },
     "infos_marche_infos_type": {
       "type": "grid",
-      "audio": {
-        "type": "sequence",
-        "key": "infos_marche_infos_type_intro",
-        "sequence": ["questions/infos_marche_infos_type.mp3"],
-        "fallback": "intro/default.mp3"
-      },
+      "audio_prompt": "questions/infos_marche_infos_type.mp3",
       "options_source": "type_info_marche",
       "set": "type_info_marche",
       "next": "infos_marche_result",
-      "json_response_contrat": "{}",
-      "comment": "Choix du type d'information souhaité sur le marché (résumé, calendrier, produits disponibles...)."
+      "audio": {
+        "type": "sequence",
+        "key": "infos_marche_infos_type_intro",
+        "sequence": [
+          "intro/result_infos_marche_infos_type_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      }
     },
     "infos_marche_result": {
       "type": "result",
       "data_source": {
         "endpoint": "api/app/infos_marches",
-        "params": ["marche", "info_type"]
+        "params": [
+          "marche",
+          "info_type"
+        ]
       },
+      "audio_sequence": [
+        "questions/infos_marche_result.mp3"
+      ],
+      "comment": "\"regle\": {\n  \"type\": \"hebdomadaire\",\n  \"valeur\": {\n    \"jours\": [2, 5]\n  }\n}\n\"regle\": {\n  \"type\": \"intervalle\",\n  \"valeur\": {\n    \"interval\": 4,\n    \"date_reference\": \"2026-03-01\"\n  }\n}\n\n\n\"regle\": {\n  \"type\": \"mensuel\",\n  \"valeur\": {\n    \"jours\": [5],\n    \"semaine\": 2\n  }\n}\n\n\n\n",
+      "json_response_contrat": "{\n  \"type\": \"calendar\",\n  \"version\": \"1.0\",\n  \"data\": {\n    \"marche\": {\n      \"id\": 12,\n      \"nom\": \"takon\"\n    },\n\n    \"regle\": {\n      \"type\": \"hebdomadaire\",\n      \"valeur\": {\n        \"jours\": [2, 5]\n      }\n    },\n\n    \"description\": \"Marché tous les mardi et vendredi\",\n\n    \"intro\": [\n      \"intro/calendrier_marche.mp3\",\n      \"marches/takon.mp3\"\n    ],\n\n    \"outro\": [\n      \"frequence/hebdomadaire.mp3\"\n    ]\n  }\n}\n\n\n",
       "audio": {
         "type": "sequence",
         "key": "infos_marche_result_intro",
-        "sequence": ["questions/infos_marche_result.mp3"],
+        "sequence": [
+          "intro/result_infos_marche_result_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "json_response_contrat": "{\n  \"type\": \"calendar\",\n  \"version\": \"1.0\",\n  \"data\": {\n    \"marche\": { \"id\": 12, \"nom\": \"takon\" },\n    \"regle\": { \"type\": \"hebdomadaire\", \"valeur\": { \"jours\": [2, 5] } },\n    \"description\": \"Marché tous les mardi et vendredi\",\n    \"intro\": [\"intro/calendrier_marche.mp3\", \"marches/takon.mp3\"],\n    \"outro\": [\"frequence/hebdomadaire.mp3\"]\n  }\n}",
-      "response_examples": [],
-      "comment": "Informations sur le marché choisi. La règle de calendrier peut être hebdomadaire, par intervalle ou mensuelle (voir json_response_contrat)."
+      }
     },
     "explorer_produit_produit": {
       "type": "grid",
-      "audio": {
-        "type": "sequence",
-        "key": "explorer_produit_produit_intro",
-        "sequence": ["questions/explorer_produit_produit.mp3"],
-        "fallback": "intro/default.mp3"
-      },
+      "audio_prompt": "questions/explorer_produit_produit.mp3",
       "options_source": "produits",
       "set": "produits",
       "next": "explorer_produit_marche",
-      "json_response_contrat": "{}",
-      "comment": "Choix du produit dont on veut explorer l'historique des prix."
-    },
-    "explorer_produit_marche": {
-      "type": "grid",
       "audio": {
         "type": "sequence",
-        "key": "explorer_produit_marche_intro",
-        "sequence": ["questions/explorer_produit_marche.mp3"],
+        "key": "explorer_produit_produit_intro",
+        "sequence": [
+          "intro/explorer_produit_produit_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "options_source": "marches_suivis",
-      "set": "marches_suivis",
-      "next": "explorer_produit_periode",
-      "json_response_contrat": "{}",
-      "comment": "Choix du marché suivi pour l'historique des prix."
-    },
-    "explorer_produit_periode": {
-      "type": "grid",
-      "audio": {
-        "type": "sequence",
-        "key": "explorer_produit_periode_intro",
-        "sequence": ["questions/explorer_produit_periode.mp3"],
-        "fallback": "intro/default.mp3"
-      },
-      "options_source": "periode",
-      "set": "periode",
-      "next": "explorer_produit_result",
-      "json_response_contrat": "{}",
-      "comment": "Choix de la période d'historique des prix à afficher."
+      }
     },
     "explorer_produit_result": {
       "type": "result",
       "data_source": {
-        "endpoint": "explorer_prix",
-        "params": ["marche", "produit", "periode"]
+        "endpoint": "api/app/explorer_prix",
+        "params": [
+          "marche",
+          "produit",
+          "periode"
+        ]
       },
+      "audio_sequence": [
+        "questions/explorer_produit_result.mp3"
+      ],
+      "comment": "🧠 🎯 Objectif du backend\n\nConstruire un moteur qui transforme des données de prix agricoles en narration audio structurée (JSON).\n\n⚙️ 🔥 GRANDES LIGNES À DONNER AU DEV\n1️⃣ Récupération des données\nInput API :\nproduit\nmarché\npériode (semaine, mois, 6 mois, etc.)\nRequête :\nrécupérer les prix historiques du produit dans le marché\ninclure toutes les variétés\ntrier par date croissante\n2️⃣ Structuration des données\nRegrouper les données par date\nÀ chaque date :\nliste des variétés\nprix + unité\n\n👉 Format interne attendu :\n\n[\n  {\n    \"date\": \"2026-01-10\",\n    \"varieties\": [...]\n  }\n]\n3️⃣ Filtrage intelligent des dates (CRUCIAL)\nNe garder que :\nla première date\nles dates où au moins un prix change\n\n👉 Règle :\n\ncomparer avec la date précédente\ndétecter changement par variété\n4️⃣ Calcul de tendance (🔺🔻➖)\nCalculer variation entre deux dates\nBasé sur prix moyen ou dominant\n\n👉 Règle simple :\n\nhausse → 🔺\nbaisse → 🔻\nstable → ➖\n\n👉 Ajouter seuil (~5%) pour éviter bruit\n\n5️⃣ Enrichissement (mapping assets)\n\nPour chaque élément récupérer :\n\naudio (clé fichier)\nimage associée\n\n👉 Exemple :\n\nproduit → produits/mais.mp3\nmarché → marches/takon.mp3\nunité → unites/kg.mp3\n6️⃣ Génération de la séquence audio\n\nConstruire un JSON structuré avec :\n\n🔹 INTRO\nphrase complète :\nhistorique + produit + marché + période\n🔹 POUR CHAQUE DATE\nBloc date\naudio date\nvariation (sauf première date)\nBloc variétés\npour chaque variété :\nnom\nprix\nunité\n7️⃣ Gestion des cas réels (IMPORTANT)\n\nLe backend doit gérer :\n\n1 seule variété → simple\nplusieurs variétés → boucle\ndonnées manquantes → ignorer proprement\nunités différentes → cohérence obligatoire\n8️⃣ Génération dynamique des audios\n\nLe backend doit pouvoir générer :\n\n📅 dates → date/YYYY_MM_DD.mp3\n💰 prix → prix/XXXX_fcfa.mp3\n📊 variation → variation/hausse.mp3\n9️⃣ Génération du conseil final (IA simple)\n\nBasé sur tendance globale :\n\nhausse → conseil vendre / attendre\nbaisse → conseil acheter\nstable → conseil neutre\n\n\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/historique_prix.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_marche.mp3\",\n        \"marches/takon.mp3\",\n        \"periode/six_derniers_mois.mp3\"\n      ],\n      \"image\": \"images/intro/historique.png\"\n    },\n\n    /* ================= DATE 1 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_10.mp3\"\n      ],\n      \"image\": null\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/8000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= DATE 2 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_20.mp3\",\n        \"variation/hausse.mp3\"\n      ],\n      \"image\": \"images/icons/hausse.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/6000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/9000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= CONSEIL IA ================= */\n\n    {\n      \"audios\": [\n        \"conseils/tendance_hausse.mp3\",\n        \"conseils/attendre_peut_etre.mp3\"\n      ],\n      \"image\": \"images/icons/trend_up.png\"\n    }\n  ]\n}",
       "audio": {
         "type": "sequence",
         "key": "explorer_produit_result_intro",
-        "sequence": ["questions/explorer_produit_result.mp3"],
+        "sequence": [
+          "intro/result_explorer_produit_result_intro.mp3"
+        ],
         "fallback": "intro/default.mp3"
-      },
-      "json_response_contrat": "{}",
-      "response_examples": [
-        "{\n  \"type\": \"audio_sequence\",\n  \"sequence\": [\n    { \"audios\": [\"intro/historique_prix.mp3\", \"{produit}\", \"intro/dans_marche.mp3\", \"{marche}\", \"{periode}\"], \"image\": \"images/intro/historique.png\" },\n    { \"audios\": [\"{date:2026-01-10}\"], \"image\": null },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_a.mp3\", \"{prix:8000}\", \"unites/bassine_10kg.mp3\"], \"image\": \"images/produits/mais_local.png\" },\n    { \"audios\": [\"variation/hausse.mp3\", \"conseils/tendance_hausse.mp3\"], \"image\": \"images/icons/trend_up.png\" }\n  ]\n}"
+      }
+    },
+    "explorer_produit_periode": {
+      "type": "grid",
+      "audio_prompt": "questions/explorer_produit_periode.mp3",
+      "options_source": "periode",
+      "set": "periode",
+      "next": "explorer_produit_result",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_periode_intro",
+        "sequence": [
+          "intro/explorer_produit_periode_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      }
+    },
+    "anime_calendrier_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/anime_calendrier_departement.mp3",
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_calendrier_result",
+      "audio": {
+        "type": "sequence",
+        "key": "anime_calendrier_departement_intro",
+        "sequence": [
+          "intro/anime_calendrier_departement_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      }
+    },
+    "explorer_produit_marche": {
+      "type": "grid",
+      "audio_prompt": "questions/explorer_produit_marche.mp3",
+      "options_source": "marches_suivis",
+      "set": "marches_suivis",
+      "next": "explorer_produit_periode",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_marche_intro",
+        "sequence": [
+          "intro/explorer_produit_marche_intro"
+        ],
+        "fallback": "intro/default.mp3"
+      }
+    },
+    "explorer_produit_marche_filter": {
+      "type": "pre_filter",
+      "audio_prompt": "questions/filtre.mp3",
+      "cles": [
+        "produits"
       ],
-      "comment": "Historique des prix : le backend regroupe les prix par date, ne garde que les dates où le prix change, calcule la tendance (hausse/baisse/stable) et génère un conseil final."
+      "filtre_source": "marche_par_departement",
+      "next": "infos_marche_infos_type",
+      "cle": "departements",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_marche_filter_intro",
+        "sequence": [
+          "intro/explorer_produit_marche_filter_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      }
     }
   }
 }

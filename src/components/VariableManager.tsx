@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { X, Plus, Trash2, Database } from 'lucide-react';
+import { X, Plus, Trash2, Database, Eye, EyeOff } from 'lucide-react';
 import type { Node } from 'reactflow';
-import type { FlowGraphNodeData, FlowNodeProbe, FlowVariables } from '../types/flow';
+import type { ActiveOverrides, FlowGraphNodeData, FlowNodeProbe, FlowVariables } from '../types/flow';
+import { isVariableValueActive, toggleVariableValueActive, pruneVariableOverrideValue, removeVariableOverrides } from '../utils/activeState';
 
 interface VariableManagerProps {
   variables: FlowVariables;
   onUpdate: (variables: FlowVariables) => void;
+  activeOverrides: ActiveOverrides;
+  onActiveOverridesChange: (overrides: ActiveOverrides) => void;
   onClose: () => void;
   nodes: Node<FlowGraphNodeData>[];
 }
 
-const VariableManager = ({ variables, onUpdate, onClose, nodes }: VariableManagerProps) => {
+const VariableManager = ({ variables, onUpdate, activeOverrides, onActiveOverridesChange, onClose, nodes }: VariableManagerProps) => {
   const [newVarName, setNewVarName] = useState('');
 
   const addVariable = () => {
@@ -34,6 +37,7 @@ const VariableManager = ({ variables, onUpdate, onClose, nodes }: VariableManage
     const newVars = { ...variables };
     delete newVars[name];
     onUpdate(newVars);
+    onActiveOverridesChange(removeVariableOverrides(activeOverrides, name));
   };
 
   const addValue = (varName: string, value: string) => {
@@ -44,9 +48,15 @@ const VariableManager = ({ variables, onUpdate, onClose, nodes }: VariableManage
   };
 
   const removeValue = (varName: string, index: number) => {
+    const removedValue = variables[varName][index];
     const newVars = { ...variables };
     newVars[varName] = newVars[varName].filter((_, i) => i !== index);
     onUpdate(newVars);
+    onActiveOverridesChange(pruneVariableOverrideValue(activeOverrides, varName, removedValue));
+  };
+
+  const toggleActive = (varName: string, value: string) => {
+    onActiveOverridesChange(toggleVariableValueActive(activeOverrides, varName, value));
   };
 
   return (
@@ -118,14 +128,27 @@ const VariableManager = ({ variables, onUpdate, onClose, nodes }: VariableManage
                   </div>
                   
                   <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] p-2 bg-slate-50 rounded-lg border border-dashed border-slate-200">
-                    {values.map((val, idx) => (
-                      <div key={idx} className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 text-xs text-slate-600 shadow-sm group">
-                        <span>{val}</span>
-                        <button onClick={() => removeValue(name, idx)} className="text-slate-300 hover:text-red-500 transition-colors">
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
+                    {values.map((val, idx) => {
+                      const active = isVariableValueActive(activeOverrides, name, val);
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex items-center gap-1 px-2 py-1 rounded-md border text-xs shadow-sm group ${active ? 'bg-white border-slate-200 text-slate-600' : 'bg-slate-100 border-dashed border-slate-300 text-slate-400'}`}
+                        >
+                          <button
+                            onClick={() => toggleActive(name, val)}
+                            className={active ? 'text-emerald-500 hover:text-emerald-600 transition-colors' : 'text-slate-400 hover:text-slate-500 transition-colors'}
+                            title={active ? 'Actif — cliquer pour désactiver' : 'Inactif — cliquer pour activer'}
+                          >
+                            {active ? <Eye size={12} /> : <EyeOff size={12} />}
+                          </button>
+                          <span className={active ? '' : 'line-through'}>{val}</span>
+                          <button onClick={() => removeValue(name, idx)} className="text-slate-300 hover:text-red-500 transition-colors">
+                            <X size={12} />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="relative">

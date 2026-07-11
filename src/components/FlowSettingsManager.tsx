@@ -1,4 +1,5 @@
-import { X, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { X, Settings, Plus, Trash2 } from 'lucide-react';
 import type { Node } from 'reactflow';
 import type { FlowConfig, FlowGraphNodeData, AudioConfig } from '../types/flow';
 
@@ -7,6 +8,8 @@ interface FlowSettingsManagerProps {
   onEntryChange: (entry: string) => void;
   config: FlowConfig | null;
   onConfigChange: (config: FlowConfig) => void;
+  languages: string[];
+  onLanguagesChange: (languages: string[]) => void;
   nodes: Node<FlowGraphNodeData>[];
   onClose: () => void;
 }
@@ -15,8 +18,20 @@ const defaultConfig: FlowConfig = {
   audio: { auto_play_prompt: true, auto_play_option: true, pause_between_ms: 600 }
 };
 
-const FlowSettingsManager = ({ entry, onEntryChange, config, onConfigChange, nodes, onClose }: FlowSettingsManagerProps) => {
+const FlowSettingsManager = ({ entry, onEntryChange, config, onConfigChange, languages, onLanguagesChange, nodes, onClose }: FlowSettingsManagerProps) => {
   const audioConfig = config?.audio || defaultConfig.audio;
+  const [newLanguage, setNewLanguage] = useState('');
+
+  const handleAddLanguage = () => {
+    const normalized = newLanguage.trim().toLowerCase();
+    if (!normalized || languages.includes(normalized)) return;
+    onLanguagesChange([...languages, normalized]);
+    setNewLanguage('');
+  };
+
+  const handleRemoveLanguage = (lang: string) => {
+    onLanguagesChange(languages.filter((l) => l !== lang));
+  };
 
   const updateAudioConfig = <K extends keyof AudioConfig>(field: K, value: AudioConfig[K]) => {
     onConfigChange({ ...config, audio: { ...audioConfig, [field]: value } });
@@ -84,6 +99,49 @@ const FlowSettingsManager = ({ entry, onEntryChange, config, onConfigChange, nod
                 value={audioConfig.pause_between_ms ?? 600}
                 onChange={(e) => updateAudioConfig('pause_between_ms', parseInt(e.target.value) || 0)}
               />
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-4 border-t border-slate-100">
+            <label className="block text-xs font-bold text-slate-500">
+              Langues (audio uniquement — les images ne sont jamais dupliquées par langue)
+            </label>
+
+            <div className="flex flex-wrap gap-2">
+              {languages.map((lang) => (
+                <span
+                  key={lang}
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-mono"
+                >
+                  {lang}
+                  <button
+                    onClick={() => handleRemoveLanguage(lang)}
+                    className="text-slate-400 hover:text-red-500 transition-colors"
+                    title={`Retirer ${lang}`}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </span>
+              ))}
+              {languages.length === 0 && (
+                <span className="text-xs text-slate-400 italic">Aucune langue déclarée</span>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                className="flex-1 p-2 border border-slate-200 rounded text-sm font-mono outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="ex. mina"
+                value={newLanguage}
+                onChange={(e) => setNewLanguage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddLanguage()}
+              />
+              <button
+                onClick={handleAddLanguage}
+                className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 text-white rounded text-xs font-bold hover:bg-slate-800 transition-colors whitespace-nowrap"
+              >
+                <Plus size={14} /> Ajouter
+              </button>
             </div>
           </div>
         </div>

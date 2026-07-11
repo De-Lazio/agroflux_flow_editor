@@ -1,0 +1,384 @@
+{
+  "version": "1.0",
+  "entry": "root",
+  "config": {
+    "audio": {
+      "auto_play_prompt": true,
+      "auto_play_option": true,
+      "pause_between_ms": 600
+    }
+  },
+  "variables": {
+    "produits": [
+      "mais",
+      "soja"
+    ],
+    "departements": [
+      "oueme",
+      "plateau",
+      "zou",
+      "collines",
+      "mono",
+      "couffo",
+      "atlantique",
+      "litoral",
+      "borgou",
+      "alibori",
+      "atacora",
+      "donga"
+    ],
+    "x_anime_x": [
+      "aujourdhui",
+      "demain",
+      "apres_demain",
+      "dans_trois_jours",
+      "dans_quatre_jours",
+      "hier",
+      "avant_hier",
+      "trois_jours_passe",
+      "quatre_jours_passe",
+      "cinq_jours_passe"
+    ],
+    "periode": [
+      "aujourdhui",
+      "cette_semaine",
+      "ce_mois",
+      "trois_derniers_mois",
+      "six_derniers_mois",
+      "cette_annee"
+    ],
+    "marches_suivis": [
+      "ikpinle",
+      "ketou",
+      "parakou",
+      "glazoue",
+      "save",
+      "malanville",
+      "kpedekpo"
+    ],
+    "type_info_marche": [
+      "resume_rapide",
+      "presentation_du_marche",
+      "produits_disponibles",
+      "calendrier_animation",
+      "opportunite_marche"
+    ],
+    "departements_et_tout": [
+      "tout_les_departements",
+      "oueme",
+      "plateau",
+      "zou",
+      "collines"
+    ]
+  },
+  "hashmaps": {
+    "marche_par_departement": {
+      "oueme": ["ouando", "adjohoun", "gbada", "bonou"],
+      "plateau": ["takon", "sakete", "ketou"]
+    }
+  },
+  "audio_mappings": {
+    "produits": "produits",
+    "departements": "departements",
+    "x_anime_x": "x_anime_x",
+    "periode": "periode",
+    "marches_suivis": "marches_suivis",
+    "type_info_marche": "type_info_marche",
+    "departements_et_tout": "departements_et_tout",
+    "marche_par_departement": "marche_par_departement"
+  },
+  "resource_formats": {
+    "audio": "mp3",
+    "image": "jpeg"
+  },
+  "languages": ["fr", "fon", "yoruba", "dendi", "adja"],
+  "nodes": {
+    "root": {
+      "type": "root",
+      "audio": {
+        "type": "sequence",
+        "key": "root_intro",
+        "sequence": ["intro/root.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options": [
+        { "id": "achete_produit", "next": "achete_produit" },
+        { "id": "vendre_produit", "next": "vendre_produit" },
+        { "id": "marche_anime_x", "next": "marche_anime_x" },
+        { "id": "marche_anime_calendrier", "next": "anime_calendrier_calendrier" },
+        { "id": "infos_march", "next": "infos_marche_departement" },
+        { "id": "explorer_produit", "next": "explorer_produit_produit" }
+      ],
+      "json_response_contrat": "{}",
+      "comment": "Menu principal du flow AgroFlux : point d'entrée de tous les parcours."
+    },
+    "achete_produit": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "achete_produit_intro",
+        "sequence": ["intro/achete_produit_intro.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "produits",
+      "set": "produits",
+      "next": "acheter_result",
+      "json_response_contrat": "{}",
+      "comment": "Nœud de démarrage du flow \"acheter un produit\". Permet de choisir le produit à acheter."
+    },
+    "vendre_produit": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "vendre_produit_intro",
+        "sequence": ["intro/vendre_produit_intro.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "produits",
+      "set": "produits",
+      "next": "vendre_result",
+      "json_response_contrat": "{}",
+      "comment": "Nœud de démarrage du flow \"vendre un produit\". Permet de choisir le produit à vendre."
+    },
+    "marche_anime_x": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "marche_anime_x_intro",
+        "sequence": ["questions/marche_anime_x.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "x_anime_x",
+      "set": "x_anime_x",
+      "next": "anime_x_departement",
+      "json_response_contrat": "{}",
+      "comment": "Choix du jour (aujourd'hui, demain, etc.) pour connaître les marchés animés."
+    },
+    "acheter_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/acheter_produit",
+        "params": ["produit", "departement"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "acheter_result_intro",
+        "sequence": ["intro/acheter_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    { \"audios\": [\"intro/vous_cherchez_acheter.mp3\", \"{produit}\", \"intro/dans_departement.mp3\", \"{departement}\"], \"image\": \"images/intro/acheter.png\" },\n    { \"audios\": [\"ordre/premier_marche.mp3\", \"marches/bohicon.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/marches/bohicon.png\" },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_a.mp3\", \"{prix:1000}\", \"unites/kg.mp3\"], \"image\": \"images/produits/mais_local.png\" }\n  ],\n  \"meta\": { \"auto_play\": true, \"pause_ms\": 600 }\n}",
+      "response_examples": [],
+      "comment": "Résultats du parcours \"acheter un produit\" : liste des marchés avec les meilleurs prix pour le produit choisi."
+    },
+    "vendre_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/vendre_produit",
+        "params": ["produit", "departement"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "vendre_result_intro",
+        "sequence": ["intro/vendre_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    { \"audios\": [\"intro/vous_cherchez_vendre.mp3\", \"{produit}\", \"intro/dans_departement.mp3\", \"{departement}\"], \"image\": \"images/intro/vendre.png\" },\n    { \"audios\": [\"ordre/premier_marche.mp3\", \"marches/bohicon.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/marches/bohicon.png\" },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_vendu_a.mp3\", \"{prix:1000}\", \"unites/kg.mp3\"], \"image\": \"images/produits/mais_local.png\" }\n  ],\n  \"meta\": { \"auto_play\": true, \"pause_ms\": 600 }\n}",
+      "response_examples": [],
+      "comment": "Résultats du parcours \"vendre un produit\" : liste des marchés avec les meilleurs prix de vente pour le produit choisi."
+    },
+    "anime_x_departement": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "anime_x_departement_intro",
+        "sequence": ["questions/anime_x_departement.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_x_result",
+      "json_response_contrat": "{}",
+      "comment": "Choix du département (ou tous les départements) pour la liste des marchés animés à la date choisie."
+    },
+    "anime_x_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/anime_x",
+        "params": ["date", "departement"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "anime_x_result_intro",
+        "sequence": ["intro/anime_x_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{}",
+      "response_examples": [
+        "{\n  \"type\": \"audio_sequence\",\n  \"sequence\": [\n    { \"audios\": [\"intro/les_marches_actifs_sont.mp3\", \"{date:2026-03-10}\"], \"image\": \"images/calendar/date.png\" },\n    { \"audios\": [\"location/dans_le_departement.mp3\", \"{departement}\"], \"image\": \"images/localites/atlantique.png\" },\n    { \"audios\": [\"marches/bohicon.mp3\"], \"image\": \"images/marches/bohicon.png\" }\n  ]\n}"
+      ],
+      "comment": "Liste des marchés animés à la date et dans le département choisis."
+    },
+    "anime_calendrier_calendrier": {
+      "type": "calendrier",
+      "audio": {
+        "type": "sequence",
+        "key": "anime_calendrier_calendrier_intro",
+        "sequence": ["questions/date_anime_calendrier_calendrier.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "periode": 7,
+      "cadran": "centrer",
+      "next": "anime_calendrier_departement",
+      "json_response_contrat": "{}",
+      "comment": "Sélection de la date (widget calendrier) pour connaître les marchés animés."
+    },
+    "anime_calendrier_departement": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "anime_calendrier_departement_intro",
+        "sequence": ["questions/anime_calendrier_departement.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "departements_et_tout",
+      "set": "departements_et_tout",
+      "next": "anime_calendrier_result",
+      "json_response_contrat": "{}",
+      "comment": "Choix du département après sélection de la date via le calendrier."
+    },
+    "anime_calendrier_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/anime_calendrier",
+        "params": ["date", "departement"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "anime_calendrier_result_intro",
+        "sequence": ["intro/anime_calendrier_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{}",
+      "response_examples": [],
+      "comment": "Liste des marchés animés pour la date sélectionnée via le calendrier."
+    },
+    "infos_marche_departement": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "infos_marche_departement_intro",
+        "sequence": ["questions/infos_marche_departement.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "departements",
+      "set": "departements",
+      "next": "explorer_produit_marche_filter",
+      "json_response_contrat": "{}",
+      "comment": "Choix du département pour explorer les informations d'un marché."
+    },
+    "explorer_produit_marche_filter": {
+      "type": "pre_filter",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_marche_filter_intro",
+        "sequence": ["questions/filtre.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "cle": "departements",
+      "filtre_source": "marche_par_departement",
+      "next": "infos_marche_infos_type",
+      "json_response_contrat": "{}",
+      "comment": "Filtre interne : réduit la liste des marchés proposés au département choisi, via le hashmap marche_par_departement."
+    },
+    "infos_marche_infos_type": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "infos_marche_infos_type_intro",
+        "sequence": ["questions/infos_marche_infos_type.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "type_info_marche",
+      "set": "type_info_marche",
+      "next": "infos_marche_result",
+      "json_response_contrat": "{}",
+      "comment": "Choix du type d'information souhaité sur le marché (résumé, calendrier, produits disponibles...)."
+    },
+    "infos_marche_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "api/app/infos_marches",
+        "params": ["marche", "info_type"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "infos_marche_result_intro",
+        "sequence": ["questions/infos_marche_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{\n  \"type\": \"calendar\",\n  \"version\": \"1.0\",\n  \"data\": {\n    \"marche\": { \"id\": 12, \"nom\": \"takon\" },\n    \"regle\": { \"type\": \"hebdomadaire\", \"valeur\": { \"jours\": [2, 5] } },\n    \"description\": \"Marché tous les mardi et vendredi\",\n    \"intro\": [\"intro/calendrier_marche.mp3\", \"marches/takon.mp3\"],\n    \"outro\": [\"frequence/hebdomadaire.mp3\"]\n  }\n}",
+      "response_examples": [],
+      "comment": "Informations sur le marché choisi. La règle de calendrier peut être hebdomadaire, par intervalle ou mensuelle (voir json_response_contrat)."
+    },
+    "explorer_produit_produit": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_produit_intro",
+        "sequence": ["questions/explorer_produit_produit.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "produits",
+      "set": "produits",
+      "next": "explorer_produit_marche",
+      "json_response_contrat": "{}",
+      "comment": "Choix du produit dont on veut explorer l'historique des prix."
+    },
+    "explorer_produit_marche": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_marche_intro",
+        "sequence": ["questions/explorer_produit_marche.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "marches_suivis",
+      "set": "marches_suivis",
+      "next": "explorer_produit_periode",
+      "json_response_contrat": "{}",
+      "comment": "Choix du marché suivi pour l'historique des prix."
+    },
+    "explorer_produit_periode": {
+      "type": "grid",
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_periode_intro",
+        "sequence": ["questions/explorer_produit_periode.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "options_source": "periode",
+      "set": "periode",
+      "next": "explorer_produit_result",
+      "json_response_contrat": "{}",
+      "comment": "Choix de la période d'historique des prix à afficher."
+    },
+    "explorer_produit_result": {
+      "type": "result",
+      "data_source": {
+        "endpoint": "explorer_prix",
+        "params": ["marche", "produit", "periode"]
+      },
+      "audio": {
+        "type": "sequence",
+        "key": "explorer_produit_result_intro",
+        "sequence": ["questions/explorer_produit_result.mp3"],
+        "fallback": "intro/default.mp3"
+      },
+      "json_response_contrat": "{}",
+      "response_examples": [
+        "{\n  \"type\": \"audio_sequence\",\n  \"sequence\": [\n    { \"audios\": [\"intro/historique_prix.mp3\", \"{produit}\", \"intro/dans_marche.mp3\", \"{marche}\", \"{periode}\"], \"image\": \"images/intro/historique.png\" },\n    { \"audios\": [\"{date:2026-01-10}\"], \"image\": null },\n    { \"audios\": [\"produits/mais_local.mp3\", \"phrases/est_a.mp3\", \"{prix:8000}\", \"unites/bassine_10kg.mp3\"], \"image\": \"images/produits/mais_local.png\" },\n    { \"audios\": [\"variation/hausse.mp3\", \"conseils/tendance_hausse.mp3\"], \"image\": \"images/icons/trend_up.png\" }\n  ]\n}"
+      ],
+      "comment": "Historique des prix : le backend regroupe les prix par date, ne garde que les dates où le prix change, calcule la tendance (hausse/baisse/stable) et génère un conseil final."
+    }
+  }
+}

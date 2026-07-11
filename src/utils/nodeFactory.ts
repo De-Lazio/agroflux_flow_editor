@@ -24,6 +24,8 @@ export const createDefaultGridNode = (id: string): GridNodeData => ({
   options_source: "",
   set: "",
   next: "",
+  can_choix_all: false,
+  controle_active: false,
   json_response_contrat: "{}",
   comment: ""
 });
@@ -71,6 +73,8 @@ export const createDefaultPreFilterNode = (id: string): PreFilterNodeData => ({
   cle: '',
   filtre_source: '',
   next: '',
+  can_choix_all: false,
+  controle_active: false,
   json_response_contrat: "{}",
   comment: ""
 });
