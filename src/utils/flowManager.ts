@@ -3,7 +3,9 @@ import { Position } from 'reactflow';
 import dagre from 'dagre';
 import { DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './resourceInventory';
 import { DEFAULT_LANGUAGES } from './languages';
+import { createEmptyActiveOverrides } from './activeState';
 import type {
+  ActiveOverrides,
   FlowData,
   FlowNodes,
   FlowNodeData,
@@ -60,6 +62,8 @@ export interface FlowExtraData {
   audioMappings?: FlowMappings;
   resource_formats?: ResourceFormats;
   languages?: string[];
+  activeOverrides?: ActiveOverrides;
+  hashmapsNoResources?: string[];
 }
 
 export const flowToJson = (nodes: Node<FlowGraphNodeData>[], extraData: FlowExtraData = {}): FlowData => {
@@ -84,6 +88,8 @@ export const flowToJson = (nodes: Node<FlowGraphNodeData>[], extraData: FlowExtr
       image: DEFAULT_IMAGE_FORMAT
     },
     languages: extraData.languages || DEFAULT_LANGUAGES,
+    active_overrides: extraData.activeOverrides || createEmptyActiveOverrides(),
+    hashmaps_no_resources: extraData.hashmapsNoResources || [],
     nodes: flowNodes
   };
 };

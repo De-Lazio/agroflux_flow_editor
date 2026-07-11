@@ -116,4 +116,23 @@ describe('buildHashmapResources', () => {
     expect(result.audios).toEqual([]);
     expect(result.images).toEqual([]);
   });
+
+  it('exclut totalement (audio et image) un hashmap listé dans excludedHashmaps', () => {
+    const result = buildHashmapResources(
+      { marche_par_departement: { oueme: ['ouando'] }, loc_autre: { littoral: ['cotonou'] } },
+      {},
+      ['fon'],
+      'mp3',
+      'jpeg',
+      ['marche_par_departement']
+    );
+
+    expect(result.audios).toEqual(['audio/fon/loc_autre/littoral/cotonou.mp3']);
+    expect(result.images).toEqual(['images/loc_autre/littoral/cotonou.jpeg']);
+  });
+
+  it('n\'exclut rien par défaut si excludedHashmaps est omis', () => {
+    const result = buildHashmapResources({ marche_par_departement: { oueme: ['ouando'] } }, {}, ['fon'], 'mp3', 'jpeg');
+    expect(result.audios).toEqual(['audio/fon/marche_par_departement/oueme/ouando.mp3']);
+  });
 });

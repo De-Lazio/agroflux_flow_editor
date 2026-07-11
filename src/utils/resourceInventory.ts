@@ -75,19 +75,26 @@ export const buildVariableResources = (
  * clé "oueme", valeur "ouando", langue "fon"
  *   => audio/fon/marche_par_departement/oueme/ouando.mp3
  *   => images/marche_par_departement/oueme/ouando.jpeg
+ *
+ * `excludedHashmaps` (voir FlowData.hashmaps_no_resources) retire du calcul
+ * les hashmaps dont clés/valeurs sont déjà couvertes par des ressources de
+ * variable existantes ailleurs : ni audio ni image n'est attendu pour eux.
  */
 export const buildHashmapResources = (
   hashmaps: FlowHashmaps,
   mappings: FlowMappings,
   languages: string[] = DEFAULT_LANGUAGES,
   audioFormat: string = DEFAULT_AUDIO_FORMAT,
-  imageFormat: string = DEFAULT_IMAGE_FORMAT
+  imageFormat: string = DEFAULT_IMAGE_FORMAT,
+  excludedHashmaps: string[] = []
 ): ResourceGroup => {
   const audios: string[] = [];
   const images: string[] = [];
   const activeLanguages = [...new Set(languages)];
+  const excluded = new Set(excludedHashmaps);
 
   Object.entries(hashmaps || {}).forEach(([name, keys]) => {
+    if (excluded.has(name)) return;
     const folder = mappings?.[name] || name;
     Object.entries(keys || {}).forEach(([key, values]) => {
       (values || []).forEach((value) => {

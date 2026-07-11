@@ -284,12 +284,63 @@ export const validateFlow = (flowData: FlowData): ValidationResult => {
     }
   });
 
+  // Garde-fou de cohérence de l'overlay actif (voir PLAN_ACTIVE_STATE.md) :
+  // une exception qui ne pointe plus vers une variable/valeur/hashmap/clé
+  // existante est sans effet (elle ne correspond à rien), mais signale que le
+  // nettoyage attendu à la suppression/au renommage n'a pas eu lieu.
+  const activeOverrides = flowData.active_overrides || { variables: {}, hashmaps: {} };
+
+  Object.entries(activeOverrides.variables || {}).forEach(([varName, inactiveValues]) => {
+    if (!variables[varName]) {
+      warnings.push(`active_overrides référence une variable inexistante : "${varName}".`);
+      return;
+    }
+    inactiveValues.forEach((value) => {
+      if (!variables[varName].includes(value)) {
+        warnings.push(`active_overrides référence une valeur inexistante "${value}" pour la variable "${varName}".`);
+      }
+    });
+  });
+
+  Object.entries(activeOverrides.hashmaps || {}).forEach(([mapName, override]) => {
+    const hashmap = hashmaps[mapName];
+    if (!hashmap) {
+      warnings.push(`active_overrides référence un hashmap inexistant : "${mapName}".`);
+      return;
+    }
+
+    (override.inactive_keys || []).forEach((key) => {
+      if (!hashmap[key]) {
+        warnings.push(`active_overrides référence une clé inexistante "${key}" pour le hashmap "${mapName}".`);
+      }
+    });
+
+    Object.entries(override.inactive_values || {}).forEach(([key, values]) => {
+      if (!hashmap[key]) {
+        warnings.push(`active_overrides référence une clé inexistante "${key}" pour le hashmap "${mapName}".`);
+        return;
+      }
+      values.forEach((value) => {
+        if (!hashmap[key].includes(value)) {
+          warnings.push(`active_overrides référence une valeur inexistante "${value}" pour la clé "${key}" du hashmap "${mapName}".`);
+        }
+      });
+    });
+  });
+
+  const hashmapsNoResources = flowData.hashmaps_no_resources || [];
+  hashmapsNoResources.forEach((mapName) => {
+    if (!hashmaps[mapName]) {
+      warnings.push(`hashmaps_no_resources référence un hashmap inexistant : "${mapName}".`);
+    }
+  });
+
   // Ressources générées automatiquement pour chaque valeur de variable/hashmap
   const audioFormat = flowData.resource_formats?.audio || DEFAULT_AUDIO_FORMAT;
   const imageFormat = flowData.resource_formats?.image || DEFAULT_IMAGE_FORMAT;
 
   const variableResources = buildVariableResources(variables, mappings, languages, audioFormat, imageFormat);
-  const hashmapResources = buildHashmapResources(hashmaps, mappings, languages, audioFormat, imageFormat);
+  const hashmapResources = buildHashmapResources(hashmaps, mappings, languages, audioFormat, imageFormat, hashmapsNoResources);
 
   variableResources.audios.forEach((a) => audioFiles.add(a));
   variableResources.images.forEach((i) => imageFiles.add(i));

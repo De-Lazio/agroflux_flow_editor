@@ -1,27 +1,47 @@
-// Import de Variables/HashMaps depuis une route API distante. Le flux est en
-// deux temps : fetchRemoteData() récupère et valide la forme des données,
-// puis computeImportDiff()/applyImport() gèrent la fusion avec les données
-// locales — voir ApiImportPanel.tsx pour l'UI de résolution des conflits.
+// Import de Variables/HashMaps (avec leur état actif) depuis une route API
+// distante. Le flux est en deux temps : fetchRemoteData() récupère et valide
+// la forme des données, puis computeImportDiff()/applyImport() gèrent la
+// fusion avec les données locales (valeurs ET active_overrides) — voir
+// ApiImportPanel.tsx pour l'UI de résolution des conflits, et
+// API_IMPORT_FORMAT.md pour le format exact attendu côté backend.
 
-import type { FlowVariables, FlowHashmaps } from '../types/flow';
+import type { ActiveOverrides, FlowHashmaps, FlowVariables, HashmapActiveOverride } from '../types/flow';
 
 export type ImportResolution = 'local' | 'remote' | 'merge-local' | 'merge-remote';
 
+// Chaque valeur/clé porte directement son état actif (true/false) plutôt
+// qu'un simple tableau — c'est la forme la plus simple à produire pour le
+// backend (un objet, pas une structure imbriquée supplémentaire).
+export interface RemoteVariablePayload {
+  [value: string]: boolean;
+}
+
+export interface RemoteHashmapKeyPayload {
+  active: boolean;
+  values: Record<string, boolean>;
+}
+
 export interface RemoteData {
-  variables: FlowVariables;
-  hashmaps: FlowHashmaps;
+  variables: Record<string, RemoteVariablePayload>;
+  hashmaps: Record<string, Record<string, RemoteHashmapKeyPayload>>;
 }
 
 export interface VariableConflict {
   name: string;
   localValues: string[];
   remoteValues: string[];
+  localInactive: string[];
+  remoteInactive: string[];
 }
 
 export interface HashmapConflict {
   name: string;
   localMap: Record<string, string[]>;
   remoteMap: Record<string, string[]>;
+  localInactiveKeys: string[];
+  remoteInactiveKeys: string[];
+  localInactiveValues: Record<string, string[]>;
+  remoteInactiveValues: Record<string, string[]>;
 }
 
 export interface ImportDiff {
@@ -29,6 +49,12 @@ export interface ImportDiff {
   variableAdditions: string[];
   hashmapConflicts: HashmapConflict[];
   hashmapAdditions: string[];
+}
+
+export interface ImportResult {
+  variables: FlowVariables;
+  hashmaps: FlowHashmaps;
+  activeOverrides: ActiveOverrides;
 }
 
 const sameStringSet = (a: string[], b: string[]): boolean => {
@@ -43,6 +69,27 @@ const sameHashmap = (a: Record<string, string[]>, b: Record<string, string[]>): 
   const keysB = Object.keys(b);
   if (keysA.length !== keysB.length) return false;
   return keysA.every((k) => b[k] !== undefined && sameStringSet(a[k], b[k]));
+};
+
+// true si au moins une valeur du payload distant a un état actif différent
+// de ce que dit l'overlay local (absence de localInactive = actif).
+const activeStateDiffers = (localInactive: string[], remoteActive: Record<string, boolean>): boolean => {
+  const localInactiveSet = new Set(localInactive);
+  return Object.entries(remoteActive).some(([value, active]) => localInactiveSet.has(value) === active);
+};
+
+const hashmapActiveStateDiffers = (
+  localOverride: HashmapActiveOverride | undefined,
+  remoteKeyMap: Record<string, RemoteHashmapKeyPayload>
+): boolean => {
+  const remoteKeyActive: Record<string, boolean> = Object.fromEntries(
+    Object.entries(remoteKeyMap).map(([key, kp]) => [key, kp.active])
+  );
+  if (activeStateDiffers(localOverride?.inactive_keys || [], remoteKeyActive)) return true;
+
+  return Object.entries(remoteKeyMap).some(([key, kp]) =>
+    activeStateDiffers(localOverride?.inactive_values?.[key] || [], kp.values)
+  );
 };
 
 const mergeStringArrays = (primary: string[], secondary: string[]): string[] => {
@@ -68,39 +115,102 @@ const mergeHashmapEntries = (
   return result;
 };
 
-const parseVariables = (raw: unknown): FlowVariables => {
-  if (raw === undefined) return {};
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    throw new Error("Le champ \"variables\" doit être un objet { nom: [valeurs] }.");
-  }
-  const result: FlowVariables = {};
-  for (const [name, values] of Object.entries(raw as Record<string, unknown>)) {
-    if (!Array.isArray(values) || !values.every((v) => typeof v === 'string')) {
-      throw new Error(`La variable "${name}" doit être un tableau de chaînes.`);
+// Fusionne l'état actif d'un ensemble de valeurs (variable, clés de hashmap,
+// ou valeurs d'une clé) selon la même résolution que la liste de valeurs
+// elle-même : 'local'/'remote' gardent tel quel un des deux côtés ;
+// 'merge-local' fait gagner l'état local pour toute valeur déjà connue en
+// local (les valeurs nouvelles, apportées par le distant, adoptent son état
+// faute d'alternative) ; 'merge-remote' fait l'inverse.
+const mergeActiveState = (
+  localValues: string[],
+  localInactive: string[],
+  remoteActive: Record<string, boolean>,
+  resolution: ImportResolution
+): string[] => {
+  const localValuesSet = new Set(localValues);
+  const remoteValuesSet = new Set(Object.keys(remoteActive));
+  const remoteInactive = Object.entries(remoteActive).filter(([, active]) => !active).map(([v]) => v);
+
+  switch (resolution) {
+    case 'local':
+      return localInactive;
+    case 'remote':
+      return remoteInactive;
+    case 'merge-local': {
+      const result = new Set(localInactive);
+      remoteInactive.forEach((v) => { if (!localValuesSet.has(v)) result.add(v); });
+      return [...result];
     }
-    result[name] = values;
+    case 'merge-remote': {
+      const result = new Set(remoteInactive);
+      localInactive.forEach((v) => { if (!remoteValuesSet.has(v)) result.add(v); });
+      return [...result];
+    }
+  }
+};
+
+const parseVariablePayload = (name: string, raw: unknown): RemoteVariablePayload => {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(`La variable "${name}" doit être un objet { valeur: true/false }.`);
+  }
+  const result: RemoteVariablePayload = {};
+  for (const [value, active] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof active !== 'boolean') {
+      throw new Error(`La valeur "${value}" de la variable "${name}" doit être un booléen (true = actif, false = inactif).`);
+    }
+    result[value] = active;
   }
   return result;
 };
 
-const parseHashmaps = (raw: unknown): FlowHashmaps => {
+const parseVariables = (raw: unknown): Record<string, RemoteVariablePayload> => {
   if (raw === undefined) return {};
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    throw new Error("Le champ \"hashmaps\" doit être un objet { nom: { clé: [valeurs] } }.");
+    throw new Error("Le champ \"variables\" doit être un objet { nom: { valeur: true/false } }.");
   }
-  const result: FlowHashmaps = {};
-  for (const [name, map] of Object.entries(raw as Record<string, unknown>)) {
+  const result: Record<string, RemoteVariablePayload> = {};
+  for (const [name, payload] of Object.entries(raw as Record<string, unknown>)) {
+    result[name] = parseVariablePayload(name, payload);
+  }
+  return result;
+};
+
+const parseHashmapKeyPayload = (mapName: string, key: string, raw: unknown): RemoteHashmapKeyPayload => {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(`La clé "${key}" du hashmap "${mapName}" doit être un objet { active, values }.`);
+  }
+  const body = raw as Record<string, unknown>;
+  if (typeof body.active !== 'boolean') {
+    throw new Error(`La clé "${key}" du hashmap "${mapName}" doit avoir un champ "active" booléen.`);
+  }
+  if (!body.values || typeof body.values !== 'object' || Array.isArray(body.values)) {
+    throw new Error(`La clé "${key}" du hashmap "${mapName}" doit avoir un champ "values" objet { valeur: true/false }.`);
+  }
+  const values: Record<string, boolean> = {};
+  for (const [value, active] of Object.entries(body.values as Record<string, unknown>)) {
+    if (typeof active !== 'boolean') {
+      throw new Error(`La valeur "${value}" de la clé "${key}" (hashmap "${mapName}") doit être un booléen.`);
+    }
+    values[value] = active;
+  }
+  return { active: body.active, values };
+};
+
+const parseHashmaps = (raw: unknown): Record<string, Record<string, RemoteHashmapKeyPayload>> => {
+  if (raw === undefined) return {};
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error("Le champ \"hashmaps\" doit être un objet { nom: { clé: { active, values } } }.");
+  }
+  const result: Record<string, Record<string, RemoteHashmapKeyPayload>> = {};
+  for (const [mapName, map] of Object.entries(raw as Record<string, unknown>)) {
     if (!map || typeof map !== 'object' || Array.isArray(map)) {
-      throw new Error(`Le hashmap "${name}" doit être un objet { clé: [valeurs] }.`);
+      throw new Error(`Le hashmap "${mapName}" doit être un objet { clé: { active, values } }.`);
     }
-    const parsedMap: Record<string, string[]> = {};
-    for (const [key, values] of Object.entries(map as Record<string, unknown>)) {
-      if (!Array.isArray(values) || !values.every((v) => typeof v === 'string')) {
-        throw new Error(`La clé "${key}" du hashmap "${name}" doit être un tableau de chaînes.`);
-      }
-      parsedMap[key] = values;
+    const parsedMap: Record<string, RemoteHashmapKeyPayload> = {};
+    for (const [key, keyPayload] of Object.entries(map as Record<string, unknown>)) {
+      parsedMap[key] = parseHashmapKeyPayload(mapName, key, keyPayload);
     }
-    result[name] = parsedMap;
+    result[mapName] = parsedMap;
   }
   return result;
 };
@@ -144,27 +254,62 @@ export const fetchRemoteData = async (url: string, token?: string): Promise<Remo
 export const computeImportDiff = (
   localVariables: FlowVariables,
   localHashmaps: FlowHashmaps,
+  localActiveOverrides: ActiveOverrides,
   remote: RemoteData
 ): ImportDiff => {
   const variableConflicts: VariableConflict[] = [];
   const variableAdditions: string[] = [];
-  for (const [name, remoteValues] of Object.entries(remote.variables)) {
+
+  for (const [name, remotePayload] of Object.entries(remote.variables)) {
+    const remoteValues = Object.keys(remotePayload);
     const localValues = localVariables[name];
+
     if (!localValues) {
       variableAdditions.push(name);
-    } else if (!sameStringSet(localValues, remoteValues)) {
-      variableConflicts.push({ name, localValues, remoteValues });
+      continue;
+    }
+
+    const localInactive = localActiveOverrides.variables[name] || [];
+    const remoteInactive = remoteValues.filter((v) => remotePayload[v] === false);
+
+    if (!sameStringSet(localValues, remoteValues) || activeStateDiffers(localInactive, remotePayload)) {
+      variableConflicts.push({ name, localValues, remoteValues, localInactive, remoteInactive });
     }
   }
 
   const hashmapConflicts: HashmapConflict[] = [];
   const hashmapAdditions: string[] = [];
-  for (const [name, remoteMap] of Object.entries(remote.hashmaps)) {
+
+  for (const [name, remoteKeyMap] of Object.entries(remote.hashmaps)) {
+    const remoteMap: Record<string, string[]> = Object.fromEntries(
+      Object.entries(remoteKeyMap).map(([key, kp]) => [key, Object.keys(kp.values)])
+    );
     const localMap = localHashmaps[name];
+
     if (!localMap) {
       hashmapAdditions.push(name);
-    } else if (!sameHashmap(localMap, remoteMap)) {
-      hashmapConflicts.push({ name, localMap, remoteMap });
+      continue;
+    }
+
+    const localOverride = localActiveOverrides.hashmaps[name];
+
+    if (!sameHashmap(localMap, remoteMap) || hashmapActiveStateDiffers(localOverride, remoteKeyMap)) {
+      const remoteInactiveKeys = Object.entries(remoteKeyMap).filter(([, kp]) => !kp.active).map(([k]) => k);
+      const remoteInactiveValues: Record<string, string[]> = {};
+      Object.entries(remoteKeyMap).forEach(([key, kp]) => {
+        const inactiveForKey = Object.entries(kp.values).filter(([, active]) => !active).map(([v]) => v);
+        if (inactiveForKey.length > 0) remoteInactiveValues[key] = inactiveForKey;
+      });
+
+      hashmapConflicts.push({
+        name,
+        localMap,
+        remoteMap,
+        localInactiveKeys: localOverride?.inactive_keys || [],
+        remoteInactiveKeys,
+        localInactiveValues: localOverride?.inactive_values || {},
+        remoteInactiveValues
+      });
     }
   }
 
@@ -193,35 +338,80 @@ const resolveHashmap = (
   }
 };
 
-// Les clés absentes de *Resolutions sont soit des additions pures (pas de
-// conflit), soit — en théorie seulement — un conflit non résolu ; dans ce
-// dernier cas on retombe sur 'merge-remote', le choix le moins destructeur.
+// Les clés absentes de *Resolutions sont des additions pures (pas de conflit
+// présenté à l'utilisateur) : retombent sur 'merge-remote', ce qui revient
+// mathématiquement à "prendre le distant" quand il n'y a rien en local.
 export const applyImport = (
   localVariables: FlowVariables,
   localHashmaps: FlowHashmaps,
+  localActiveOverrides: ActiveOverrides,
   remote: RemoteData,
   variableResolutions: Record<string, ImportResolution>,
   hashmapResolutions: Record<string, ImportResolution>
-): { variables: FlowVariables; hashmaps: FlowHashmaps } => {
+): ImportResult => {
   const variables: FlowVariables = { ...localVariables };
-  for (const [name, remoteValues] of Object.entries(remote.variables)) {
-    const localValues = localVariables[name];
-    if (!localValues) {
-      variables[name] = remoteValues;
-      continue;
+  const overrideVariables: Record<string, string[]> = { ...localActiveOverrides.variables };
+
+  for (const [name, remotePayload] of Object.entries(remote.variables)) {
+    const remoteValues = Object.keys(remotePayload);
+    const localValues = localVariables[name] || [];
+    const resolution = variableResolutions[name] ?? 'merge-remote';
+
+    variables[name] = resolveArray(localValues, remoteValues, resolution);
+
+    const localInactive = localActiveOverrides.variables[name] || [];
+    const nextInactive = mergeActiveState(localValues, localInactive, remotePayload, resolution);
+    if (nextInactive.length > 0) {
+      overrideVariables[name] = nextInactive;
+    } else {
+      delete overrideVariables[name];
     }
-    variables[name] = resolveArray(localValues, remoteValues, variableResolutions[name] ?? 'merge-remote');
   }
 
   const hashmaps: FlowHashmaps = { ...localHashmaps };
-  for (const [name, remoteMap] of Object.entries(remote.hashmaps)) {
-    const localMap = localHashmaps[name];
-    if (!localMap) {
-      hashmaps[name] = remoteMap;
-      continue;
+  const overrideHashmaps: Record<string, HashmapActiveOverride> = { ...localActiveOverrides.hashmaps };
+
+  for (const [name, remoteKeyMap] of Object.entries(remote.hashmaps)) {
+    const remoteMap: Record<string, string[]> = Object.fromEntries(
+      Object.entries(remoteKeyMap).map(([key, kp]) => [key, Object.keys(kp.values)])
+    );
+    const localMap = localHashmaps[name] || {};
+    const resolution = hashmapResolutions[name] ?? 'merge-remote';
+
+    hashmaps[name] = resolveHashmap(localMap, remoteMap, resolution);
+
+    const localOverride = localActiveOverrides.hashmaps[name];
+    const remoteKeyActive: Record<string, boolean> = Object.fromEntries(
+      Object.entries(remoteKeyMap).map(([key, kp]) => [key, kp.active])
+    );
+    const inactive_keys = mergeActiveState(Object.keys(localMap), localOverride?.inactive_keys || [], remoteKeyActive, resolution);
+
+    const inactive_values: Record<string, string[]> = { ...(localOverride?.inactive_values || {}) };
+    Object.entries(remoteKeyMap).forEach(([key, kp]) => {
+      const localValuesForKey = localMap[key] || [];
+      const localInactiveForKey = localOverride?.inactive_values?.[key] || [];
+      const nextForKey = mergeActiveState(localValuesForKey, localInactiveForKey, kp.values, resolution);
+      if (nextForKey.length > 0) {
+        inactive_values[key] = nextForKey;
+      } else {
+        delete inactive_values[key];
+      }
+    });
+
+    const nextEntry: HashmapActiveOverride = {};
+    if (inactive_keys.length > 0) nextEntry.inactive_keys = inactive_keys;
+    if (Object.keys(inactive_values).length > 0) nextEntry.inactive_values = inactive_values;
+
+    if (Object.keys(nextEntry).length > 0) {
+      overrideHashmaps[name] = nextEntry;
+    } else {
+      delete overrideHashmaps[name];
     }
-    hashmaps[name] = resolveHashmap(localMap, remoteMap, hashmapResolutions[name] ?? 'merge-remote');
   }
 
-  return { variables, hashmaps };
+  return {
+    variables,
+    hashmaps,
+    activeOverrides: { variables: overrideVariables, hashmaps: overrideHashmaps }
+  };
 };

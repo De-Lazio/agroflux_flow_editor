@@ -264,6 +264,106 @@ describe('validateFlow — détection de cycles', () => {
   });
 });
 
+describe('validateFlow — cohérence de active_overrides', () => {
+  it('ne signale rien quand active_overrides est absent', () => {
+    const { warnings } = validateFlow(buildFlow({ variables: { produits: ['mais'] }, audio_mappings: { produits: 'produits' } }));
+    expect(warnings.some((w) => w.includes('active_overrides'))).toBe(false);
+  });
+
+  it('ne signale rien quand toutes les exceptions référencent des valeurs existantes', () => {
+    const flow = buildFlow({
+      variables: { produits: ['mais', 'riz'] },
+      hashmaps: { marche_par_departement: { oueme: ['ouando', 'adjohoun'] } },
+      audio_mappings: { produits: 'produits', marche_par_departement: 'marche_par_departement' },
+      active_overrides: {
+        variables: { produits: ['riz'] },
+        hashmaps: { marche_par_departement: { inactive_values: { oueme: ['adjohoun'] } } }
+      }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('active_overrides'))).toBe(false);
+  });
+
+  it('signale une variable inexistante référencée par active_overrides', () => {
+    const flow = buildFlow({
+      active_overrides: { variables: { ne_existe_pas: ['x'] }, hashmaps: {} }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('active_overrides') && w.includes('ne_existe_pas') && w.includes('variable inexistante'))).toBe(true);
+  });
+
+  it('signale une valeur de variable inexistante référencée par active_overrides', () => {
+    const flow = buildFlow({
+      variables: { produits: ['mais'] },
+      audio_mappings: { produits: 'produits' },
+      active_overrides: { variables: { produits: ['sorgho'] }, hashmaps: {} }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('active_overrides') && w.includes('sorgho') && w.includes('produits'))).toBe(true);
+  });
+
+  it('signale un hashmap inexistant référencé par active_overrides', () => {
+    const flow = buildFlow({
+      active_overrides: { variables: {}, hashmaps: { ne_existe_pas: { inactive_keys: ['x'] } } }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('active_overrides') && w.includes('ne_existe_pas') && w.includes('hashmap inexistant'))).toBe(true);
+  });
+
+  it('signale une clé de hashmap inexistante référencée via inactive_keys', () => {
+    const flow = buildFlow({
+      hashmaps: { marche_par_departement: { oueme: ['ouando'] } },
+      audio_mappings: { marche_par_departement: 'marche_par_departement' },
+      active_overrides: { variables: {}, hashmaps: { marche_par_departement: { inactive_keys: ['plateau'] } } }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('active_overrides') && w.includes('plateau') && w.includes('clé inexistante'))).toBe(true);
+  });
+
+  it('signale une clé de hashmap inexistante référencée via inactive_values', () => {
+    const flow = buildFlow({
+      hashmaps: { marche_par_departement: { oueme: ['ouando'] } },
+      audio_mappings: { marche_par_departement: 'marche_par_departement' },
+      active_overrides: { variables: {}, hashmaps: { marche_par_departement: { inactive_values: { plateau: ['ketou'] } } } }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('active_overrides') && w.includes('plateau') && w.includes('clé inexistante'))).toBe(true);
+  });
+
+  it('signale une valeur inexistante référencée via inactive_values pour une clé existante', () => {
+    const flow = buildFlow({
+      hashmaps: { marche_par_departement: { oueme: ['ouando'] } },
+      audio_mappings: { marche_par_departement: 'marche_par_departement' },
+      active_overrides: { variables: {}, hashmaps: { marche_par_departement: { inactive_values: { oueme: ['adjohoun'] } } } }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('active_overrides') && w.includes('adjohoun') && w.includes('oueme'))).toBe(true);
+  });
+});
+
+describe('validateFlow — cohérence de hashmaps_no_resources', () => {
+  it('ne signale rien quand hashmaps_no_resources est absent', () => {
+    const { warnings } = validateFlow(buildFlow());
+    expect(warnings.some((w) => w.includes('hashmaps_no_resources'))).toBe(false);
+  });
+
+  it('ne signale rien pour un hashmap existant', () => {
+    const flow = buildFlow({
+      hashmaps: { marche_par_departement: { oueme: ['ouando'] } },
+      audio_mappings: { marche_par_departement: 'marche_par_departement' },
+      hashmaps_no_resources: ['marche_par_departement']
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('hashmaps_no_resources'))).toBe(false);
+  });
+
+  it('signale un hashmap inexistant référencé par hashmaps_no_resources', () => {
+    const flow = buildFlow({ hashmaps_no_resources: ['ne_existe_pas'] });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('hashmaps_no_resources') && w.includes('ne_existe_pas'))).toBe(true);
+  });
+});
+
 describe('validateFlow — rapport d\'inventaire', () => {
   it('recense les audios référencés directement dans les nœuds', () => {
     const { report } = validateFlow(buildFlow());
@@ -291,6 +391,24 @@ describe('validateFlow — rapport d\'inventaire', () => {
     // Les ressources générées doivent aussi apparaître dans la liste globale
     expect(report.audios).toContain('audio/fr/produits/mais.mp3');
     expect(report.audios).toContain('audio/fr/marche_par_departement/oueme/ouando.mp3');
+  });
+
+  it('exclut du rapport un hashmap listé dans hashmaps_no_resources (audio et image)', () => {
+    const flow = buildFlow({
+      variables: { produits: ['mais'] },
+      hashmaps: { marche_par_departement: { oueme: ['ouando'] } },
+      audio_mappings: { produits: 'produits', marche_par_departement: 'marche_par_departement' },
+      hashmaps_no_resources: ['marche_par_departement']
+    });
+
+    const { report } = validateFlow(flow);
+
+    expect(report.hashmapResources.audios).toEqual([]);
+    expect(report.hashmapResources.images).toEqual([]);
+    expect(report.audios).not.toContain('audio/fr/marche_par_departement/oueme/ouando.mp3');
+    expect(report.images).not.toContain('images/marche_par_departement/oueme/ouando.jpeg');
+    // Les ressources de variable, elles, ne sont pas affectées.
+    expect(report.variableResources.audios).toEqual(['audio/fr/produits/mais.mp3']);
   });
 
   it('respecte les formats de ressources déclarés dans le flow', () => {

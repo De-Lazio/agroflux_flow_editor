@@ -150,6 +150,8 @@ Chaque type possède un comportement précis et un contrat bien défini.
 
 Le moteur Flutter interprète ces nœuds pour construire dynamiquement les interfaces utilisateur.
 
+Chaque valeur de variable et chaque clé/valeur de HashMap peut aussi être marquée active ou inactive, sans jamais être supprimée du Studio (qui continue d'exposer l'intégralité du contenu développé, y compris en phase pilote). Les nœuds Grid et Pre-Filter déclarent, indépendamment, s'ils doivent respecter cet état à l'affichage (`controle_active`) et s'ils doivent proposer un choix « Tout » (`can_choix_all`). C'est le backend et l'application Flutter qui appliquent réellement ce filtrage à l'exécution.
+
 Relation entre les différents composants
                 Flow Editor
                      │

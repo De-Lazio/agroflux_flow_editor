@@ -36,12 +36,23 @@ interface BaseNodeData {
   audio?: AudioSequence;
 }
 
+// Attributs communs aux nœuds dont les options viennent d'une variable ou d'un
+// hashmap (grid, pre_filter) — voir PLAN_ACTIVE_STATE.md. Purement déclaratifs
+// côté Studio : c'est le mobile/backend qui les applique à l'exécution.
+interface ActiveControlledNodeData {
+  // Absent = false : pas d'option "Tout" proposée en plus de la liste.
+  can_choix_all?: boolean;
+  // Absent = false : affiche toutes les valeurs (actives ou non, sans tenir
+  // compte de active_overrides).
+  controle_active?: boolean;
+}
+
 export interface RootNodeData extends BaseNodeData {
   type: 'root';
   options: RootOption[];
 }
 
-export interface GridNodeData extends BaseNodeData {
+export interface GridNodeData extends BaseNodeData, ActiveControlledNodeData {
   type: 'grid';
   options_source: string;
   set: string;
@@ -61,7 +72,7 @@ export interface CalendrierNodeData extends BaseNodeData {
   next: string;
 }
 
-export interface PreFilterNodeData extends BaseNodeData {
+export interface PreFilterNodeData extends BaseNodeData, ActiveControlledNodeData {
   type: 'pre_filter';
   cle: string;
   filtre_source: string;
@@ -101,6 +112,20 @@ export type FlowVariables = Record<string, string[]>;
 export type FlowHashmaps = Record<string, Record<string, string[]>>;
 export type FlowMappings = Record<string, string>;
 
+// Overlay additif des états "inactif" (voir PLAN_ACTIVE_STATE.md) : ne liste
+// que les exceptions, tout le reste est actif par défaut. `variables`/
+// `hashmaps` eux-mêmes ne changent jamais de forme — ce n'est pas une
+// restructuration, juste une couche à part que Studio peut ignorer si absente.
+export interface HashmapActiveOverride {
+  inactive_keys?: string[];                    // clés du hashmap désactivées en bloc
+  inactive_values?: Record<string, string[]>;  // par clé, valeurs de sa liste désactivées
+}
+
+export interface ActiveOverrides {
+  variables: Record<string, string[]>;         // varName -> valeurs inactives
+  hashmaps: Record<string, HashmapActiveOverride>;
+}
+
 export interface FlowData {
   version: string;
   entry: string;
@@ -112,6 +137,14 @@ export interface FlowData {
   // Langues actives pour la génération des ressources audio (voir src/utils/languages.ts).
   // Seul l'audio est multilingue : les images ne dépendent jamais de la langue.
   languages: string[];
+  // Absent = { variables: {}, hashmaps: {} } (tout actif) — voir PLAN_ACTIVE_STATE.md.
+  active_overrides?: ActiveOverrides;
+  // Overlay additif (même logique que active_overrides) : noms de hashmaps
+  // dont les clés/valeurs sont déjà couvertes par des variables existantes
+  // (mêmes libellés), donc sans ressources audio/image propres à générer.
+  // Absent = [] = tous les hashmaps génèrent leurs ressources (comportement
+  // historique, inchangé).
+  hashmaps_no_resources?: string[];
   nodes: FlowNodes;
 }
 

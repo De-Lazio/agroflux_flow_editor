@@ -1,14 +1,26 @@
 import { useState } from 'react';
-import { X, Plus, Trash2, Library, ChevronRight } from 'lucide-react';
+import { X, Plus, Trash2, Library, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import type { ActiveOverrides } from '../types/flow';
+import {
+  isHashmapKeyActive,
+  isHashmapValueActive,
+  toggleHashmapKeyActive,
+  toggleHashmapValueActive,
+  removeHashmapOverrides,
+  removeHashmapKeyOverrides,
+  pruneHashmapOverrideValue
+} from '../utils/activeState';
 
 interface HashMapManagerProps {
   hashmaps: Record<string, Record<string, string[]>>;
   onUpdate: (hashmaps: Record<string, Record<string, string[]>>) => void;
+  activeOverrides: ActiveOverrides;
+  onActiveOverridesChange: (overrides: ActiveOverrides) => void;
   onClose: () => void;
   variables: Record<string, string[]>;
 }
 
-const HashMapManager = ({ hashmaps, onUpdate, onClose }: HashMapManagerProps) => {
+const HashMapManager = ({ hashmaps, onUpdate, activeOverrides, onActiveOverridesChange, onClose }: HashMapManagerProps) => {
   const [newHashMapName, setNewHashMapName] = useState('');
   const [selectedHashMap, setSelectedHashMap] = useState<string | null>(null);
   const [newKey, setNewKey] = useState('');
@@ -24,6 +36,7 @@ const HashMapManager = ({ hashmaps, onUpdate, onClose }: HashMapManagerProps) =>
     const newHashMaps = { ...hashmaps };
     delete newHashMaps[name];
     onUpdate(newHashMaps);
+    onActiveOverridesChange(removeHashmapOverrides(activeOverrides, name));
     if (selectedHashMap === name) setSelectedHashMap(null);
   };
 
@@ -41,6 +54,7 @@ const HashMapManager = ({ hashmaps, onUpdate, onClose }: HashMapManagerProps) =>
     delete newMap[key];
     newHashMaps[mapName] = newMap;
     onUpdate(newHashMaps);
+    onActiveOverridesChange(removeHashmapKeyOverrides(activeOverrides, mapName, key));
   };
 
   const addValue = (mapName: string, key: string, value: string) => {
@@ -51,9 +65,19 @@ const HashMapManager = ({ hashmaps, onUpdate, onClose }: HashMapManagerProps) =>
   };
 
   const removeValue = (mapName: string, key: string, index: number) => {
+    const removedValue = hashmaps[mapName][key][index];
     const newHashMaps = { ...hashmaps };
     newHashMaps[mapName][key] = newHashMaps[mapName][key].filter((_, i) => i !== index);
     onUpdate(newHashMaps);
+    onActiveOverridesChange(pruneHashmapOverrideValue(activeOverrides, mapName, key, removedValue));
+  };
+
+  const toggleKeyActive = (mapName: string, key: string) => {
+    onActiveOverridesChange(toggleHashmapKeyActive(activeOverrides, mapName, key));
+  };
+
+  const toggleValueActive = (mapName: string, key: string, value: string) => {
+    onActiveOverridesChange(toggleHashmapValueActive(activeOverrides, mapName, key, value));
   };
 
   return (
@@ -159,14 +183,23 @@ const HashMapManager = ({ hashmaps, onUpdate, onClose }: HashMapManagerProps) =>
 
                 <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {Object.entries(hashmaps[selectedHashMap]).map(([key, values]) => (
-                      <div key={key} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-fit">
+                    {Object.entries(hashmaps[selectedHashMap]).map(([key, values]) => {
+                      const keyActive = isHashmapKeyActive(activeOverrides, selectedHashMap, key);
+                      return (
+                      <div key={key} className={`bg-white rounded-2xl p-5 border shadow-sm hover:shadow-md transition-all flex flex-col h-fit ${keyActive ? 'border-slate-200' : 'border-dashed border-slate-300 opacity-70'}`}>
                         <div className="flex justify-between items-center mb-4">
-                          <h5 className="font-black text-slate-800 text-sm flex items-center gap-2">
+                          <h5 className={`font-black text-sm flex items-center gap-2 ${keyActive ? 'text-slate-800' : 'text-slate-400 line-through'}`}>
                             <span className="w-1.5 h-6 bg-amber-400 rounded-full"></span>
                             {key}
                           </h5>
                           <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => toggleKeyActive(selectedHashMap, key)}
+                              className={keyActive ? 'p-1.5 text-emerald-500 hover:text-emerald-600 transition-colors' : 'p-1.5 text-slate-400 hover:text-slate-500 transition-colors'}
+                              title={keyActive ? 'Clé active — cliquer pour désactiver' : 'Clé inactive — cliquer pour activer'}
+                            >
+                              {keyActive ? <Eye size={16} /> : <EyeOff size={16} />}
+                            </button>
                             <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-lg uppercase">
                               {values.length} items
                             </span>
@@ -175,17 +208,34 @@ const HashMapManager = ({ hashmaps, onUpdate, onClose }: HashMapManagerProps) =>
                             </button>
                           </div>
                         </div>
-                        
+
                         <div className="flex flex-wrap gap-2 mb-4 min-h-[60px] p-3 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                           {values.length === 0 && <p className="text-[10px] text-slate-400 italic m-auto">Aucune valeur</p>}
-                          {values.map((val, idx) => (
-                            <div key={idx} className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 shadow-sm group hover:border-amber-200">
-                              <span>{val}</span>
-                              <button onClick={() => removeValue(selectedHashMap, key, idx)} className="text-slate-300 hover:text-red-500 transition-colors">
-                                <X size={14} />
-                              </button>
-                            </div>
-                          ))}
+                          {values.map((val, idx) => {
+                            const valueActive = isHashmapValueActive(activeOverrides, selectedHashMap, key, val);
+                            return (
+                              <div
+                                key={idx}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold shadow-sm group hover:border-amber-200 ${valueActive ? 'bg-white border-slate-200 text-slate-600' : 'bg-slate-100 border-slate-300 text-slate-400'}`}
+                              >
+                                <button
+                                  onClick={() => toggleValueActive(selectedHashMap, key, val)}
+                                  className={valueActive ? 'text-emerald-500 hover:text-emerald-600 transition-colors' : 'text-slate-400 hover:text-slate-500 transition-colors'}
+                                  title={
+                                    !keyActive
+                                      ? "Clé désactivée : cette valeur restera inactive tant que la clé n'est pas réactivée"
+                                      : (valueActive ? 'Actif — cliquer pour désactiver' : 'Inactif — cliquer pour activer')
+                                  }
+                                >
+                                  {valueActive ? <Eye size={14} /> : <EyeOff size={14} />}
+                                </button>
+                                <span className={valueActive ? '' : 'line-through'}>{val}</span>
+                                <button onClick={() => removeValue(selectedHashMap, key, idx)} className="text-slate-300 hover:text-red-500 transition-colors">
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
 
                         <div className="relative">
@@ -202,7 +252,8 @@ const HashMapManager = ({ hashmaps, onUpdate, onClose }: HashMapManagerProps) =>
                           />
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>

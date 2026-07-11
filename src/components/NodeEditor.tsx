@@ -292,6 +292,23 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                 {Object.keys(variables || {}).map(v => <option key={v} value={v}>{v}</option>)}
               </select>
             </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs font-bold text-slate-500">Autoriser le choix « Tout »</span>
+              <input
+                type="checkbox"
+                checked={data.can_choix_all ?? false}
+                onChange={(e) => handleChange('can_choix_all', e.target.checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500">N'afficher que les options actives</span>
+              <input
+                type="checkbox"
+                checked={data.controle_active ?? false}
+                onChange={(e) => handleChange('controle_active', e.target.checked)}
+              />
+            </div>
           </section>
         )}
 
@@ -407,6 +424,23 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                 <option value="">(Choisir un hashmap)</option>
                 {Object.keys(hashmaps || {}).map(h => <option key={h} value={h}>{h}</option>)}
               </select>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs font-bold text-slate-500">Autoriser le choix « Tout »</span>
+              <input
+                type="checkbox"
+                checked={data.can_choix_all ?? false}
+                onChange={(e) => handleChange('can_choix_all', e.target.checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500">N'afficher que les options actives</span>
+              <input
+                type="checkbox"
+                checked={data.controle_active ?? false}
+                onChange={(e) => handleChange('controle_active', e.target.checked)}
+              />
             </div>
           </section>
         )}

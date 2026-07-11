@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, CloudDownload, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import type { FlowVariables, FlowHashmaps } from '../types/flow';
+import type { ActiveOverrides, FlowVariables, FlowHashmaps } from '../types/flow';
 import {
   fetchRemoteData,
   computeImportDiff,
@@ -13,7 +13,8 @@ import {
 interface ApiImportPanelProps {
   variables: FlowVariables;
   hashmaps: FlowHashmaps;
-  onImport: (variables: FlowVariables, hashmaps: FlowHashmaps) => void;
+  activeOverrides: ActiveOverrides;
+  onImport: (variables: FlowVariables, hashmaps: FlowHashmaps, activeOverrides: ActiveOverrides) => void;
   onClose: () => void;
 }
 
@@ -28,16 +29,26 @@ const RESOLUTION_OPTIONS: { value: ImportResolution; label: string }[] = [
 
 const DEFAULT_RESOLUTION: ImportResolution = 'merge-remote';
 
-const ValueChips = ({ values }: { values: string[] }) => (
-  <div className="flex flex-wrap gap-1.5 min-h-[28px]">
-    {values.length === 0 && <span className="text-[11px] text-slate-400 italic">(vide)</span>}
-    {values.map((v, i) => (
-      <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-xs font-mono">{v}</span>
-    ))}
-  </div>
-);
+// inactive : sous-ensemble de `values` à afficher barré/grisé (état inactif
+// déclaré par le côté local ou distant concerné) — purement visuel.
+const ValueChips = ({ values, inactive = [] }: { values: string[]; inactive?: string[] }) => {
+  const inactiveSet = new Set(inactive);
+  return (
+    <div className="flex flex-wrap gap-1.5 min-h-[28px]">
+      {values.length === 0 && <span className="text-[11px] text-slate-400 italic">(vide)</span>}
+      {values.map((v, i) => (
+        <span
+          key={i}
+          className={`px-2 py-0.5 rounded-md text-xs font-mono ${inactiveSet.has(v) ? 'bg-slate-100 text-slate-400 line-through' : 'bg-slate-100 text-slate-600'}`}
+        >
+          {v}
+        </span>
+      ))}
+    </div>
+  );
+};
 
-const ApiImportPanel = ({ variables, hashmaps, onImport, onClose }: ApiImportPanelProps) => {
+const ApiImportPanel = ({ variables, hashmaps, activeOverrides, onImport, onClose }: ApiImportPanelProps) => {
   const [step, setStep] = useState<Step>('form');
   const [url, setUrl] = useState('');
   const [token, setToken] = useState('');
@@ -58,7 +69,7 @@ const ApiImportPanel = ({ variables, hashmaps, onImport, onClose }: ApiImportPan
     setError(null);
     try {
       const data = await fetchRemoteData(url.trim(), token.trim() || undefined);
-      const computedDiff = computeImportDiff(variables, hashmaps, data);
+      const computedDiff = computeImportDiff(variables, hashmaps, activeOverrides, data);
       const initialVarResolutions: Record<string, ImportResolution> = {};
       computedDiff.variableConflicts.forEach((c) => { initialVarResolutions[c.name] = DEFAULT_RESOLUTION; });
       const initialHashResolutions: Record<string, ImportResolution> = {};
@@ -88,8 +99,8 @@ const ApiImportPanel = ({ variables, hashmaps, onImport, onClose }: ApiImportPan
 
   const handleApply = () => {
     if (!remoteData) return;
-    const result = applyImport(variables, hashmaps, remoteData, variableResolutions, hashmapResolutions);
-    onImport(result.variables, result.hashmaps);
+    const result = applyImport(variables, hashmaps, activeOverrides, remoteData, variableResolutions, hashmapResolutions);
+    onImport(result.variables, result.hashmaps, result.activeOverrides);
     onClose();
   };
 
@@ -142,10 +153,12 @@ const ApiImportPanel = ({ variables, hashmaps, onImport, onClose }: ApiImportPan
                 </p>
               </div>
 
-              <p className="text-xs text-slate-400">
-                La route doit répondre avec un JSON de la forme{' '}
-                <code className="bg-slate-100 px-1 rounded">{'{ "variables": {...}, "hashmaps": {...} }'}</code>.
-              </p>
+              <div className="text-xs text-slate-400 space-y-1">
+                <p>La route doit répondre avec un JSON où chaque valeur porte son état actif :</p>
+                <p><code className="bg-slate-100 px-1 rounded">variables: {'{ nom: { valeur: true|false } }'}</code></p>
+                <p><code className="bg-slate-100 px-1 rounded">hashmaps: {'{ nom: { cle: { active, values: { valeur: true|false } } } }'}</code></p>
+                <p>Voir <code className="bg-slate-100 px-1 rounded">API_IMPORT_FORMAT.md</code> pour le détail et des exemples.</p>
+              </div>
 
               {error && (
                 <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
@@ -206,11 +219,11 @@ const ApiImportPanel = ({ variables, hashmaps, onImport, onClose }: ApiImportPan
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Local</p>
-                          <ValueChips values={conflict.localValues} />
+                          <ValueChips values={conflict.localValues} inactive={conflict.localInactive} />
                         </div>
                         <div>
                           <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Distant</p>
-                          <ValueChips values={conflict.remoteValues} />
+                          <ValueChips values={conflict.remoteValues} inactive={conflict.remoteInactive} />
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-3 pt-1">
@@ -240,8 +253,8 @@ const ApiImportPanel = ({ variables, hashmaps, onImport, onClose }: ApiImportPan
                           <p className="text-[10px] font-bold text-slate-400 uppercase">Local</p>
                           {Object.entries(conflict.localMap).map(([key, values]) => (
                             <div key={key}>
-                              <p className="text-xs font-semibold text-slate-500 mb-0.5">{key}</p>
-                              <ValueChips values={values} />
+                              <p className={`text-xs font-semibold mb-0.5 ${conflict.localInactiveKeys.includes(key) ? 'text-slate-400 line-through' : 'text-slate-500'}`}>{key}</p>
+                              <ValueChips values={values} inactive={conflict.localInactiveValues[key] || []} />
                             </div>
                           ))}
                         </div>
@@ -249,8 +262,8 @@ const ApiImportPanel = ({ variables, hashmaps, onImport, onClose }: ApiImportPan
                           <p className="text-[10px] font-bold text-slate-400 uppercase">Distant</p>
                           {Object.entries(conflict.remoteMap).map(([key, values]) => (
                             <div key={key}>
-                              <p className="text-xs font-semibold text-slate-500 mb-0.5">{key}</p>
-                              <ValueChips values={values} />
+                              <p className={`text-xs font-semibold mb-0.5 ${conflict.remoteInactiveKeys.includes(key) ? 'text-slate-400 line-through' : 'text-slate-500'}`}>{key}</p>
+                              <ValueChips values={values} inactive={conflict.remoteInactiveValues[key] || []} />
                             </div>
                           ))}
                         </div>

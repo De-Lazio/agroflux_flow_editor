@@ -29,6 +29,7 @@ import type { BackendContract } from './utils/backendContract';
 import { downloadTextFile } from './utils/download';
 import { DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './utils/resourceInventory';
 import { DEFAULT_LANGUAGES } from './utils/languages';
+import { createEmptyActiveOverrides } from './utils/activeState';
 import {
   createDefaultRootNode,
   createDefaultGridNode,
@@ -38,6 +39,7 @@ import {
 } from './utils/nodeFactory';
 import initialFlowJson from '../flow.json';
 import type {
+  ActiveOverrides,
   FlowData,
   FlowGraphNodeData,
   FlowVariables,
@@ -77,6 +79,9 @@ const App = () => {
 
   const [variables, setVariables] = useState<FlowVariables>({});
   const [hashmaps, setHashmaps] = useState<FlowHashmaps>({});
+  // Persistance (session, JSON, flowToJson) branchée en Phase 5 — voir PLAN_ACTIVE_STATE.md.
+  const [activeOverrides, setActiveOverrides] = useState<ActiveOverrides>(createEmptyActiveOverrides());
+  const [hashmapsNoResources, setHashmapsNoResources] = useState<string[]>([]);
   const [audioMappings, setAudioMappings] = useState<FlowMappings>(defaultAudioMappings);
   const [audioFormat, setAudioFormat] = useState<string>(DEFAULT_AUDIO_FORMAT);
   const [imageFormat, setImageFormat] = useState<string>(DEFAULT_IMAGE_FORMAT);
@@ -132,6 +137,8 @@ const App = () => {
             setConfig(session.config || null);
             setLanguages(session.languages || DEFAULT_LANGUAGES);
             setEntryNode(session.entryNode || "");
+            setActiveOverrides(session.activeOverrides || createEmptyActiveOverrides());
+            setHashmapsNoResources(session.hashmapsNoResources || []);
             seedHistory(session.nodes, session.edges || [], session.variables || {}, session.hashmaps || {});
             setIsAppReady(true);
             return;
@@ -153,6 +160,8 @@ const App = () => {
       setConfig(initialFlow.config || null);
       setLanguages(initialFlow.languages || DEFAULT_LANGUAGES);
       setEntryNode(initialFlow.entry || "");
+      setActiveOverrides(initialFlow.active_overrides || createEmptyActiveOverrides());
+      setHashmapsNoResources(initialFlow.hashmaps_no_resources || []);
       seedHistory(initialNodes, initialEdges, initialFlow.variables || {}, initialFlow.hashmaps || {});
       setIsAppReady(true);
     };
@@ -175,11 +184,13 @@ const App = () => {
       config,
       languages,
       entryNode,
+      activeOverrides,
+      hashmapsNoResources,
       updatedAt: new Date().toISOString()
     };
 
     localStorage.setItem('agroflux_flow_session', JSON.stringify(session));
-  }, [nodes, edges, variables, hashmaps, audioMappings, audioFormat, imageFormat, config, languages, entryNode, isAppReady]);
+  }, [nodes, edges, variables, hashmaps, audioMappings, audioFormat, imageFormat, config, languages, entryNode, activeOverrides, hashmapsNoResources, isAppReady]);
 
   const addToHistory = (newNodes: FlowGraphNode[], newEdges: Edge[]) => {
     const newEntry: HistoryEntry = {
@@ -273,6 +284,8 @@ const App = () => {
     setConfig(null);
     setLanguages(DEFAULT_LANGUAGES);
     setEntryNode("");
+    setActiveOverrides(createEmptyActiveOverrides());
+    setHashmapsNoResources([]);
     setSelectedNode(null);
     setHistory([]);
     setHistoryIndex(-1);
@@ -323,7 +336,9 @@ const App = () => {
     resource_formats: { audio: audioFormat, image: imageFormat },
     config,
     languages,
-    entry: entryNode
+    entry: entryNode,
+    activeOverrides,
+    hashmapsNoResources
   });
 
   // Reconstruit le FlowData courant à la demande (jamais mis en cache) : utilisé par
@@ -360,6 +375,8 @@ const App = () => {
           setConfig(json.config || null);
           setLanguages(json.languages || DEFAULT_LANGUAGES);
           setEntryNode(json.entry || "");
+          setActiveOverrides(json.active_overrides || createEmptyActiveOverrides());
+          setHashmapsNoResources(json.hashmaps_no_resources || []);
 
           const { nodes: newNodes, edges: newEdges } = jsonToFlow(json);
           setNodes(newNodes);
@@ -435,6 +452,8 @@ const App = () => {
         <VariableManager
           variables={variables}
           onUpdate={setVariables}
+          activeOverrides={activeOverrides}
+          onActiveOverridesChange={setActiveOverrides}
           onClose={() => setIsVariableManagerOpen(false)}
           nodes={nodes}
         />
@@ -444,6 +463,8 @@ const App = () => {
         <HashMapManager
           hashmaps={hashmaps}
           onUpdate={setHashmaps}
+          activeOverrides={activeOverrides}
+          onActiveOverridesChange={setActiveOverrides}
           onClose={() => setIsHashMapManagerOpen(false)}
           variables={variables}
         />
@@ -459,6 +480,8 @@ const App = () => {
           imageFormat={imageFormat}
           onAudioFormatChange={setAudioFormat}
           onImageFormatChange={setImageFormat}
+          hashmapsNoResources={hashmapsNoResources}
+          onHashmapsNoResourcesChange={setHashmapsNoResources}
           onClose={() => setIsMappingManagerOpen(false)}
         />
       )}
@@ -480,9 +503,11 @@ const App = () => {
         <ApiImportPanel
           variables={variables}
           hashmaps={hashmaps}
-          onImport={(newVariables, newHashmaps) => {
+          activeOverrides={activeOverrides}
+          onImport={(newVariables, newHashmaps, newActiveOverrides) => {
             setVariables(newVariables);
             setHashmaps(newHashmaps);
+            setActiveOverrides(newActiveOverrides);
           }}
           onClose={() => setIsApiImportOpen(false)}
         />
