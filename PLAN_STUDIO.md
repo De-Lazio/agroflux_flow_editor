@@ -1,5 +1,5 @@
 # Plan de mise en œuvre — AgroFlux Studio
-
+npm 
 Ce plan traduit `new_orientation.md` / `studio.md` en étapes concrètes, en tenant compte
 de l'existant (`src/`) et des deux arbitrages tranchés avant d'écrire ce plan :
 
