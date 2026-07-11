@@ -1507,7 +1507,7 @@
     "produits": "produits",
     "departements": "departements",
     "x_anime_x": "x_anime_x",
-    "periode": "periode/",
+    "periode": "periode",
     "marches_suivis": "marches_suivis",
     "type_info_marche": "type_info_marche",
     "departements_et_tout": "departements_et_tout",
@@ -1584,30 +1584,46 @@
         ],
         "fallback": "intro/default.mp3"
       },
-      "comment": ""
+      "comment": "Menu principal — point d'entrée unique du flow (entry). Propose les 6 parcours de l'application :\n1. achete_produit → \"Acheter un produit\" (où acheter, au meilleur prix, dans un département).\n2. vendre_produit → \"Vendre un produit\" (où vendre, au meilleur prix, dans un département).\n3. marche_anime_x → \"Marché animé\" via une date relative (aujourd'hui, demain, hier, ...).\n4. marche_anime_calendrier → \"Marché animé\" via une date choisie sur un calendrier.\n5. infos_march → \"Infos sur un marché\" (département → marché → type d'info : horaires, produits, calendrier d'animation, opportunités...).\n6. explorer_produit → \"Explorer un produit\" (historique/tendance des prix d'un produit sur un marché suivi, sur une période)."
     },
     "achete_produit": {
       "type": "grid",
       "audio_prompt": "questions/achete_produit.mp3",
       "options_source": "produits",
       "set": "produits",
-      "next": "acheter_result",
+      "next": "achete_produit_departement",
       "audio": {
         "type": "sequence",
         "key": "achete_produit_intro",
         "sequence": [
-          "intro/achete_produit_intro.pm3"
+          "intro/achete_produit_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
       },
-      "comment": "Noeud de démarage du flow acheter un produit.\n\nCe noeud permet de choisir le produit à acheter."
+      "comment": "Noeud de démarage du flow acheter un produit.\n\nCe noeud permet de choisir le produit à acheter. La valeur choisie est stockée sous le paramètre \"produit\" (voir data_source.params du nœud résultat acheter_result)."
+    },
+    "achete_produit_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/achete_produit_departement.mp3",
+      "options_source": "departements",
+      "set": "departements",
+      "next": "acheter_result",
+      "audio": {
+        "type": "sequence",
+        "key": "achete_produit_departement_intro",
+        "sequence": [
+          "intro/achete_produit_departement_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      },
+      "comment": "Étape ajoutée pour compléter la branche \"Acheter un produit\" : sans elle, acheter_result ne recevait jamais de valeur pour son paramètre \"departement\" (data_source.params l'exige) et l'appel API aurait été impossible à construire.\n\nLa valeur choisie est stockée sous le paramètre \"departement\"."
     },
     "vendre_produit": {
       "type": "grid",
       "audio_prompt": "questions/vendre_produit.mp3",
       "options_source": "produits",
       "set": "produits",
-      "next": "vendre_result",
+      "next": "vendre_produit_departement",
       "audio": {
         "type": "sequence",
         "key": "vendre_produit_intro",
@@ -1616,13 +1632,29 @@
         ],
         "fallback": "intro/default.mp3"
       },
-      "comment": "Noeud de démarage du flow vendre un produit.\n\nCe noeud permet de choisir le produit à vendre."
+      "comment": "Noeud de démarage du flow vendre un produit.\n\nCe noeud permet de choisir le produit à vendre. La valeur choisie est stockée sous le paramètre \"produit\" (voir data_source.params du nœud résultat vendre_result)."
+    },
+    "vendre_produit_departement": {
+      "type": "grid",
+      "audio_prompt": "questions/vendre_produit_departement.mp3",
+      "options_source": "departements",
+      "set": "departements",
+      "next": "vendre_result",
+      "audio": {
+        "type": "sequence",
+        "key": "vendre_produit_departement_intro",
+        "sequence": [
+          "intro/vendre_produit_departement_intro.mp3"
+        ],
+        "fallback": "intro/default.mp3"
+      },
+      "comment": "Étape ajoutée pour compléter la branche \"Vendre un produit\", symétrique à achete_produit_departement : vendre_result exige un paramètre \"departement\" que rien ne collectait avant.\n\nLa valeur choisie est stockée sous le paramètre \"departement\"."
     },
     "marche_anime_x": {
       "type": "grid",
       "audio_prompt": "questions/marche_anime_x.mp3",
       "options_source": "x_anime_x",
-      "set": "",
+      "set": "date",
       "next": "anime_x_departement",
       "audio": {
         "type": "sequence",
@@ -1631,7 +1663,8 @@
           "intro/marche_anime_x_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Choix d'une date RELATIVE (aujourd'hui, demain, hier, ...) pour savoir quels marchés sont animés ce jour-là — alternative rapide au calendrier (branche marche_anime_calendrier).\n\nCorrection : \"set\" était vide (\"\") dans la version précédente du flow, ce qui faisait que la valeur choisie n'était stockée nulle part ; anime_x_result attend pourtant un paramètre \"date\". \"set\" vaut maintenant \"date\"."
     },
     "acheter_result": {
       "type": "result",
@@ -1643,13 +1676,13 @@
         ]
       },
       "audio_sequence": [],
-      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_acheter.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_sont.mp3\"\n      ],\n      \"image\": \"images/intro/acheter.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_bas_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/comparer_qualite.mp3\"\n      ],\n      \"image\": \"images/icons/attention_transport.png\"\n    }\n  ]\n}",
+      "comment": "⚠️ ROUTE BACKEND À DÉVELOPPER : POST api/app/acheter_produit (params attendus : produit, departement — tous deux désormais correctement collectés en amont par achete_produit puis achete_produit_departement).\n\nObjectif : renvoyer, pour ce produit dans ce département, les meilleurs prix constatés sur les marchés du département (comparaison multi-marchés, triés du moins cher au plus cher), avec un conseil final.\n\nRéponse attendue : voir json_response_contrat (type \"audio_sequence\"). Le nombre réel de blocs \"marché\"/\"variété\" dans la réponse est DYNAMIQUE (0 à N selon les données disponibles) — l'exemple ci-dessous n'illustre qu'un rendu concret à 3 marchés / 2 variétés.\n\n--- EXEMPLE ILLUSTRATIF (texte libre, pas un contrat exécutable) ---\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_acheter.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_sont.mp3\"\n      ],\n      \"image\": \"images/intro/acheter.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/vendu_a.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_bas_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/comparer_qualite.mp3\"\n      ],\n      \"image\": \"images/icons/attention_transport.png\"\n    }\n  ]\n}",
       "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_acheter.mp3\",\n        \"{produit}\",\n        \"intro/dans_departement.mp3\",\n        \"{departement}\"\n      ],\n      \"image\": \"images/intro/acheter.png\"\n    },\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"{date:2026-03-10}\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"{prix:1000}\",\n        \"unites/kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    }\n  ],\n  \"meta\": {\n     \"auto_play\": true,\n    \"pause_ms\": 600\n  }\n}",
       "audio": {
         "type": "sequence",
         "key": "acheter_result_intro",
         "sequence": [
-          "intro/result_achete_produit_intro.pm3"
+          "intro/result_achete_produit_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
       }
@@ -1664,7 +1697,8 @@
         ]
       },
       "audio_sequence": [],
-      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_vendre.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_vente.mp3\"\n      ],\n      \"image\": \"images/intro/vendre.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_eleve_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/vendre_maintenant_si_possible.mp3\"\n      ],\n      \"image\": \"images/icons/opportunity_transport.png\"\n    }\n  ]\n}",
+      "comment": "⚠️ ROUTE BACKEND À DÉVELOPPER : POST api/app/vendre_produit (params attendus : produit, departement — tous deux désormais correctement collectés en amont par vendre_produit puis vendre_produit_departement).\n\nObjectif : symétrique de acheter_result — renvoyer, pour ce produit dans ce département, les marchés où le vendre au meilleur prix (triés du plus cher au moins cher côté vendeur), avec un conseil final.\n\nRéponse attendue : voir json_response_contrat (type \"audio_sequence\"). Le nombre réel de blocs \"marché\"/\"variété\" est DYNAMIQUE (0 à N) — l'exemple ci-dessous n'illustre qu'un rendu concret à 3 marchés / 2 variétés.\n\n--- EXEMPLE ILLUSTRATIF (texte libre, pas un contrat exécutable) ---\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_vendre.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_departement.mp3\",\n        \"localites/atlantique.mp3\",\n        \"intro/meilleurs_prix_vente.mp3\"\n      ],\n      \"image\": \"images/intro/vendre.png\"\n    },\n\n    /* ================= MARCHÉ 1 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    /* variété 1 */\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/1000_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* variété 2 */\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/900_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4500_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 2 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/deuxieme_marche.mp3\",\n        \"marches/abomey.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_09.mp3\"\n      ],\n      \"image\": \"images/marches/abomey.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/950_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4800_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local_avec_unites.png\"\n    },\n\n    /* ================= MARCHÉ 3 ================= */\n\n    {\n      \"audios\": [\n        \"ordre/troisieme_marche.mp3\",\n        \"marches/dassa.mp3\",\n        \"date/releve_le.mp3\",\n        \"date/2026_03_08.mp3\"\n      ],\n      \"image\": \"images/marches/dassa.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_jaune.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"prix/920_fcfa.mp3\",\n        \"unites/kg.mp3\",\n        \"phrases/soit.mp3\",\n        \"prix/4600_fcfa.mp3\",\n        \"unites/bassine_5kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_jaune_avec_unites.png\"\n    },\n\n    /* ================= CONSEIL ================= */\n\n    {\n      \"audios\": [\n        \"conseils/prix_eleve_bonne_opportunite.mp3\",\n        \"conseils/ajouter_transport.mp3\",\n        \"conseils/vendre_maintenant_si_possible.mp3\"\n      ],\n      \"image\": \"images/icons/opportunity_transport.png\"\n    }\n  ]\n}",
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    {\n      \"audios\": [\n        \"intro/vous_cherchez_vendre.mp3\",\n        \"{produit}\",\n        \"intro/dans_departement.mp3\",\n        \"{departement}\"\n      ],\n      \"image\": \"images/intro/vendre.png\"\n    },\n    {\n      \"audios\": [\n        \"ordre/premier_marche.mp3\",\n        \"marches/bohicon.mp3\",\n        \"{date:2026-03-10}\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_vendu_a.mp3\",\n        \"{prix:1000}\",\n        \"unites/kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    }\n  ],\n  \"meta\": {\n    \"auto_play\": true,\n    \"pause_ms\": 600\n  }\n}",
       "audio": {
         "type": "sequence",
         "key": "vendre_result_intro",
@@ -1687,7 +1721,8 @@
           "intro/anime_x_departement_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Choix du département à consulter (ou \"tout_les_departements\" via departements_et_tout, si can_choix_all/controle_active sont activés pour ce nœud) pour la date choisie au nœud précédent (marche_anime_x). La valeur choisie est stockée sous le paramètre \"departement\"."
     },
     "anime_x_result": {
       "type": "result",
@@ -1699,7 +1734,8 @@
         ]
       },
       "audio_sequence": [],
-      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}",
+      "comment": "⚠️ ROUTE BACKEND À DÉVELOPPER : POST api/app/anime_x (params : date — valeur relative choisie dans x_anime_x tel que \"aujourdhui\"/\"demain\"/... ; departement — ou \"tout_les_departements\").\n\nObjectif : renvoyer la liste des marchés animés à la date relative demandée, dans le département choisi (ou dans tous les départements si \"tout_les_departements\"). Le backend doit convertir la date relative en date calendaire réelle avant de chercher les marchés programmés ce jour-là.\n\nRéponse attendue : voir json_response_contrat (type \"audio_sequence\"). Le bloc \"MARCHES\" est répété dynamiquement une fois par marché trouvé (0 à N, potentiellement 0 si aucun marché n'est animé ce jour-là — prévoir un message explicite dans ce cas).\n\n--- EXEMPLE ILLUSTRATIF (texte libre, pas un contrat exécutable) ---\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}",
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"{date}\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"{departement}\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    }\n  ],\n  \"meta\": {\n    \"auto_play\": true,\n    \"pause_ms\": 600\n  }\n}",
       "audio": {
         "type": "sequence",
         "key": "anime_x_result_intro",
@@ -1722,7 +1758,8 @@
           "intro/anime_calendrier_calendrier_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Choix d'une date CALENDAIRE précise (alternative à marche_anime_x, qui ne propose que des dates relatives) pour savoir quels marchés sont animés ce jour-là. \"periode\": 7 et \"cadran\": \"centrer\" indiquent au mobile d'afficher un calendrier de 7 jours centré sur aujourd'hui (3 jours avant / aujourd'hui / 3 jours après) ; \"cadran\" peut aussi valoir \"passé\" ou \"future\" pour une fenêtre orientée dans un seul sens.\n\n⚠️ Le type \"calendrier\" n'a pas de champ \"set\" dans le schéma actuel du Flow Editor (contrairement à \"grid\") : il n'existe donc aucun moyen, dans ce JSON, de nommer explicitement le paramètre sous lequel la date choisie est transmise. C'est une convention à respecter côté mobile/backend, documentée ici : la date choisie sur ce calendrier doit être transmise au paramètre \"anime_date\" du nœud résultat suivant (anime_calendrier_result)."
     },
     "anime_calendrier_result": {
       "type": "result",
@@ -1734,7 +1771,8 @@
         ]
       },
       "audio_sequence": [],
-      "comment": "{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}",
+      "comment": "⚠️ ROUTE BACKEND À DÉVELOPPER : POST api/app/anime_calendrier (params : anime_date — date calendaire exacte choisie sur le calendrier de anime_calendrier_calendrier, format \"YYYY-MM-DD\" ; departement — ou \"tout_les_departements\").\n\nObjectif : identique à anime_x_result (liste des marchés animés dans le département à une date donnée) mais ici la date est une date calendaire exacte choisie par l'utilisateur, pas une date relative. Les deux routes (api/app/anime_x et api/app/anime_calendrier) peuvent d'ailleurs partager la même implémentation côté backend une fois la date relative convertie en date calendaire — à évaluer avec l'équipe backend pour éviter une duplication inutile.\n\nRéponse attendue : voir json_response_contrat (type \"audio_sequence\"). Le bloc \"MARCHES\" est répété dynamiquement une fois par marché trouvé (0 à N).\n\n--- EXEMPLE ILLUSTRATIF (texte libre, pas un contrat exécutable) ---\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"context\": {\n    \"anime_date\": \"2026-03-10\",\n    \"departement\": \"Atlantique\",\n    \"filter_type\": \"single_department | all_departments\"\n  },\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"date/2026_03_10.mp3\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"localites/atlantique.mp3\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n\n    /* ================= RESULT LIST ================= */\n\n    {\n      \"audios\": [\n        \"intro/liste_des_marches.mp3\"\n      ],\n      \"image\": null\n    },\n\n    /* ================= MARCHES ================= */\n\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/porto_novo.mp3\"\n      ],\n      \"image\": \"images/marches/porto_novo.png\"\n    },\n\n    {\n      \"audios\": [\n        \"marches/abomey_calavi.mp3\"\n      ],\n      \"image\": \"images/marches/abomey_calavi.png\"\n    }\n\n  ]\n}",
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    {\n      \"audios\": [\n        \"intro/les_marches_actifs_sont.mp3\",\n        \"time/a_la_date.mp3\",\n        \"{anime_date}\"\n      ],\n      \"image\": \"images/calendar/date.png\"\n    },\n    {\n      \"audios\": [\n        \"location/dans_le_departement.mp3\",\n        \"{departement}\"\n      ],\n      \"image\": \"images/localites/atlantique.png\"\n    },\n    {\n      \"audios\": [\n        \"marches/bohicon.mp3\"\n      ],\n      \"image\": \"images/marches/bohicon.png\"\n    }\n  ],\n  \"meta\": {\n    \"auto_play\": true,\n    \"pause_ms\": 600\n  }\n}",
       "audio": {
         "type": "sequence",
         "key": "anime_calendrier_result_intro",
@@ -1757,7 +1795,8 @@
           "intro/infos_marche_departement_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Premier niveau de la branche \"Infos sur un marché\" : choix du département. La valeur choisie est stockée sous le paramètre \"departements\" et sert de clé de recherche au nœud pre_filter suivant (explorer_produit_marche_filter, champ \"cle\": \"departements\")."
     },
     "infos_marche_infos_type": {
       "type": "grid",
@@ -1772,7 +1811,8 @@
           "intro/result_infos_marche_infos_type_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Dernier niveau avant le résultat : choix du TYPE d'information souhaitée sur le marché déjà sélectionné (explorer_produit_marche_filter). Les 5 valeurs possibles de \"type_info_marche\" correspondent chacune à une forme de réponse DIFFÉRENTE côté backend (voir le détail dans infos_marche_result) :\n- resume_rapide → résumé condensé (identité + horaires + tendance générale).\n- presentation_du_marche → présentation descriptive du marché (localisation, jours d'activité, spécialités).\n- produits_disponibles → liste des produits actuellement disponibles sur ce marché.\n- calendrier_animation → règle de récurrence des jours d'animation (voir json_response_contrat, type \"calendar\").\n- opportunite_marche → alerte(s)/opportunité(s) commerciale(s) ponctuelle(s) repérée(s) sur ce marché.\n\nLa valeur choisie est stockée sous le paramètre \"info_type\"."
     },
     "infos_marche_result": {
       "type": "result",
@@ -1786,8 +1826,13 @@
       "audio_sequence": [
         "questions/infos_marche_result.mp3"
       ],
-      "comment": "\"regle\": {\n  \"type\": \"hebdomadaire\",\n  \"valeur\": {\n    \"jours\": [2, 5]\n  }\n}\n\"regle\": {\n  \"type\": \"intervalle\",\n  \"valeur\": {\n    \"interval\": 4,\n    \"date_reference\": \"2026-03-01\"\n  }\n}\n\n\n\"regle\": {\n  \"type\": \"mensuel\",\n  \"valeur\": {\n    \"jours\": [5],\n    \"semaine\": 2\n  }\n}\n\n\n\n",
-      "json_response_contrat": "{\n  \"type\": \"calendar\",\n  \"version\": \"1.0\",\n  \"data\": {\n    \"marche\": {\n      \"id\": 12,\n      \"nom\": \"takon\"\n    },\n\n    \"regle\": {\n      \"type\": \"hebdomadaire\",\n      \"valeur\": {\n        \"jours\": [2, 5]\n      }\n    },\n\n    \"description\": \"Marché tous les mardi et vendredi\",\n\n    \"intro\": [\n      \"intro/calendrier_marche.mp3\",\n      \"marches/takon.mp3\"\n    ],\n\n    \"outro\": [\n      \"frequence/hebdomadaire.mp3\"\n    ]\n  }\n}\n\n\n",
+      "comment": "⚠️ ROUTE BACKEND À DÉVELOPPER : POST api/app/infos_marches (params : marche — nom du marché résolu par le pre_filter explorer_produit_marche_filter ; info_type — une des 5 valeurs de type_info_marche, voir infos_marche_infos_type).\n\nObjectif : IMPORTANT — la forme de la réponse DÉPEND de \"info_type\", ce ne sont PAS 5 variantes d'un même contrat mais 5 contrats différents. json_response_contrat ci-dessous ne montre que le cas \"calendrier_animation\" ; response_examples liste des exemples pour \"produits_disponibles\" et \"resume_rapide\". Le backend doit implémenter les 5 branches.\n\nPour \"calendrier_animation\", le champ \"regle\" décrit la récurrence des jours de marché — 3 formes possibles :\n- hebdomadaire : { \"jours\": [2, 5] } → jours de la semaine (1=lundi ... 7=dimanche), ex. mardi et vendredi.\n- intervalle : { \"interval\": 4, \"date_reference\": \"2026-03-01\" } → tous les N jours à partir d'une date de référence.\n- mensuel : { \"jours\": [5], \"semaine\": 2 } → ex. le 5ème jour de la 2ème semaine du mois.",
+      "json_response_contrat": "{\n  \"type\": \"calendar\",\n  \"version\": \"1.0\",\n  \"data\": {\n    \"marche\": {\n      \"id\": 12,\n      \"nom\": \"takon\"\n    },\n\n    \"regle\": {\n      \"type\": \"hebdomadaire\",\n      \"valeur\": {\n        \"jours\": [2, 5]\n      }\n    },\n\n    \"description\": \"Marché tous les mardi et vendredi\",\n\n    \"intro\": [\n      \"intro/calendrier_marche.mp3\",\n      \"marches/takon.mp3\"\n    ],\n\n    \"outro\": [\n      \"frequence/hebdomadaire.mp3\"\n    ]\n  }\n}",
+      "response_examples": [
+        "{\n  \"type\": \"calendar\",\n  \"version\": \"1.0\",\n  \"info_type\": \"calendrier_animation\",\n  \"data\": {\n    \"marche\": { \"id\": 12, \"nom\": \"takon\" },\n    \"regle\": { \"type\": \"hebdomadaire\", \"valeur\": { \"jours\": [2, 5] } },\n    \"description\": \"Marché tous les mardi et vendredi\",\n    \"intro\": [\"intro/calendrier_marche.mp3\", \"marches/takon.mp3\"],\n    \"outro\": [\"frequence/hebdomadaire.mp3\"]\n  }\n}",
+        "{\n  \"type\": \"product_list\",\n  \"version\": \"1.0\",\n  \"info_type\": \"produits_disponibles\",\n  \"data\": {\n    \"marche\": { \"id\": 12, \"nom\": \"takon\" },\n    \"intro\": [\"intro/produits_disponibles.mp3\", \"marches/takon.mp3\"],\n    \"produits\": [\n      { \"nom\": \"mais\", \"audio\": \"produits/mais.mp3\", \"image\": \"images/produits/mais.jpeg\" },\n      { \"nom\": \"riz\", \"audio\": \"produits/riz.mp3\", \"image\": \"images/produits/riz.jpeg\" }\n    ]\n  }\n}",
+        "{\n  \"type\": \"summary\",\n  \"version\": \"1.0\",\n  \"info_type\": \"resume_rapide\",\n  \"data\": {\n    \"marche\": { \"id\": 12, \"nom\": \"takon\" },\n    \"intro\": [\"intro/resume_marche.mp3\", \"marches/takon.mp3\"],\n    \"horaires\": \"06:00-18:00\",\n    \"tendance_generale\": \"stable\",\n    \"outro\": [\"tendance/stable.mp3\"]\n  }\n}"
+      ],
       "audio": {
         "type": "sequence",
         "key": "infos_marche_result_intro",
@@ -1810,7 +1855,8 @@
           "intro/explorer_produit_produit_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Premier niveau de la branche \"Explorer un produit\" : choix du produit dont on veut suivre l'évolution des prix. La valeur choisie est stockée sous le paramètre \"produit\"."
     },
     "explorer_produit_result": {
       "type": "result",
@@ -1825,7 +1871,8 @@
       "audio_sequence": [
         "questions/explorer_produit_result.mp3"
       ],
-      "comment": "🧠 🎯 Objectif du backend\n\nConstruire un moteur qui transforme des données de prix agricoles en narration audio structurée (JSON).\n\n⚙️ 🔥 GRANDES LIGNES À DONNER AU DEV\n1️⃣ Récupération des données\nInput API :\nproduit\nmarché\npériode (semaine, mois, 6 mois, etc.)\nRequête :\nrécupérer les prix historiques du produit dans le marché\ninclure toutes les variétés\ntrier par date croissante\n2️⃣ Structuration des données\nRegrouper les données par date\nÀ chaque date :\nliste des variétés\nprix + unité\n\n👉 Format interne attendu :\n\n[\n  {\n    \"date\": \"2026-01-10\",\n    \"varieties\": [...]\n  }\n]\n3️⃣ Filtrage intelligent des dates (CRUCIAL)\nNe garder que :\nla première date\nles dates où au moins un prix change\n\n👉 Règle :\n\ncomparer avec la date précédente\ndétecter changement par variété\n4️⃣ Calcul de tendance (🔺🔻➖)\nCalculer variation entre deux dates\nBasé sur prix moyen ou dominant\n\n👉 Règle simple :\n\nhausse → 🔺\nbaisse → 🔻\nstable → ➖\n\n👉 Ajouter seuil (~5%) pour éviter bruit\n\n5️⃣ Enrichissement (mapping assets)\n\nPour chaque élément récupérer :\n\naudio (clé fichier)\nimage associée\n\n👉 Exemple :\n\nproduit → produits/mais.mp3\nmarché → marches/takon.mp3\nunité → unites/kg.mp3\n6️⃣ Génération de la séquence audio\n\nConstruire un JSON structuré avec :\n\n🔹 INTRO\nphrase complète :\nhistorique + produit + marché + période\n🔹 POUR CHAQUE DATE\nBloc date\naudio date\nvariation (sauf première date)\nBloc variétés\npour chaque variété :\nnom\nprix\nunité\n7️⃣ Gestion des cas réels (IMPORTANT)\n\nLe backend doit gérer :\n\n1 seule variété → simple\nplusieurs variétés → boucle\ndonnées manquantes → ignorer proprement\nunités différentes → cohérence obligatoire\n8️⃣ Génération dynamique des audios\n\nLe backend doit pouvoir générer :\n\n📅 dates → date/YYYY_MM_DD.mp3\n💰 prix → prix/XXXX_fcfa.mp3\n📊 variation → variation/hausse.mp3\n9️⃣ Génération du conseil final (IA simple)\n\nBasé sur tendance globale :\n\nhausse → conseil vendre / attendre\nbaisse → conseil acheter\nstable → conseil neutre\n\n\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/historique_prix.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_marche.mp3\",\n        \"marches/takon.mp3\",\n        \"periode/six_derniers_mois.mp3\"\n      ],\n      \"image\": \"images/intro/historique.png\"\n    },\n\n    /* ================= DATE 1 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_10.mp3\"\n      ],\n      \"image\": null\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/8000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= DATE 2 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_20.mp3\",\n        \"variation/hausse.mp3\"\n      ],\n      \"image\": \"images/icons/hausse.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/6000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/9000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= CONSEIL IA ================= */\n\n    {\n      \"audios\": [\n        \"conseils/tendance_hausse.mp3\",\n        \"conseils/attendre_peut_etre.mp3\"\n      ],\n      \"image\": \"images/icons/trend_up.png\"\n    }\n  ]\n}",
+      "comment": "⚠️ ROUTE BACKEND À DÉVELOPPER : POST api/app/explorer_prix (params : marche, produit, periode).\n\nRéponse attendue : voir json_response_contrat (type \"audio_sequence\"). Le nombre de blocs \"DATE\" est DYNAMIQUE (dépend du nombre de relevés filtrés à l'étape 3 ci-dessous), l'exemple à la fin de ce commentaire n'illustre qu'un cas concret à 2 dates / 2 variétés.\n\n🧠 🎯 Objectif du backend\n\nConstruire un moteur qui transforme des données de prix agricoles en narration audio structurée (JSON).\n\n⚙️ 🔥 GRANDES LIGNES À DONNER AU DEV\n1️⃣ Récupération des données\nInput API :\nproduit\nmarché\npériode (semaine, mois, 6 mois, etc.)\nRequête :\nrécupérer les prix historiques du produit dans le marché\ninclure toutes les variétés\ntrier par date croissante\n2️⃣ Structuration des données\nRegrouper les données par date\nÀ chaque date :\nliste des variétés\nprix + unité\n\n👉 Format interne attendu :\n\n[\n  {\n    \"date\": \"2026-01-10\",\n    \"varieties\": [...]\n  }\n]\n3️⃣ Filtrage intelligent des dates (CRUCIAL)\nNe garder que :\nla première date\nles dates où au moins un prix change\n\n👉 Règle :\n\ncomparer avec la date précédente\ndétecter changement par variété\n4️⃣ Calcul de tendance (🔺🔻➖)\nCalculer variation entre deux dates\nBasé sur prix moyen ou dominant\n\n👉 Règle simple :\n\nhausse → 🔺\nbaisse → 🔻\nstable → ➖\n\n👉 Ajouter seuil (~5%) pour éviter bruit\n\n5️⃣ Enrichissement (mapping assets)\n\nPour chaque élément récupérer :\n\naudio (clé fichier)\nimage associée\n\n👉 Exemple :\n\nproduit → produits/mais.mp3\nmarché → marches/takon.mp3\nunité → unites/kg.mp3\n6️⃣ Génération de la séquence audio\n\nConstruire un JSON structuré avec :\n\n🔹 INTRO\nphrase complète :\nhistorique + produit + marché + période\n🔹 POUR CHAQUE DATE\nBloc date\naudio date\nvariation (sauf première date)\nBloc variétés\npour chaque variété :\nnom\nprix\nunité\n7️⃣ Gestion des cas réels (IMPORTANT)\n\nLe backend doit gérer :\n\n1 seule variété → simple\nplusieurs variétés → boucle\ndonnées manquantes → ignorer proprement\nunités différentes → cohérence obligatoire\n8️⃣ Génération dynamique des audios\n\nLe backend doit pouvoir générer :\n\n📅 dates → date/YYYY_MM_DD.mp3\n💰 prix → prix/XXXX_fcfa.mp3\n📊 variation → variation/hausse.mp3\n9️⃣ Génération du conseil final (IA simple)\n\nBasé sur tendance globale :\n\nhausse → conseil vendre / attendre\nbaisse → conseil acheter\nstable → conseil neutre\n\n\n{\n  \"type\": \"audio_sequence\",\n  \"language\": \"fon\",\n\n  \"sequence\": [\n\n    /* ================= INTRO ================= */\n\n    {\n      \"audios\": [\n        \"intro/historique_prix.mp3\",\n        \"produits/mais.mp3\",\n        \"intro/dans_marche.mp3\",\n        \"marches/takon.mp3\",\n        \"periode/six_derniers_mois.mp3\"\n      ],\n      \"image\": \"images/intro/historique.png\"\n    },\n\n    /* ================= DATE 1 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_10.mp3\"\n      ],\n      \"image\": null\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/5000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/8000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= DATE 2 ================= */\n\n    {\n      \"audios\": [\n        \"date/2026_01_20.mp3\",\n        \"variation/hausse.mp3\"\n      ],\n      \"image\": \"images/icons/hausse.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/6000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    },\n\n    {\n      \"audios\": [\n        \"produits/mais_local.mp3\",\n        \"phrases/est_a.mp3\",\n        \"prix/9000_fcfa.mp3\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_local.png\"\n    },\n\n    /* ================= CONSEIL IA ================= */\n\n    {\n      \"audios\": [\n        \"conseils/tendance_hausse.mp3\",\n        \"conseils/attendre_peut_etre.mp3\"\n      ],\n      \"image\": \"images/icons/trend_up.png\"\n    }\n  ]\n}",
+      "json_response_contrat": "{\n  \"type\": \"audio_sequence\",\n  \"version\": \"1.0\",\n  \"sequence\": [\n    {\n      \"audios\": [\n        \"intro/historique_prix.mp3\",\n        \"{produit}\",\n        \"intro/dans_marche.mp3\",\n        \"{marche}\",\n        \"{periode}\"\n      ],\n      \"image\": \"images/intro/historique.png\"\n    },\n    {\n      \"audios\": [\n        \"{date:2026-01-10}\"\n      ],\n      \"image\": null\n    },\n    {\n      \"audios\": [\n        \"produits/mais_blanc.mp3\",\n        \"phrases/est_a.mp3\",\n        \"{prix:5000}\",\n        \"unites/bassine_10kg.mp3\"\n      ],\n      \"image\": \"images/produits/mais_blanc.png\"\n    }\n  ],\n  \"meta\": {\n    \"auto_play\": true,\n    \"pause_ms\": 600\n  }\n}",
       "audio": {
         "type": "sequence",
         "key": "explorer_produit_result_intro",
@@ -1848,7 +1895,8 @@
           "intro/explorer_produit_periode_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Dernier niveau avant le résultat : choix de la période d'historique à consulter (aujourd'hui, cette semaine, ce mois, ..., cette année). La valeur choisie est stockée sous le paramètre \"periode\"."
     },
     "anime_calendrier_departement": {
       "type": "grid",
@@ -1863,7 +1911,8 @@
           "intro/anime_calendrier_departement_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Choix du département à consulter (ou \"tout_les_departements\") pour la date calendaire choisie au nœud précédent (anime_calendrier_calendrier). La valeur choisie est stockée sous le paramètre \"departement\"."
     },
     "explorer_produit_marche": {
       "type": "grid",
@@ -1875,18 +1924,16 @@
         "type": "sequence",
         "key": "explorer_produit_marche_intro",
         "sequence": [
-          "intro/explorer_produit_marche_intro"
+          "intro/explorer_produit_marche_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Choix du marché à suivre, PARMI UNE LISTE COURTE ET CURATED (\"marches_suivis\", 7 marchés) plutôt qu'un pre_filter département → marché complet : choix délibéré pour cette branche, qui cible les marchés les plus consultés plutôt qu'une couverture exhaustive (contrairement à la branche \"Infos sur un marché\", qui elle passe par explorer_produit_marche_filter pour couvrir tous les départements). La valeur choisie est stockée sous le paramètre \"marche\"."
     },
     "explorer_produit_marche_filter": {
       "type": "pre_filter",
       "audio_prompt": "questions/filtre.mp3",
-      "cles": [
-        "produits"
-      ],
-      "filtre_source": "marche_par_departement",
+      "filtre_source": "marches_par_departement",
       "next": "infos_marche_infos_type",
       "cle": "departements",
       "audio": {
@@ -1896,7 +1943,8 @@
           "intro/explorer_produit_marche_filter_intro.mp3"
         ],
         "fallback": "intro/default.mp3"
-      }
+      },
+      "comment": "Nœud utilisé UNIQUEMENT par la branche \"Infos sur un marché\" (infos_marche_departement → ce nœud → infos_marche_infos_type) — son nom historique \"explorer_produit_marche_filter\" prête à confusion avec la branche \"Explorer un produit\", qui elle ne l'utilise pas (elle choisit son marché via un menu direct, voir explorer_produit_marche).\n\nFonctionnement : \"cle\": \"departements\" indique de relire la valeur déjà choisie pour la variable \"departements\" (au nœud infos_marche_departement) ; \"filtre_source\": \"marches_par_departement\" indique de l'utiliser comme clé dans ce hashmap pour obtenir la liste des marchés de ce département. La valeur choisie parmi cette liste filtrée est stockée sous le paramètre \"marche\".\n\nCorrection : filtre_source pointait vers le hashmap \"marche_par_departement\" (singulier), une ébauche incomplète qui ne couvre que 2 départements sur 12 (oueme, plateau). Il pointe maintenant vers \"marches_par_departement\" (pluriel), qui couvre les 12 départements avec les mêmes marchés que la variable \"marches\" — donc sans ressources audio/image à générer séparément (voir hashmaps_no_resources). Le champ \"cles\": [\"produits\"] a aussi été retiré : il ne fait partie d'aucun schéma de nœud pre_filter reconnu par le Flow Editor (seul \"cle\", au singulier, existe) et n'avait aucun effet."
     }
   }
 }
