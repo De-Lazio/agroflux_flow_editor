@@ -61,9 +61,9 @@
       "dans_quatre_jours",
       "hier",
       "avant_hier",
-      "trois_jours passe",
-      "quatre_jours passe",
-      "cinq_jours passe"
+      "trois_jours_passe",
+      "quatre_jours_passe",
+      "cinq_jours_passe"
     ],
     "periode": [
       "aujourdhui",
@@ -91,10 +91,18 @@
     ],
     "departements_et_tout": [
       "tout_les_departements",
+      "alibori",
+      "atacora",
+      "atlantique",
+      "borgou",
+      "collines",
+      "couffo",
+      "donga",
+      "littoral",
+      "mono",
       "oueme",
       "plateau",
-      "zou",
-      "colline"
+      "zou"
     ],
     "regions": [
       "centre",
