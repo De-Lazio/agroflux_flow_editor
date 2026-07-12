@@ -399,10 +399,10 @@ describe('validateFlow — cohérence de hashmaps_no_resources', () => {
 });
 
 describe('validateFlow — rapport d\'inventaire', () => {
-  it('recense les audios référencés directement dans les nœuds', () => {
+  it('recense les audios référencés directement dans les nœuds, préfixés par langue', () => {
     const { report } = validateFlow(buildFlow());
-    expect(report.audios).toContain('intro/root.mp3');
-    expect(report.audios).toContain('intro/default.mp3');
+    expect(report.audios).toContain('audio/fr/intro/root.mp3');
+    expect(report.audios).toContain('audio/fr/intro/default.mp3');
   });
 
   it('génère les ressources par variable, séparément des ressources par hashmap', () => {

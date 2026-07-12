@@ -8,7 +8,7 @@ import {
   parseAudioSequence
 } from '../../utils/simulationEngine';
 import type { SimulationContext, AudioSequenceEnvelope } from '../../utils/simulationEngine';
-import { readResourceObjectUrl } from '../../utils/simulationResources';
+import { readResourceObjectUrl, toLanguageAudioPath } from '../../utils/simulationResources';
 import type { ResourceIndex } from '../../utils/simulationResources';
 import type { FlowData, ResultNodeData } from '../../types/flow';
 
@@ -19,6 +19,7 @@ interface SimulatorResultPanelProps {
   baseUrl: string;
   token: string;
   resourceIndex: ResourceIndex | null;
+  language: string;
 }
 
 type ResponseSource = 'real' | 'mock';
@@ -33,7 +34,7 @@ interface ResponseState {
 
 const DEFAULT_PAUSE_MS = 500;
 
-const SimulatorResultPanel = ({ flow, node, contextValues, baseUrl, token, resourceIndex }: SimulatorResultPanelProps) => {
+const SimulatorResultPanel = ({ flow, node, contextValues, baseUrl, token, resourceIndex, language }: SimulatorResultPanelProps) => {
   const context: SimulationContext = { values: contextValues, history: [] };
   const missing = computeMissingParams(node, context);
   const request = buildRequest(baseUrl, token, node, context);
@@ -150,7 +151,7 @@ const SimulatorResultPanel = ({ flow, node, contextValues, baseUrl, token, resou
           )}
 
           {envelope ? (
-            <AudioSequencePlayer flow={flow} envelope={envelope} resourceIndex={resourceIndex} />
+            <AudioSequencePlayer flow={flow} envelope={envelope} resourceIndex={resourceIndex} language={language} />
           ) : (
             <pre className="text-[11px] font-mono bg-white border border-slate-100 rounded p-2 whitespace-pre-wrap break-all max-h-64 overflow-y-auto">
               {response.json}
@@ -166,9 +167,10 @@ interface AudioSequencePlayerProps {
   flow: FlowData;
   envelope: AudioSequenceEnvelope;
   resourceIndex: ResourceIndex | null;
+  language: string;
 }
 
-const AudioSequencePlayer = ({ flow, envelope, resourceIndex }: AudioSequencePlayerProps) => {
+const AudioSequencePlayer = ({ flow, envelope, resourceIndex, language }: AudioSequencePlayerProps) => {
   const { play, stop } = useSequentialAudioPlayer();
   const [blockIndex, setBlockIndex] = useState<number | null>(null);
   const [blockImage, setBlockImage] = useState<string | null>(null);
@@ -201,7 +203,10 @@ const AudioSequencePlayer = ({ flow, envelope, resourceIndex }: AudioSequencePla
       } else {
         setBlockImageUrl(null);
       }
-      await play(`seq:${i}`, resourceIndex, block.audios);
+      // block.audios vient de la réponse backend (littéral, sans langue —
+      // voir API_BACKEND_ROUTES.md §3.2) ; block.image, lui, est déjà un
+      // chemin complet ("images/...") et ne se préfixe jamais.
+      await play(`seq:${i}`, resourceIndex, block.audios.map((p) => toLanguageAudioPath(language, p)));
       if (runTokenRef.current !== token) return;
       await new Promise((resolve) => setTimeout(resolve, pauseMs));
     }

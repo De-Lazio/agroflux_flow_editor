@@ -9,7 +9,8 @@ import {
   resolveImagePath,
   resolveRootOptionAudioPath,
   resolveLiteralPath,
-  readResourceObjectUrl
+  readResourceObjectUrl,
+  toLanguageAudioPath
 } from '../../utils/simulationResources';
 import type { ResourceIndex, ResourceLookup } from '../../utils/simulationResources';
 import type { FlowData } from '../../types/flow';
@@ -68,7 +69,7 @@ const SimulatorStepBody = ({ flow, currentNodeId, contextValues, resourceIndex, 
 
   const resolveOptionAudio = (option: SimulationOption): ResourceLookup | null => {
     if (!resourceIndex || !currentNode) return null;
-    if (currentNode.type === 'root') return resolveRootOptionAudioPath(resourceIndex, flow, option.value);
+    if (currentNode.type === 'root') return resolveRootOptionAudioPath(resourceIndex, flow, option.value, language);
     if (currentNode.type === 'grid') {
       return resolveAudioPath(resourceIndex, flow, currentNode.options_source, undefined, option.value, language);
     }
@@ -155,13 +156,18 @@ const SimulatorStepBody = ({ flow, currentNodeId, contextValues, resourceIndex, 
 
   if (!currentNode) return null;
 
-  const introPaths = currentNode.audio?.sequence || [];
-  const introFallback = currentNode.audio?.fallback;
+  // Chemins littéraux du flow, sans dimension langue (voir
+  // API_BACKEND_ROUTES.md §3.2) : toLanguageAudioPath() ajoute le préfixe
+  // audio/{langue}/ avant toute résolution/lecture, jamais avant (le champ
+  // brut reste utile tel quel pour l'affichage, ex. l'attribut title).
+  const introPaths = (currentNode.audio?.sequence || []).map((p) => toLanguageAudioPath(language, p));
+  const introFallback = currentNode.audio?.fallback ? toLanguageAudioPath(language, currentNode.audio.fallback) : undefined;
   const introAvailable = !!resourceIndex && introPaths.length > 0;
   const isPlayingIntro = playingKey === 'intro';
 
   const promptPath = audioPromptOf(currentNode);
-  const promptFound = resourceIndex && promptPath ? resolveLiteralPath(resourceIndex, promptPath).method !== 'not-found' : false;
+  const resolvedPromptPath = promptPath ? toLanguageAudioPath(language, promptPath) : undefined;
+  const promptFound = resourceIndex && resolvedPromptPath ? resolveLiteralPath(resourceIndex, resolvedPromptPath).method !== 'not-found' : false;
   const isPlayingPrompt = playingKey === 'prompt';
 
   return (
@@ -192,9 +198,9 @@ const SimulatorStepBody = ({ flow, currentNodeId, contextValues, resourceIndex, 
           <button
             disabled={!promptFound}
             onClick={() => {
-              if (!resourceIndex) return;
+              if (!resourceIndex || !resolvedPromptPath) return;
               if (isPlayingPrompt) stop();
-              else play('prompt', resourceIndex, [promptPath]);
+              else play('prompt', resourceIndex, [resolvedPromptPath]);
             }}
             title={promptPath}
             className="flex items-center gap-1.5 px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"

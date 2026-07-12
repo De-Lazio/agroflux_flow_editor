@@ -4,7 +4,8 @@ import {
   resolveAudioPath,
   resolveImagePath,
   resolveRootOptionAudioPath,
-  resolveLiteralPath
+  resolveLiteralPath,
+  toLanguageAudioPath
 } from './simulationResources';
 import type { ResourceIndex } from './simulationResources';
 import type { FlowData } from '../types/flow';
@@ -156,18 +157,28 @@ describe('resolveLiteralPath', () => {
   });
 });
 
+describe('toLanguageAudioPath', () => {
+  it('préfixe un chemin littéral avec audio/{langue}/', () => {
+    expect(toLanguageAudioPath('fon', 'questions/achete_produit.mp3')).toBe('audio/fon/questions/achete_produit.mp3');
+  });
+
+  it("ne touche pas au format ni au reste du chemin, seul le préfixe change selon la langue", () => {
+    expect(toLanguageAudioPath('yoruba', 'prix/1000_fcfa.mp3')).toBe('audio/yoruba/prix/1000_fcfa.mp3');
+  });
+});
+
 describe('resolveRootOptionAudioPath', () => {
-  it("résout 'questions/{id}.{format}' si présent", () => {
-    const index = buildIndex(['questions/achete_produit.mp3']);
+  it("résout 'audio/{langue}/questions/{id}.{format}' si présent", () => {
+    const index = buildIndex(['audio/fon/questions/achete_produit.mp3']);
     const flow = buildFlow();
-    const res = resolveRootOptionAudioPath(index, flow, 'achete_produit');
-    expect(res).toEqual({ path: 'questions/achete_produit.mp3', method: 'canonical' });
+    const res = resolveRootOptionAudioPath(index, flow, 'achete_produit', 'fon');
+    expect(res).toEqual({ path: 'audio/fon/questions/achete_produit.mp3', method: 'canonical' });
   });
 
   it('retourne not-found si absent (convention non garantie)', () => {
     const index = buildIndex([]);
     const flow = buildFlow();
-    const res = resolveRootOptionAudioPath(index, flow, 'achete_produit');
+    const res = resolveRootOptionAudioPath(index, flow, 'achete_produit', 'fon');
     expect(res).toEqual({ path: null, method: 'not-found' });
   });
 });

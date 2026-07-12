@@ -265,6 +265,7 @@ const SimulatorPanel = ({ getCurrentFlow, onClose }: SimulatorPanelProps) => {
               baseUrl={config.baseUrl}
               token={config.token}
               resourceIndex={resourceIndex}
+              language={language}
             />
           )}
         </div>

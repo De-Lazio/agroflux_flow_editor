@@ -114,22 +114,43 @@ export const resolveImagePath = (
 
 /**
  * Chemin (best-effort, convention non garantie) de l'audio d'une option de
- * nœud `root` : "questions/{id}.{format}" — aucun champ du schéma ne le
- * déclare explicitement, voir simulation_plan.md §3.2.
+ * nœud `root` : "audio/{langue}/questions/{id}.{format}" — aucun champ du
+ * schéma ne le déclare explicitement, voir simulation_plan.md §3.2.
  */
-export const resolveRootOptionAudioPath = (index: ResourceIndex, flow: FlowData, optionId: string): ResourceLookup => {
+export const resolveRootOptionAudioPath = (
+  index: ResourceIndex,
+  flow: FlowData,
+  optionId: string,
+  language: string
+): ResourceLookup => {
   const format = audioFormatOf(flow);
-  const path = `questions/${optionId}.${format}`;
+  const path = toLanguageAudioPath(language, `questions/${optionId}.${format}`);
   return index.byPath.has(path) ? { path, method: 'canonical' } : NOT_FOUND;
 };
 
 // ---------------------------------------------------------------------------
 // Lecture réelle (Phase 5) : les chemins déjà écrits en toutes lettres dans le
-// flow (audio_prompt d'un nœud, audio.sequence/fallback, et plus tard chaque
-// entrée "audios" d'une réponse audio_sequence) sont des chemins littéraux —
-// même convention que le validator (validator.ts ne les préfixe jamais par
-// "audio/{langue}/"), donc une simple présence dans l'index suffit ici.
+// flow (audio_prompt d'un nœud, audio.sequence/fallback) et ceux renvoyés par
+// le backend dans une réponse audio_sequence ("audios") sont des chemins
+// LITTÉRAUX MAIS SANS DIMENSION LANGUE (voir API_BACKEND_ROUTES.md §3.2) :
+// même arborescence sous chaque dossier de langue, donc ni le flow ni le
+// backend ne précisent la langue eux-mêmes. C'est au CALLER de préfixer avec
+// toLanguageAudioPath() avant d'appeler resolveLiteralPath/
+// readResourceObjectUrl ci-dessous — ces deux fonctions restent volontairement
+// génériques (simple présence dans l'index) et servent aussi bien pour
+// l'audio déjà préfixé que pour les images (qui n'ont jamais de préfixe
+// langue et s'utilisent telles quelles).
 // ---------------------------------------------------------------------------
+
+/**
+ * Préfixe un chemin littéral AUDIO (jamais un chemin image) avec le dossier
+ * de la langue choisie — les chemins littéraux du flow et des réponses
+ * backend sont écrits sans cette dimension (voir API_BACKEND_ROUTES.md
+ * §3.2 : "le backend n'a jamais besoin de connaître la langue de
+ * l'utilisateur", c'est au client de préfixer).
+ */
+export const toLanguageAudioPath = (language: string, literalAudioPath: string): string =>
+  `audio/${language}/${literalAudioPath}`;
 
 export const resolveLiteralPath = (index: ResourceIndex, path: string): ResourceLookup =>
   index.byPath.has(path) ? { path, method: 'canonical' } : NOT_FOUND;
