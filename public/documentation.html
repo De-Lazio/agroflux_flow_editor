@@ -347,6 +347,7 @@
       <a class="nav-link sub" href="#guide-studio-resources">→ Onglet Ressources</a>
       <a class="nav-link sub" href="#guide-studio-build">→ Onglet Build</a>
       <a class="nav-link sub" href="#guide-studio-publish">→ Onglet Publication</a>
+      <a class="nav-link sub" href="#guide-simulator">Le Simulateur</a>
     </div>
 
     <div class="nav-group">
@@ -637,6 +638,7 @@ POST api/app/acheter_produit
       <div class="card"><h4>🔨 Build</h4><p>Valide + scanne + écrit un dossier de sortie complet (contrat + diagnostics).</p></div>
       <div class="card"><h4>☁️ Publication</h4><p>Dossier "propre" prêt à consommer : contrat + ressources réellement référencées.</p></div>
       <div class="card"><h4>💾 Sessions &amp; JSON</h4><p>Auto-sauvegarde locale, import/export de <code class="inline">flow.json</code>, undo/redo.</p></div>
+      <div class="card"><h4>🚀 Simulateur</h4><p>Rejoue le flow nœud par nœud comme l'app mobile : navigation, ressources réelles, appel API avec repli simulé.</p></div>
     </div>
 
     <!-- ======================= GUIDE ======================= -->
@@ -656,6 +658,7 @@ POST api/app/acheter_produit
           <tr><td><span class="btn-label">↶ / ↷</span></td><td>Annuler / rétablir (historique des 50 derniers états du graphe, variables et HashMaps inclus).</td></tr>
           <tr><td><span class="btn-label">⛶ Réorganiser</span></td><td>Recalcule automatiquement la position de tous les nœuds (algorithme Dagre, dispositions verticale).</td></tr>
           <tr><td><span class="btn-label">⬜ Studio</span></td><td>Ouvre le panneau Studio (Ressources / Build / Publication) — voir plus bas.</td></tr>
+          <tr><td><span class="btn-label">🚀 Simulateur</span></td><td>Ouvre le panneau Simulateur (rejeu du flow nœud par nœud) — voir <a href="#guide-simulator">Le Simulateur</a>.</td></tr>
           <tr><td><span class="btn-label">✔ Valider</span></td><td>Lance la validation complète du flow et ouvre le rapport — voir <a href="#guide-validation">Validation du flow</a>.</td></tr>
         </tbody>
       </table>
@@ -873,6 +876,82 @@ POST api/app/acheter_produit
       "propre", prêt à être livré au backend et à l'application Flutter.
     </p>
 
+    <h2 id="guide-simulator">Guide d'utilisation — Le Simulateur</h2>
+    <p>
+      Ouvert via le bouton <span class="btn-label">🚀 Simulateur</span>, ce panneau rejoue le flow
+      <strong>nœud par nœud</strong>, exactement comme le ferait l'application mobile Flutter :
+      navigation interactive, lecture des vraies ressources audio/image, et test des routes API
+      (réelles ou simulées). C'est l'outil de choix pour vérifier qu'un flow fonctionne réellement
+      avant de le livrer.
+    </p>
+    <div class="callout info">
+      <strong class="label">Pourquoi un simulateur ?</strong>
+      Il détecte automatiquement les chaînes de collecte cassées : si un paramètre attendu par un
+      nœud <code class="inline">result</code> n'a jamais été collecté sur le chemin parcouru, le
+      Simulateur l'affiche clairement plutôt que de laisser l'erreur invisible jusqu'à l'intégration
+      mobile.
+    </div>
+
+    <h3>Configuration</h3>
+    <p>Le bandeau en haut du panneau (repliable) rassemble tout ce dont le Simulateur a besoin :</p>
+    <ul>
+      <li><strong>URL de base du backend</strong> — préfixe ajouté devant l'<code class="inline">endpoint</code> de chaque nœud <code class="inline">result</code>.</li>
+      <li><strong>Bearer Token</strong> — optionnel, envoyé en en-tête <code class="inline">Authorization: Bearer …</code>.</li>
+      <li><strong>Langue</strong> — parmi les langues actives du flow ; détermine quel sous-dossier <code class="inline">audio/{langue}/…</code> est utilisé pour la lecture.</li>
+      <li><strong>Dossier de ressources</strong> — le même dossier que l'onglet Studio → Ressources (voir <a href="#guide-studio-resources">Onglet Ressources</a>) ; connectez-le pour activer la lecture audio/image réelle.</li>
+    </ul>
+    <p class="muted">Cette configuration est mémorisée localement, indépendamment de la session du flow, et réutilisée à la prochaine ouverture.</p>
+
+    <h3>Navigation</h3>
+    <p>
+      Chaque type de nœud propose l'interaction adaptée : options cliquables pour
+      <code class="inline">root</code>/<code class="inline">grid</code>/<code class="inline">pre_filter</code>,
+      sélecteur de date pour <code class="inline">calendrier</code>. La colonne latérale affiche le
+      <strong>fil d'Ariane</strong> du chemin parcouru (chaque étape est cliquable pour revenir en
+      arrière) et le <strong>contexte collecté</strong> en direct.
+    </p>
+    <div class="callout warn">
+      <strong class="label">pre_filter avec liste vide</strong>
+      Si la liste filtrée est vide (ex. un département sans marché dans le HashMap), le Simulateur
+      l'affiche comme un avertissement explicite — c'est un signal de trou de données à corriger
+      dans <code class="inline">hashmaps</code>, pas un bug du Simulateur.
+    </div>
+
+    <h3>Ressources audio &amp; image</h3>
+    <p>Une fois le dossier de ressources connecté, chaque option affiche un indicateur :</p>
+    <ul>
+      <li><strong>Vert</strong> — résolution canonique : chemin exact attendu, trouvé sur le disque.</li>
+      <li><strong>Orange</strong> — résolution "au mieux" (voir ci-dessous), à vérifier.</li>
+      <li><strong>Rouge</strong> — ressource introuvable.</li>
+    </ul>
+    <p>
+      Cliquer l'icône ▶ à côté d'une option joue son audio et affiche son image, sans sélectionner
+      l'option (la sélection se fait en cliquant le reste du bouton). Les boutons
+      <strong>Intro</strong> et <strong>Question</strong> en haut de chaque nœud jouent
+      respectivement sa séquence audio d'introduction et son <code class="inline">audio_prompt</code>.
+    </p>
+    <div class="callout info">
+      <strong class="label">Résolution "au mieux" (hashmaps_no_resources)</strong>
+      Pour un HashMap listé dans <code class="inline">hashmaps_no_resources</code>, aucun chemin
+      canonique n'existe par construction (voir <a href="#guide-mapping">Mapping Audio &amp; Image</a>) :
+      le Simulateur recherche alors le fichier par son seul nom dans tout le dossier de ressources —
+      d'où l'indicateur orange, moins fiable qu'une résolution exacte.
+    </div>
+
+    <h3>Nœud résultat : appel API et repli simulé</h3>
+    <ol class="steps">
+      <li>Le panneau latéral affiche un <strong>aperçu de la requête</strong> (méthode, URL, corps JSON) construite à partir du contexte collecté, avec les paramètres jamais collectés signalés en avertissement.</li>
+      <li><strong>Envoyer la requête</strong> tente le vrai appel HTTP. En cas d'échec (réseau, 4xx/5xx — le cas général tant qu'une route n'est pas développée), le Simulateur bascule automatiquement sur une réponse simulée, construite depuis <code class="inline">response_examples</code> ou <code class="inline">json_response_contrat</code>, avec les <code class="inline">{placeholder}</code> / <code class="inline">{placeholder:défaut}</code> remplacés par les valeurs collectées (ou leur valeur par défaut).</li>
+      <li><strong>Aperçu simulé</strong> prévisualise directement cette réponse simulée, sans tenter d'appel réel — utile tant qu'aucun backend n'existe encore.</li>
+      <li>Si plusieurs <code class="inline">response_examples</code> existent, un menu déroulant permet de choisir lequel utiliser en repli.</li>
+      <li>Si la réponse (réelle ou simulée) a la forme d'une <strong>enveloppe audio_sequence</strong> (<code class="inline">{ type: "audio_sequence", sequence: [...] }</code>), un bouton <strong>Lire la séquence</strong> joue chaque bloc dans l'ordre et affiche son image ; sinon, le JSON brut est affiché formaté.</li>
+    </ol>
+    <div class="callout warn">
+      <strong class="label">Un bandeau distingue toujours réel et simulé</strong>
+      Aucune ambiguïté n'est possible : une réponse réelle affiche son statut HTTP, une réponse
+      simulée affiche systématiquement un bandeau "⚠️ Réponse simulée (route backend indisponible)".
+    </div>
+
     <!-- ======================= REFERENCE ======================= -->
 
     <h2 id="compatibilite">Compatibilité navigateur</h2>
@@ -882,6 +961,8 @@ POST api/app/acheter_produit
         <tbody>
           <tr><td>Éditeur de graphe, Variables, HashMaps, Mapping, Paramètres, Validation, Import/Export</td><td>Tout navigateur moderne (Chrome, Edge, Firefox, Safari...)</td></tr>
           <tr><td>Studio — Ressources / Build / Publication</td><td><strong>Chrome, Edge ou Opera uniquement</strong> (File System Access API). Aucun mode dégradé n'est proposé sur les autres navigateurs.</td></tr>
+          <tr><td>Simulateur — navigation, appel API, repli simulé</td><td>Tout navigateur moderne.</td></tr>
+          <tr><td>Simulateur — lecture audio/image réelle (dossier de ressources)</td><td><strong>Chrome, Edge ou Opera uniquement</strong> (File System Access API), comme le Studio.</td></tr>
         </tbody>
       </table>
     </div>
@@ -906,6 +987,12 @@ POST api/app/acheter_produit
     <h4>Je ne retrouve plus mon travail après un rechargement</h4>
     <p>Le Studio auto-sauvegarde dans le stockage local du navigateur (<code class="inline">localStorage</code>), propre à ce navigateur et cet appareil. Utilisez régulièrement <strong>Enregistrer</strong> pour exporter une copie <code class="inline">flow.json</code> durable.</p>
 
+    <h4>Les boutons "Intro" / "Question" sont grisés dans le Simulateur</h4>
+    <p>Le dossier de ressources n'est pas encore connecté (ou son scan a échoué) — connectez-le dans le bandeau Configuration du Simulateur, comme pour l'onglet Ressources du Studio.</p>
+
+    <h4>"Envoyer la requête" tombe toujours en repli simulé</h4>
+    <p>C'est attendu tant que la route backend n'est pas développée (voir les commentaires "⚠️ ROUTE BACKEND À DÉVELOPPER" dans <code class="inline">flow.json</code>). Le bandeau orange l'indique explicitement ; le statut HTTP ou le message d'erreur réseau reste affiché pour diagnostiquer.</p>
+
     <h2 id="glossaire">Glossaire</h2>
     <div class="table-wrap">
       <table>
@@ -921,6 +1008,9 @@ POST api/app/acheter_produit
           <tr><td><strong>hashmaps_no_resources</strong></td><td>Liste des HashMaps exclus de la génération de ressources audio/image (clé et valeurs déjà couvertes par une variable existante) — tout le reste génère ses ressources par défaut. Voir <a href="#guide-mapping">Mapping Audio &amp; Image</a>.</td></tr>
           <tr><td><strong>Build</strong></td><td>Validation + scan + écriture de diagnostics dans un dossier de sortie, pour vérifier en local.</td></tr>
           <tr><td><strong>Publication</strong></td><td>Un Build, plus la copie des ressources réellement référencées dans <code class="inline">assets/</code>.</td></tr>
+          <tr><td><strong>Simulateur</strong></td><td>Panneau qui rejoue le flow nœud par nœud comme l'app mobile : navigation, ressources réelles, appels API et repli simulé. Voir <a href="#guide-simulator">Le Simulateur</a>.</td></tr>
+          <tr><td><strong>Repli simulé</strong></td><td>Réponse construite depuis <code class="inline">response_examples</code>/<code class="inline">json_response_contrat</code> par le Simulateur quand l'appel API réel échoue.</td></tr>
+          <tr><td><strong>Enveloppe audio_sequence</strong></td><td>Forme de réponse <code class="inline">{ type: "audio_sequence", sequence: [{ audios, image }] }</code> que le Simulateur sait jouer directement, bloc par bloc (audio + image).</td></tr>
         </tbody>
       </table>
     </div>

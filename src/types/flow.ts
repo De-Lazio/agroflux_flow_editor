@@ -55,6 +55,9 @@ export interface RootNodeData extends BaseNodeData {
 export interface GridNodeData extends BaseNodeData, ActiveControlledNodeData {
   type: 'grid';
   options_source: string;
+  // Nom du paramètre sous lequel la valeur choisie est transmise au nœud
+  // "result" en aval — texte libre (pas forcément égal à `options_source` :
+  // c'est le nom de PARAMÈTRE API, pas un nom de variable).
   set: string;
   next: string;
 }
@@ -69,6 +72,10 @@ export interface CalendrierNodeData extends BaseNodeData {
   type: 'calendrier';
   periode: number;
   cadran: string;
+  // Nom du paramètre sous lequel la date choisie est transmise au nœud
+  // "result" en aval (ex. "anime_date") — même rôle que `set` sur GridNodeData,
+  // texte libre car ce n'est pas un nom de variable (calendrier n'en a pas).
+  set: string;
   next: string;
 }
 
@@ -76,6 +83,10 @@ export interface PreFilterNodeData extends BaseNodeData, ActiveControlledNodeDat
   type: 'pre_filter';
   cle: string;
   filtre_source: string;
+  // Nom du paramètre sous lequel la valeur choisie dans la liste filtrée est
+  // transmise au nœud "result" en aval (ex. "marche") — texte libre, comme
+  // pour CalendrierNodeData.set.
+  set: string;
   next: string;
 }
 

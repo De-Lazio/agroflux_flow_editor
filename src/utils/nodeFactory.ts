@@ -57,6 +57,7 @@ export const createDefaultCalendrierNode = (id: string): CalendrierNodeData => (
   },
   periode: 7,
   cadran: 'centrer',
+  set: '',
   next: '',
   json_response_contrat: "{}",
   comment: ""
@@ -72,6 +73,7 @@ export const createDefaultPreFilterNode = (id: string): PreFilterNodeData => ({
   },
   cle: '',
   filtre_source: '',
+  set: '',
   next: '',
   can_choix_all: false,
   controle_active: false,

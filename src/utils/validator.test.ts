@@ -161,6 +161,40 @@ describe('validateFlow — avertissements', () => {
     expect(warnings.some((w) => w.includes('result_1') && w.includes('cul-de-sac'))).toBe(false);
   });
 
+  it('signale un champ "set" vide sur un nœud grid', () => {
+    const flow = buildFlow();
+    (flow.nodes.grid_1 as GridNodeData).set = '';
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('grid_1') && w.includes('"set"'))).toBe(true);
+  });
+
+  it('signale un champ "set" vide sur un nœud calendrier', () => {
+    const flow = buildFlow({
+      nodes: {
+        ...buildFlow().nodes,
+        cal_1: { type: 'calendrier', audio: baseAudio('cal_1'), periode: 7, cadran: 'centrer', set: '', next: 'result_1' }
+      }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('cal_1') && w.includes('"set"'))).toBe(true);
+  });
+
+  it('signale un champ "set" vide sur un nœud pre_filter', () => {
+    const flow = buildFlow({
+      nodes: {
+        ...buildFlow().nodes,
+        pf_1: { type: 'pre_filter', audio: baseAudio('pf_1'), cle: 'departements', filtre_source: 'marches', set: '', next: 'result_1' }
+      }
+    });
+    const { warnings } = validateFlow(flow);
+    expect(warnings.some((w) => w.includes('pf_1') && w.includes('"set"'))).toBe(true);
+  });
+
+  it('ne signale rien quand "set" est rempli sur grid/calendrier/pre_filter', () => {
+    const { warnings } = validateFlow(buildFlow());
+    expect(warnings.some((w) => w.includes('"set"'))).toBe(false);
+  });
+
   it('signale un mapping ressource manquant pour une variable déclarée', () => {
     const flow = buildFlow({ variables: { produits: ['mais'] } });
     const { warnings } = validateFlow(flow);
@@ -365,10 +399,10 @@ describe('validateFlow — cohérence de hashmaps_no_resources', () => {
 });
 
 describe('validateFlow — rapport d\'inventaire', () => {
-  it('recense les audios référencés directement dans les nœuds', () => {
+  it('recense les audios référencés directement dans les nœuds, préfixés par langue', () => {
     const { report } = validateFlow(buildFlow());
-    expect(report.audios).toContain('intro/root.mp3');
-    expect(report.audios).toContain('intro/default.mp3');
+    expect(report.audios).toContain('audio/fr/intro/root.mp3');
+    expect(report.audios).toContain('audio/fr/intro/default.mp3');
   });
 
   it('génère les ressources par variable, séparément des ressources par hashmap', () => {

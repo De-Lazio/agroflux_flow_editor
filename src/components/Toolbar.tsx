@@ -17,7 +17,8 @@ import {
   Settings,
   ChevronDown,
   Layers,
-  CloudDownload
+  CloudDownload,
+  Rocket
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -30,6 +31,7 @@ interface ToolbarProps {
   onOpenSettings: () => void;
   onOpenApiImport: () => void;
   onOpenStudio: () => void;
+  onOpenSimulator: () => void;
   onAddNode: () => void;
   onAutoLayout: () => void;
   onValidate: () => void;
@@ -50,6 +52,7 @@ const Toolbar = ({
   onOpenSettings,
   onOpenApiImport,
   onOpenStudio,
+  onOpenSimulator,
   onAddNode,
   onAutoLayout,
   onValidate,
@@ -202,6 +205,14 @@ const Toolbar = ({
         title="Studio (Ressources, Build, Publication)"
       >
         <LayoutGrid size={18} /> <span className="hidden lg:inline">Studio</span>
+      </button>
+
+      <button
+        className="flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-md cursor-pointer text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+        onClick={onOpenSimulator}
+        title="Simulateur de Flow"
+      >
+        <Rocket size={18} /> <span className="hidden lg:inline">Simulateur</span>
       </button>
 
       <button

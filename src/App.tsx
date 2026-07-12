@@ -22,6 +22,7 @@ import ResourceMappingManager from './components/ResourceMappingManager';
 import FlowSettingsManager from './components/FlowSettingsManager';
 import ApiImportPanel from './components/ApiImportPanel';
 import StudioPanel from './components/StudioPanel';
+import SimulatorPanel from './components/SimulatorPanel';
 import { jsonToFlow, flowToJson, getLayoutedElements } from './utils/flowManager';
 import { validateFlow } from './utils/validator';
 import { buildBackendContract } from './utils/backendContract';
@@ -94,6 +95,7 @@ const App = () => {
   const [isFlowSettingsOpen, setIsFlowSettingsOpen] = useState(false);
   const [isApiImportOpen, setIsApiImportOpen] = useState(false);
   const [isStudioOpen, setIsStudioOpen] = useState(false);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
 
   // État de verrouillage pour le chargement
   const [isAppReady, setIsAppReady] = useState(false);
@@ -438,6 +440,7 @@ const App = () => {
         onOpenSettings={() => setIsFlowSettingsOpen(true)}
         onOpenApiImport={() => setIsApiImportOpen(true)}
         onOpenStudio={() => setIsStudioOpen(true)}
+        onOpenSimulator={() => setIsSimulatorOpen(true)}
         onAddNode={addNewNode}
         onAutoLayout={handleAutoLayout}
         onValidate={handleValidate}
@@ -517,6 +520,13 @@ const App = () => {
         <StudioPanel
           getCurrentFlow={getCurrentFlow}
           onClose={() => setIsStudioOpen(false)}
+        />
+      )}
+
+      {isSimulatorOpen && (
+        <SimulatorPanel
+          getCurrentFlow={getCurrentFlow}
+          onClose={() => setIsSimulatorOpen(false)}
         />
       )}
 

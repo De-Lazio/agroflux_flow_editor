@@ -1,4 +1,5 @@
 import { buildVariableResources, buildHashmapResources, DEFAULT_AUDIO_FORMAT, DEFAULT_IMAGE_FORMAT } from './resourceInventory';
+import { toLanguageAudioPath } from './simulationResources';
 import { DEFAULT_LANGUAGES } from './languages';
 import { DEFAULT_HTTP_METHOD } from '../types/flow';
 import type { FlowData, FlowNodeProbe, FlowNodes, HttpMethod, ValidationResult } from '../types/flow';
@@ -128,11 +129,18 @@ export const validateFlow = (flowData: FlowData): ValidationResult => {
           if (match) {
             usedVars.add(match[1]);
           } else {
-            audioFiles.add(item);
+            // Chemin littéral sans dimension langue (voir
+            // API_BACKEND_ROUTES.md §3.2) : un fichier attendu par langue,
+            // même convention que les ressources de variables/hashmaps
+            // ci-dessous.
+            languages.forEach((lang) => audioFiles.add(toLanguageAudioPath(lang, item)));
           }
         });
       }
-      if (node.audio.fallback) audioFiles.add(node.audio.fallback);
+      if (node.audio.fallback) {
+        const fallback = node.audio.fallback;
+        languages.forEach((lang) => audioFiles.add(toLanguageAudioPath(lang, fallback)));
+      }
     }
 
     // Images référencées dans les nœuds Result (via le champ comment)
@@ -219,6 +227,14 @@ export const validateFlow = (flowData: FlowData): ValidationResult => {
     // Cul-de-sac : un nœud de navigation doit toujours mener quelque part
     if (['grid', 'calendrier', 'pre_filter'].includes(node.type) && !fields.next) {
       warnings.push(`Nœud "${id}" (${node.type}) n'a pas de "next" : ce nœud est un cul-de-sac.`);
+    }
+
+    // Paramètre de stockage (set) : seuls root et result n'en ont pas besoin
+    // (root ne collecte rien, result est terminal) — grid, calendrier et
+    // pre_filter doivent tous nommer le paramètre API sous lequel la valeur
+    // choisie sera transmise au nœud "result" en aval.
+    if (['grid', 'calendrier', 'pre_filter'].includes(node.type) && !fields.set) {
+      warnings.push(`Nœud "${id}" (${node.type}) : le champ "set" est vide — la valeur choisie ne sera transmise à aucun paramètre exploitable par un nœud "result" en aval.`);
     }
 
     // Nœud orphelin (sauf point d'entrée)
