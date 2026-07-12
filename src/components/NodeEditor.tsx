@@ -208,28 +208,43 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
           />
 
           {data.type === 'calendrier' && (
-            <div className="grid grid-cols-2 gap-3 p-3 bg-violet-50 rounded-lg border border-violet-100">
-              <div>
-                <label className="block text-[10px] font-bold text-violet-700 uppercase mb-1">Période (jours)</label>
-                <input
-                  type="number"
-                  min="1"
-                  className="w-full p-2 border border-violet-200 rounded text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white"
-                  value={data.periode || 0}
-                  onChange={(e) => handleChange('periode', parseInt(e.target.value) || 0)}
-                />
+            <div className="p-3 bg-violet-50 rounded-lg border border-violet-100 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-violet-700 uppercase mb-1">Période (jours)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full p-2 border border-violet-200 rounded text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white"
+                    value={data.periode || 0}
+                    onChange={(e) => handleChange('periode', parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-violet-700 uppercase mb-1">Cadran</label>
+                  <select
+                    className="w-full p-2 border border-violet-200 rounded text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white"
+                    value={data.cadran || 'centrer'}
+                    onChange={(e) => handleChange('cadran', e.target.value)}
+                  >
+                    <option value="passé">Passé</option>
+                    <option value="centrer">Centrer</option>
+                    <option value="future">Future</option>
+                  </select>
+                </div>
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-violet-700 uppercase mb-1">Cadran</label>
-                <select
-                  className="w-full p-2 border border-violet-200 rounded text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white"
-                  value={data.cadran || 'centrer'}
-                  onChange={(e) => handleChange('cadran', e.target.value)}
-                >
-                  <option value="passé">Passé</option>
-                  <option value="centrer">Centrer</option>
-                  <option value="future">Future</option>
-                </select>
+                <label className="block text-[10px] font-bold text-violet-700 uppercase mb-1">Paramètre de stockage (Set)</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border border-violet-200 rounded text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white font-mono"
+                  placeholder="ex: anime_date"
+                  value={data.set || ''}
+                  onChange={(e) => handleChange('set', e.target.value)}
+                />
+                <p className="text-[10px] text-violet-400 mt-1">
+                  Nom du paramètre transmis au nœud "result" en aval avec la date choisie.
+                </p>
               </div>
             </div>
           )}
@@ -281,16 +296,17 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Variable de stockage (Set)</label>
-              <select
-                className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              <label className="block text-xs font-bold text-slate-500 mb-1">Paramètre de stockage (Set)</label>
+              <input
+                type="text"
+                className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                placeholder="ex: departements"
                 value={data.set || ''}
                 onChange={(e) => handleChange('set', e.target.value)}
-              >
-                <option value="">(Aucune)</option>
-                <option value="filtre">filtre</option>
-                {Object.keys(variables || {}).map(v => <option key={v} value={v}>{v}</option>)}
-              </select>
+              />
+              <p className="text-[10px] text-slate-400 mt-1">
+                Nom du paramètre transmis au nœud "result" en aval (data_source.params) — pas forcément le nom de la variable.
+              </p>
             </div>
 
             <div className="flex items-center justify-between pt-2">
@@ -424,6 +440,20 @@ const NodeEditor = ({ node, nodes, onUpdate, onClose, onDelete, variables, hashm
                 <option value="">(Choisir un hashmap)</option>
                 {Object.keys(hashmaps || {}).map(h => <option key={h} value={h}>{h}</option>)}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Paramètre de stockage (Set)</label>
+              <input
+                type="text"
+                className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                placeholder="ex: marche"
+                value={data.set || ''}
+                onChange={(e) => handleChange('set', e.target.value)}
+              />
+              <p className="text-[10px] text-slate-400 mt-1">
+                Nom du paramètre transmis au nœud "result" en aval avec la valeur choisie dans la liste filtrée.
+              </p>
             </div>
 
             <div className="flex items-center justify-between pt-2">

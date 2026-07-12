@@ -1590,7 +1590,7 @@
       "type": "grid",
       "audio_prompt": "questions/achete_produit.mp3",
       "options_source": "produits",
-      "set": "produits",
+      "set": "produit",
       "next": "achete_produit_departement",
       "audio": {
         "type": "sequence",
@@ -1606,7 +1606,7 @@
       "type": "grid",
       "audio_prompt": "questions/achete_produit_departement.mp3",
       "options_source": "departements",
-      "set": "departements",
+      "set": "departement",
       "next": "acheter_result",
       "audio": {
         "type": "sequence",
@@ -1622,7 +1622,7 @@
       "type": "grid",
       "audio_prompt": "questions/vendre_produit.mp3",
       "options_source": "produits",
-      "set": "produits",
+      "set": "produit",
       "next": "vendre_produit_departement",
       "audio": {
         "type": "sequence",
@@ -1638,7 +1638,7 @@
       "type": "grid",
       "audio_prompt": "questions/vendre_produit_departement.mp3",
       "options_source": "departements",
-      "set": "departements",
+      "set": "departement",
       "next": "vendre_result",
       "audio": {
         "type": "sequence",
@@ -1712,7 +1712,7 @@
       "type": "grid",
       "audio_prompt": "questions/anime_x_departement.mp3",
       "options_source": "departements_et_tout",
-      "set": "departements_et_tout",
+      "set": "departement",
       "next": "anime_x_result",
       "audio": {
         "type": "sequence",
@@ -1750,6 +1750,7 @@
       "audio_prompt": "questions/date_anime_calendrier_calendrier.mp3",
       "periode": 7,
       "cadran": "centrer",
+      "set": "anime_date",
       "next": "anime_calendrier_departement",
       "audio": {
         "type": "sequence",
@@ -1759,7 +1760,7 @@
         ],
         "fallback": "intro/default.mp3"
       },
-      "comment": "Choix d'une date CALENDAIRE précise (alternative à marche_anime_x, qui ne propose que des dates relatives) pour savoir quels marchés sont animés ce jour-là. \"periode\": 7 et \"cadran\": \"centrer\" indiquent au mobile d'afficher un calendrier de 7 jours centré sur aujourd'hui (3 jours avant / aujourd'hui / 3 jours après) ; \"cadran\" peut aussi valoir \"passé\" ou \"future\" pour une fenêtre orientée dans un seul sens.\n\n⚠️ Le type \"calendrier\" n'a pas de champ \"set\" dans le schéma actuel du Flow Editor (contrairement à \"grid\") : il n'existe donc aucun moyen, dans ce JSON, de nommer explicitement le paramètre sous lequel la date choisie est transmise. C'est une convention à respecter côté mobile/backend, documentée ici : la date choisie sur ce calendrier doit être transmise au paramètre \"anime_date\" du nœud résultat suivant (anime_calendrier_result)."
+      "comment": "Choix d'une date CALENDAIRE précise (alternative à marche_anime_x, qui ne propose que des dates relatives) pour savoir quels marchés sont animés ce jour-là. \"periode\": 7 et \"cadran\": \"centrer\" indiquent au mobile d'afficher un calendrier de 7 jours centré sur aujourd'hui (3 jours avant / aujourd'hui / 3 jours après) ; \"cadran\" peut aussi valoir \"passé\" ou \"future\" pour une fenêtre orientée dans un seul sens. \"set\": \"anime_date\" indique que la date choisie est transmise sous ce nom de paramètre au nœud résultat suivant (anime_calendrier_result)."
     },
     "anime_calendrier_result": {
       "type": "result",
@@ -1802,7 +1803,7 @@
       "type": "grid",
       "audio_prompt": "questions/infos_marche_infos_type.mp3",
       "options_source": "type_info_marche",
-      "set": "type_info_marche",
+      "set": "info_type",
       "next": "infos_marche_result",
       "audio": {
         "type": "sequence",
@@ -1846,7 +1847,7 @@
       "type": "grid",
       "audio_prompt": "questions/explorer_produit_produit.mp3",
       "options_source": "produits",
-      "set": "produits",
+      "set": "produit",
       "next": "explorer_produit_marche",
       "audio": {
         "type": "sequence",
@@ -1902,7 +1903,7 @@
       "type": "grid",
       "audio_prompt": "questions/anime_calendrier_departement.mp3",
       "options_source": "departements_et_tout",
-      "set": "departements_et_tout",
+      "set": "departement",
       "next": "anime_calendrier_result",
       "audio": {
         "type": "sequence",
@@ -1918,7 +1919,7 @@
       "type": "grid",
       "audio_prompt": "questions/explorer_produit_marche.mp3",
       "options_source": "marches_suivis",
-      "set": "marches_suivis",
+      "set": "marche",
       "next": "explorer_produit_periode",
       "audio": {
         "type": "sequence",
@@ -1936,6 +1937,7 @@
       "filtre_source": "marches_par_departement",
       "next": "infos_marche_infos_type",
       "cle": "departements",
+      "set": "marche",
       "audio": {
         "type": "sequence",
         "key": "explorer_produit_marche_filter_intro",
@@ -1944,7 +1946,7 @@
         ],
         "fallback": "intro/default.mp3"
       },
-      "comment": "Nœud utilisé UNIQUEMENT par la branche \"Infos sur un marché\" (infos_marche_departement → ce nœud → infos_marche_infos_type) — son nom historique \"explorer_produit_marche_filter\" prête à confusion avec la branche \"Explorer un produit\", qui elle ne l'utilise pas (elle choisit son marché via un menu direct, voir explorer_produit_marche).\n\nFonctionnement : \"cle\": \"departements\" indique de relire la valeur déjà choisie pour la variable \"departements\" (au nœud infos_marche_departement) ; \"filtre_source\": \"marches_par_departement\" indique de l'utiliser comme clé dans ce hashmap pour obtenir la liste des marchés de ce département. La valeur choisie parmi cette liste filtrée est stockée sous le paramètre \"marche\".\n\nCorrection : filtre_source pointait vers le hashmap \"marche_par_departement\" (singulier), une ébauche incomplète qui ne couvre que 2 départements sur 12 (oueme, plateau). Il pointe maintenant vers \"marches_par_departement\" (pluriel), qui couvre les 12 départements avec les mêmes marchés que la variable \"marches\" — donc sans ressources audio/image à générer séparément (voir hashmaps_no_resources). Le champ \"cles\": [\"produits\"] a aussi été retiré : il ne fait partie d'aucun schéma de nœud pre_filter reconnu par le Flow Editor (seul \"cle\", au singulier, existe) et n'avait aucun effet."
+      "comment": "Nœud utilisé UNIQUEMENT par la branche \"Infos sur un marché\" (infos_marche_departement → ce nœud → infos_marche_infos_type) — son nom historique \"explorer_produit_marche_filter\" prête à confusion avec la branche \"Explorer un produit\", qui elle ne l'utilise pas (elle choisit son marché via un menu direct, voir explorer_produit_marche).\n\nFonctionnement : \"cle\": \"departements\" indique de relire la valeur déjà choisie pour la variable \"departements\" (au nœud infos_marche_departement) ; \"filtre_source\": \"marches_par_departement\" indique de l'utiliser comme clé dans ce hashmap pour obtenir la liste des marchés de ce département. \"set\": \"marche\" indique que la valeur choisie parmi cette liste filtrée est transmise sous ce nom de paramètre au nœud résultat suivant.\n\nCorrection : filtre_source pointait vers le hashmap \"marche_par_departement\" (singulier), une ébauche incomplète qui ne couvre que 2 départements sur 12 (oueme, plateau). Il pointe maintenant vers \"marches_par_departement\" (pluriel), qui couvre les 12 départements avec les mêmes marchés que la variable \"marches\" — donc sans ressources audio/image à générer séparément (voir hashmaps_no_resources). Le champ \"cles\": [\"produits\"] a aussi été retiré : il ne fait partie d'aucun schéma de nœud pre_filter reconnu par le Flow Editor (seul \"cle\", au singulier, existe) et n'avait aucun effet."
     }
   }
 }

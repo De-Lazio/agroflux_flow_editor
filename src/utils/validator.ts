@@ -221,6 +221,14 @@ export const validateFlow = (flowData: FlowData): ValidationResult => {
       warnings.push(`Nœud "${id}" (${node.type}) n'a pas de "next" : ce nœud est un cul-de-sac.`);
     }
 
+    // Paramètre de stockage (set) : seuls root et result n'en ont pas besoin
+    // (root ne collecte rien, result est terminal) — grid, calendrier et
+    // pre_filter doivent tous nommer le paramètre API sous lequel la valeur
+    // choisie sera transmise au nœud "result" en aval.
+    if (['grid', 'calendrier', 'pre_filter'].includes(node.type) && !fields.set) {
+      warnings.push(`Nœud "${id}" (${node.type}) : le champ "set" est vide — la valeur choisie ne sera transmise à aucun paramètre exploitable par un nœud "result" en aval.`);
+    }
+
     // Nœud orphelin (sauf point d'entrée)
     if (id !== flowData.entry) {
       const isTarget = nodeIds.some((otherId) => {

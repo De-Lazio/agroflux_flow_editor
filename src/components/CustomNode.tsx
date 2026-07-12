@@ -71,6 +71,9 @@ const CustomNode = ({ data, selected, id }: NodeProps<FlowGraphNodeData>) => {
               <span>Période: {data.periode || '0'} jours</span>
               <span className="capitalize">Cadran: {data.cadran || 'centrer'}</span>
             </div>
+            {data.set && (
+              <div className="text-[9px] text-slate-400 italic">Stocke dans: {data.set}</div>
+            )}
           </div>
         )}
 
@@ -86,6 +89,9 @@ const CustomNode = ({ data, selected, id }: NodeProps<FlowGraphNodeData>) => {
                 <span className="text-[9px] text-slate-400">Filtré par:</span>
                 <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">{data.cle}</span>
               </div>
+            )}
+            {data.set && (
+              <div className="text-[9px] text-slate-400 italic mt-1">Stocke dans: {data.set}</div>
             )}
           </div>
         )}
