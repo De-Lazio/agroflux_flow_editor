@@ -17,6 +17,31 @@ export interface BuildResult {
   backendContract: BackendContract;
 }
 
+export interface ResourceAnalysis {
+  validation: ValidationResult;
+  manifest: Manifest;
+  reconciliation: ReconciliationResult;
+}
+
+/**
+ * Valide le flow, scanne le dossier de ressources et réconcilie les deux —
+ * la séquence commune au Build (avant d'écrire quoi que ce soit) et au
+ * Générateur de ressources (qui n'a besoin que de savoir ce qui manque, sans
+ * dossier de sortie).
+ */
+export const analyzeResources = async (
+  flow: FlowData,
+  resourcesDirHandle: FileSystemDirectoryHandle
+): Promise<ResourceAnalysis> => {
+  const validation = validateFlow(flow);
+  const manifest = await buildManifest(resourcesDirHandle);
+  const reconciliation = reconcileResources(
+    [...validation.report.audios, ...validation.report.images],
+    manifest.entries.map((entry) => entry.path)
+  );
+  return { validation, manifest, reconciliation };
+};
+
 /**
  * Orchestre l'existant (aucune nouvelle logique métier) : valide le flow, scanne
  * le dossier de ressources, réconcilie les deux, dérive le contrat backend, puis
@@ -29,13 +54,8 @@ export const runBuild = async (
   resourcesDirHandle: FileSystemDirectoryHandle,
   outputDirHandle: FileSystemDirectoryHandle
 ): Promise<BuildResult> => {
-  const validation = validateFlow(flow);
-  const manifest = await buildManifest(resourcesDirHandle);
+  const { validation, manifest, reconciliation } = await analyzeResources(flow, resourcesDirHandle);
   const repository = await buildRepository(manifest);
-  const reconciliation = reconcileResources(
-    [...validation.report.audios, ...validation.report.images],
-    manifest.entries.map((entry) => entry.path)
-  );
   const backendContract = buildBackendContract(flow);
 
   const result: BuildResult = { validation, manifest, repository, reconciliation, backendContract };

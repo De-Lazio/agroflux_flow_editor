@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { X, LayoutGrid, AlertTriangle, FolderOpen, Hammer, UploadCloud } from 'lucide-react';
+import { X, LayoutGrid, AlertTriangle, FolderOpen, Wand2, Hammer, UploadCloud } from 'lucide-react';
 import { isFileSystemAccessSupported } from '../utils/fsAccess';
 import AssetRepositoryTab from './AssetRepositoryTab';
+import GeneratorTab from './GeneratorTab';
 import BuildTab from './BuildTab';
 import PublicationTab from './PublicationTab';
 import type { FlowData } from '../types/flow';
@@ -11,10 +12,11 @@ interface StudioPanelProps {
   onClose: () => void;
 }
 
-type StudioTab = 'resources' | 'build' | 'publish';
+type StudioTab = 'resources' | 'generator' | 'build' | 'publish';
 
 const TABS: { id: StudioTab; label: string; icon: typeof FolderOpen }[] = [
   { id: 'resources', label: 'Ressources', icon: FolderOpen },
+  { id: 'generator', label: 'Générateur', icon: Wand2 },
   { id: 'build', label: 'Build', icon: Hammer },
   { id: 'publish', label: 'Publication', icon: UploadCloud }
 ];
@@ -86,6 +88,9 @@ const StudioPanel = ({ getCurrentFlow, onClose }: StudioPanelProps) => {
         <div className="flex-1 overflow-y-auto p-6">
           <div className={tab === 'resources' ? '' : 'hidden'}>
             <AssetRepositoryTab getCurrentFlow={getCurrentFlow} />
+          </div>
+          <div className={tab === 'generator' ? '' : 'hidden'}>
+            <GeneratorTab getCurrentFlow={getCurrentFlow} />
           </div>
           <div className={tab === 'build' ? '' : 'hidden'}>
             <BuildTab getCurrentFlow={getCurrentFlow} />

@@ -32,6 +32,12 @@ const RESOURCE_TYPE_BY_ROOT_SEGMENT: Record<string, ManifestEntry['resource_type
   images: 'image'
 };
 
+// Exporté pour que le Générateur de ressources sache, à partir d'un chemin
+// attendu (issu de validation.report.audios/images), s'il doit produire une
+// image ou un audio — sans dupliquer la convention audio/images/ ailleurs.
+export const resourceTypeForPath = (path: string): ManifestEntry['resource_type'] | undefined =>
+  RESOURCE_TYPE_BY_ROOT_SEGMENT[path.split('/')[0]];
+
 /**
  * Scanne réellement le dossier de ressources choisi par l'utilisateur : un
  * fichier présent = une entrée, avec son hash SHA-256, sa taille et sa date de
@@ -43,7 +49,7 @@ export const buildManifest = async (dirHandle: FileSystemDirectoryHandle): Promi
   const entries: ManifestEntry[] = [];
 
   for (const [path, fileHandle] of files) {
-    const resourceType = RESOURCE_TYPE_BY_ROOT_SEGMENT[path.split('/')[0]];
+    const resourceType = resourceTypeForPath(path);
     if (!resourceType) continue;
 
     const file = await fileHandle.getFile();

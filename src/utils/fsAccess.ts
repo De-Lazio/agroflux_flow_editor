@@ -182,3 +182,19 @@ export const copyFile = async (
   await writable.write(file);
   await writable.close();
 };
+
+/**
+ * Écrit un contenu binaire (image/audio générés en mémoire par le Générateur de
+ * ressources) à un chemin relatif donné, mêmes garanties que writeTextFile/copyFile
+ * (sous-dossiers créés au passage).
+ */
+export const writeBinaryFile = async (
+  dirHandle: FileSystemDirectoryHandle,
+  relativePath: string,
+  blob: Blob
+): Promise<void> => {
+  const fileHandle = await getNestedFileHandle(dirHandle, relativePath);
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+};

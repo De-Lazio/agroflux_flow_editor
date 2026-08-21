@@ -127,7 +127,12 @@ const App = () => {
       if (savedSession) {
         try {
           const session = JSON.parse(savedSession);
-          if (session && session.nodes && session.nodes.length > 0) {
+          // Array.isArray (et non "session.nodes.length > 0") : un projet vide
+          // sauvegardé après "Nouveau projet" a bien un tableau `nodes`, juste
+          // vide — le traiter comme "aucune session" faisait retomber sur le
+          // flow par défaut au prochain rechargement, ressuscitant l'ancien
+          // contenu que "Nouveau projet" venait justement d'effacer.
+          if (session && Array.isArray(session.nodes)) {
             console.log("📦 [Persistence] Restauration de", session.nodes.length, "nœuds...");
             setNodes(session.nodes);
             setEdges(session.edges || []);
